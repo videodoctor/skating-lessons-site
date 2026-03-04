@@ -36,6 +36,7 @@ class BookingApprovedNotification extends Notification
             ->line('**Time:** ' . \Carbon\Carbon::parse($this->booking->start_time)->format('g:i A'))
             ->line('**Location:** ' . $this->booking->timeSlot->rink->name . ' - ' . $this->booking->timeSlot->rink->address)
             ->line('**Price:** $' . number_format($this->booking->price_paid, 2))
+            ->line('**Note:** Lesson price does not include rink admission fee.')
             ->line('**What to bring:**')
             ->line('• Skates and hockey gear')
             ->line('• Water bottle')

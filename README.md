@@ -237,6 +237,41 @@ routes/
 - [ ] Phone number validation/formatting
 - [ ] Note on lesson prices (excludes rink admission)
 
+## Recent Updates (March 2026)
+
+### Services & Pricing
+- **Basic Skills Assessment:** Updated to 30-minute duration
+- **Premium Skills Assessment:** 60-minute duration (unchanged)
+- **Private Lessons:** 30-minute duration
+- **Progress Package:** 120 minutes (2×60 min premium assessments, 3 months apart)
+
+### Email Notifications
+- ✅ Rink location added to all booking emails
+- ✅ Admission fee disclaimer added ("Lesson price does not include rink admission fee")
+- ✅ Booking confirmation email sent to clients upon request submission
+- ✅ Approval email includes .ics calendar attachment
+- ✅ Rejection email notifications now working
+
+### Booking Flow
+- ✅ Cancellation policy agreement checkbox added to booking form
+- ✅ Email consent tracking (GDPR compliant)
+- ✅ Confirmation codes generated for all bookings
+
+### Calendar Features
+- ✅ Public skating session feeds for all rinks (webcal:// subscriptions)
+- ✅ Individual rink calendar feeds (Creve Coeur, Webster Groves, Brentwood, Chesterfield/Maryville)
+- ✅ Responsive grid layout for calendar subscriptions on homepage
+
+### Rink Scrapers
+- ✅ Maryville University Hockey Center (Chesterfield) scraper added
+- ✅ Improved date handling for year transitions (Feb→Mar vs Dec→Jan)
+
+### UI Improvements
+- ✅ Responsive calendar subscription grid (1 col mobile, 2 col tablet, 3 col desktop)
+- ✅ Equal-height cards with flex layout
+- ✅ Chesterfield labeled as primary location name for Maryville rink
+
+
 ## Contributing
 
 This is a private project for Kristine Skates. Contact rob@videorx.com for questions.
@@ -247,7 +282,7 @@ Proprietary - All rights reserved
 
 ## Credits
 
-- **Developer:** Rob Humanick (VideoRx)
-- **Coach:** Kristine Humanick
+- **Developer:** Rob Reinhardt (VideoRx)
+- **Coach:** Kristine Humphrey
 - **Framework:** Laravel
 - **OCR:** PaddleOCR

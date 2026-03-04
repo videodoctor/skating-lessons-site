@@ -35,6 +35,7 @@ class BookingRequestedNotification extends Notification
             ->line('**Location:** ' . $this->booking->timeSlot->rink->name)
             ->line('**Confirmation Code:** ' . $this->booking->confirmation_code)
             ->line('Coach Kristine will review your request and email you confirmation shortly.')
+            ->line('**Note:** Lesson price does not include rink admission fee.')
             ->line('If you have any questions, please reply to this email.');
     }
 }

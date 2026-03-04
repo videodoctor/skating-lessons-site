@@ -15,6 +15,7 @@
             <p class="mb-2"><strong>Time:</strong> {{ \Carbon\Carbon::parse($booking->timeSlot->start_time)->format('g:i A') }}</p>
             <p class="mb-2"><strong>Location:</strong> {{ $booking->timeSlot->rink->name }}</p>
             <p class="mb-2"><strong>Price:</strong> ${{ number_format($booking->price_paid, 2) }}</p>
+            <p class="mb-2 text-sm text-gray-600"><em>Note: Lesson price does not include rink admission fee.</em></p>
             <p class="mb-2"><strong>Status:</strong> <span class="text-yellow-600 font-bold">Pending Approval</span></p>
         </div>
 

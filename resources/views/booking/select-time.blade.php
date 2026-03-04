@@ -70,6 +70,7 @@
                         placeholder="Any special requests or information for Coach Kristine...">{{ old('notes') }}</textarea>
                 </div>
 
+                <!-- Email Consent -->
                 <div class="mb-6">
                     <label class="flex items-start">
                         <input type="checkbox" name="email_consent" required class="mt-1 mr-3">
@@ -81,7 +82,19 @@
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-
+                
+                <!-- Cancellation Policy -->
+                <div class="mb-6">
+                    <label class="flex items-start">
+                    <input type="checkbox" name="cancellation_policy" class="mt-1 mr-2" required>
+                    <span class="text-sm text-gray-700">
+                        I understand that if this lesson request is approved, I am responsible for payment by the end of the lesson unless other arrangements have been approved. Cancellations less than 24 hours before the lesson time slot will be invoiced for the full price of the lesson. *
+                    </span>
+                </label>
+                @error('cancellation_policy')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+                </div>
                 <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-4 rounded-lg text-lg transition">
                     Request This Time Slot
                 </button>

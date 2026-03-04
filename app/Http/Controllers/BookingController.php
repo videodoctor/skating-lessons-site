@@ -82,20 +82,21 @@ class BookingController extends Controller
     }
     
     // Step 4: Submit Booking
-public function submit(Request $request)
-{
-    $validated = $request->validate([
-        'service_id' => 'required|exists:services,id',
-        'time_slot_id' => 'required|exists:time_slots,id',
-        'client_name' => 'required|string|max:255',
-        'client_email' => 'required|email',
-        'client_phone' => 'required|string',
-        'notes' => 'nullable|string',
-        'email_consent' => 'required|accepted',
-    ]);
+    public function submit(Request $request)
+    {
+        $validated = $request->validate([
+            'service_id' => 'required|exists:services,id',
+            'time_slot_id' => 'required|exists:time_slots,id',
+            'client_name' => 'required|string|max:255',
+            'client_email' => 'required|email',
+            'client_phone' => 'required|string',
+            'notes' => 'nullable|string',
+            'email_consent' => 'required|accepted',
+            'cancellation_policy' => 'required|accepted',
+         ]);
     
-    // Check slot is still available
-    $timeSlot = TimeSlot::findOrFail($validated['time_slot_id']);
+         // Check slot is still available
+         $timeSlot = TimeSlot::findOrFail($validated['time_slot_id']);
     
     if (!$timeSlot->is_available || $timeSlot->booking_id) {
         return back()->with('error', 'Sorry, that time slot is no longer available.');
