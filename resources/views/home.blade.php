@@ -160,45 +160,46 @@ Teaching for multiple St. Louis area programs, I bring professional expertise an
             <p class="text-xl text-gray-700">Never miss a public skate! Add the schedule directly to your iPhone or Calendar app.</p>
         </div>
         
-        <div class="grid md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-lg p-6 text-center">
-                <h3 class="text-xl font-bold text-blue-900 mb-4">All Rinks</h3>
-                <p class="text-gray-600 mb-4">Get all public skating sessions in one calendar</p>
-                <a href="{{ str_replace('https://', 'webcal://', url('calendar/public-skating.ics')) }}" class="inline-block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center flex flex-col">
+                <h3 class="text-xl font-bold text-blue-900 mb-2">All Rinks</h3>
+                <p class="text-gray-600 mb-4 flex-grow">Get all public skating sessions in one calendar</p>
+                <a href="{{ str_replace('https://', 'webcal://', url('/calendar/public-skating.ics')) }}" class="inline-block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition">
                     Subscribe to All
                 </a>
             </div>
             
-            <div class="bg-white rounded-lg shadow-lg p-6 text-center">
-                <h3 class="text-xl font-bold text-blue-900 mb-4">Creve Coeur</h3>
-                <p class="text-gray-600 mb-4">Creve Coeur Ice Arena only</p>
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center flex flex-col">
+                <h3 class="text-xl font-bold text-blue-900 mb-2">Creve Coeur</h3>
+                <p class="text-gray-600 mb-4 flex-grow">Creve Coeur Ice Arena only</p>
                 <a href="{{ str_replace('https://', 'webcal://', url('/calendar/creve-coeur.ics')) }}" class="inline-block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition">
                     Subscribe
                 </a>
             </div>
             
-            <div class="bg-white rounded-lg shadow-lg p-6 text-center">
-                <h3 class="text-xl font-bold text-blue-900 mb-4">Webster Groves</h3>
-                <p class="text-gray-600 mb-4">Webster Groves Ice Arena only</p>
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center flex flex-col">
+                <h3 class="text-xl font-bold text-blue-900 mb-2">Webster Groves</h3>
+                <p class="text-gray-600 mb-4 flex-grow">Webster Groves Ice Arena only</p>
                 <a href="{{ str_replace('https://', 'webcal://', url('/calendar/webster-groves.ics')) }}" class="inline-block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition">
                     Subscribe
                 </a>
             </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
-            <h3 class="text-xl font-bold text-blue-900 mb-4">Brentwood</h3>
-            <p class="text-gray-600 mb-4">Brentwood Ice Rink only</p>
-            <a href="{{ str_replace('https://', 'webcal://', url('/calendar/brentwood.ics')) }}" class="inline-block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition">
-                Subscribe
-            </a>
-        </div>
-        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
-            <h3 class="text-xl font-bold text-blue-900 mb-4">Chesterfield</h3>
-            <p class="text-gray-600 mb-4">Maryville University Hockey Center only</p>
-            <a href="{{ str_replace('https://', 'webcal://', url('/calendar/maryville.ics')) }}" class="inline-block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition">
-                Subscribe
-            </a>
+            
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center flex flex-col">
+                <h3 class="text-xl font-bold text-blue-900 mb-2">Brentwood</h3>
+                <p class="text-gray-600 mb-4 flex-grow">Brentwood Ice Rink only</p>
+                <a href="{{ str_replace('https://', 'webcal://', url('/calendar/brentwood.ics')) }}" class="inline-block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition">
+                    Subscribe
+                </a>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center flex flex-col">
+                <h3 class="text-xl font-bold text-blue-900 mb-2">Chesterfield</h3>
+                <p class="text-gray-600 mb-4 flex-grow">Maryville University Hockey Center only</p>
+                <a href="{{ str_replace('https://', 'webcal://', url('/calendar/maryville.ics')) }}" class="inline-block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition">
+                    Subscribe
+                </a>
+            </div>
         </div>
         
         <div class="text-center mt-8 text-gray-600">
@@ -207,5 +208,4 @@ Teaching for multiple St. Louis area programs, I bring professional expertise an
         </div>
     </div>
 </div>
-
 @endsection
