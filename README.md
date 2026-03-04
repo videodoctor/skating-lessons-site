@@ -1,66 +1,253 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Kristine Skates - Skating Lesson Booking Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel-based booking and scheduling platform for skating lessons with automated rink schedule scraping, client management, and calendar integrations.
 
-## About Laravel
+**Live Site:** https://kristineskates.com
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Overview
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+This platform allows clients to book skating lessons with Coach Kristine across multiple ice rinks in the St. Louis area. It automatically scrapes public skating session schedules from rink websites and generates available lesson time slots.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Features
 
-## Learning Laravel
+### Booking System
+- **Guest Booking** - Book lessons without creating an account
+- **Client Registration** - Create account for faster booking and history tracking
+- **Multi-Rink Support** - Lessons available at 4+ ice rinks
+- **Real-time Availability** - Only shows available time slots
+- **Confirmation Codes** - Unique codes for booking lookup
+- **Email Notifications** - Automated emails for requests, approvals, and rejections
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Admin Dashboard
+- Approve/reject booking requests
+- View all bookings with filters
+- Manage rink schedules
+- Email notifications for new requests
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Automated Schedule Scraping
+Scrapes public skating schedules from:
+- **Creve Coeur Ice Arena** - OCR extraction from calendar images using PaddleOCR
+- **Brentwood Ice Rink** - PDF parsing with text extraction
+- **Webster Groves Ice Arena** - PDF parsing with text extraction
+- **Maryville University Hockey Center** - HTML parsing with regex
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Generates 30-minute lesson slots from public skate sessions.
 
-## Laravel Sponsors
+### Calendar Integrations
+- **Public Skating Calendars** - Subscribe to public skate times (webcal:// feeds)
+  - All rinks combined feed
+  - Individual rink feeds
+- **Lesson Calendar Attachments** - .ics files attached to approval emails
+- Auto-updating feeds (refreshes hourly)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Client Features
+- Dashboard showing booking history
+- Auto-fill booking forms for registered users
+- Email consent tracking (GDPR compliant)
+- View booking status and details
 
-### Premium Partners
+## Tech Stack
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+- **Framework:** Laravel 11.x
+- **Frontend:** Tailwind CSS, Blade templates
+- **Database:** MySQL
+- **OCR:** PaddleOCR (Python) for Creve Coeur schedules
+- **PDF Parsing:** Smalot PdfParser
+- **Calendar:** Spatie iCalendar Generator
+- **Email:** Laravel Mail with Gmail SMTP
+- **Server:** Ubuntu 24, Nginx, PHP 8.3
+
+## Installation
+
+### Prerequisites
+```bash
+# PHP 8.3+
+# Composer
+# MySQL 8.0+
+# Node.js & NPM
+# Python 3.x with PaddleOCR (for Creve Coeur scraper)
+```
+
+### Setup
+
+1. Clone repository:
+```bash
+git clone git@github.com:videodoctor/skating-lessons-site.git
+cd skating-lessons-site
+```
+
+2. Install dependencies:
+```bash
+composer install
+npm install
+npm run build
+```
+
+3. Environment configuration:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+4. Configure `.env`:
+```env
+APP_URL=https://yourdomain.com
+DB_DATABASE=your_database
+DB_USERNAME=your_user
+DB_PASSWORD=your_password
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_FROM_ADDRESS=noreply@yourdomain.com
+```
+
+5. Run migrations:
+```bash
+php artisan migrate
+```
+
+6. Seed initial data:
+```bash
+php artisan db:seed --class=RinksSeeder
+```
+
+7. Create admin user:
+```bash
+php artisan tinker
+>>> $user = App\Models\User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => bcrypt('password')]);
+>>> exit
+```
+
+8. Set up PaddleOCR (for Creve Coeur scraper):
+```bash
+python3 -m venv /home/ubuntu/paddle-env
+source /home/ubuntu/paddle-env/bin/activate
+pip install paddlepaddle paddleocr
+```
+
+9. Set file permissions:
+```bash
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+```
+
+10. Schedule scraper (add to crontab):
+```bash
+# Run daily at 2 AM
+0 2 * * * cd /var/www/kristineskates.com && php artisan scrape:rink-schedules >> /dev/null 2>&1
+```
+
+## Usage
+
+### Scraping Rink Schedules
+
+Run manually:
+```bash
+# Scrape all rinks
+php artisan scrape:rink-schedules
+
+# Scrape specific rink
+php artisan scrape:rink-schedules creve-coeur
+php artisan scrape:rink-schedules brentwood
+php artisan scrape:rink-schedules webster-groves
+php artisan scrape:rink-schedules maryville
+```
+
+### Calendar Feeds
+
+Public skating session feeds:
+- All rinks: `webcal://kristineskates.com/calendar/public-skating.ics`
+- Creve Coeur: `webcal://kristineskates.com/calendar/creve-coeur.ics`
+- Brentwood: `webcal://kristineskates.com/calendar/brentwood.ics`
+- Webster Groves: `webcal://kristineskates.com/calendar/webster-groves.ics`
+- Maryville: `webcal://kristineskates.com/calendar/maryville.ics`
+
+## Database Schema
+
+### Key Tables
+- `users` - Admin users
+- `clients` - Client accounts (with authentication)
+- `services` - Lesson types (Basic, Premium)
+- `rinks` - Ice rink information
+- `rink_sessions` - Scraped public skating sessions
+- `time_slots` - 30-minute bookable lesson slots
+- `bookings` - Lesson bookings
+
+## Project Structure
+```
+app/
+├── Console/Commands/
+│   └── ScrapeRinkSchedules.php    # Automated scraper
+├── Http/Controllers/
+│   ├── Admin/                     # Admin dashboard
+│   ├── Auth/                      # Client authentication
+│   ├── BookingController.php      # Public booking flow
+│   └── CalendarController.php     # Calendar feed generation
+├── Models/
+│   ├── Booking.php
+│   ├── Client.php
+│   ├── Rink.php
+│   ├── RinkSession.php
+│   └── TimeSlot.php
+└── Notifications/                 # Email notifications
+    ├── NewBookingNotification.php
+    ├── BookingRequestedNotification.php
+    ├── BookingApprovedNotification.php
+    └── BookingRejectedNotification.php
+
+resources/views/
+├── admin/                         # Admin views
+├── booking/                       # Public booking flow
+├── client/                        # Client portal
+└── layouts/
+
+routes/
+└── web.php                        # All routes
+```
+
+## TODO / Roadmap
+
+### Security
+- [ ] Add CAPTCHA for guest bookings
+- [ ] Email verification for guest bookings
+- [ ] Email verification for new client registration
+
+### Booking Management
+- [ ] Booking lookup by confirmation code
+- [ ] Rejection with reason selection
+- [ ] Reschedule feature (admin-initiated)
+- [ ] Client approval of reschedule requests
+- [ ] Clickable confirmation codes in emails
+
+### Calendar Features
+- [ ] ICS downloads from client dashboard
+- [ ] ICS downloads from admin dashboard
+- [ ] Private admin calendar feed (all bookings)
+- [ ] Personalized client calendar feeds (by preferred rinks)
+
+### Features
+- [ ] Privacy Policy page
+- [ ] Admin review page (compare paper planner vs online)
+- [ ] Weekly printable calendar view
+- [ ] Blackout dates management
+- [ ] Service duration updates
+- [ ] Phone number validation/formatting
+- [ ] Note on lesson prices (excludes rink admission)
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+This is a private project for Kristine Skates. Contact rob@videorx.com for questions.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Proprietary - All rights reserved
+
+## Credits
+
+- **Developer:** Rob Humanick (VideoRx)
+- **Coach:** Kristine Humanick
+- **Framework:** Laravel
+- **OCR:** PaddleOCR
