@@ -40,14 +40,21 @@ class ScheduleController extends Controller
 
         $rinks = Rink::where('is_active', true)->get();
 
+        $prevMonth = $currentMonth->copy()->subMonth()->format('Y-m');
+        $nextMonth = $currentMonth->copy()->addMonth()->format('Y-m');
+        $bookingsJson = $bookingsByDate->map(fn($b) => $b->map(fn($x) => [
+            'id' => $x->id, 'client_name' => $x->client_name,
+            'status' => $x->status, 'start_time' => $x->start_time,
+            'service_name' => $x->service->name ?? ''
+        ]));
+        $slotsJson = $slotsByDate->map(fn($s) => $s->map(fn($x) => [
+            'id' => $x->id, 'start_time' => $x->start_time, 'is_available' => $x->is_available
+        ]));
         return view('admin.schedule', compact(
             'currentMonth', 'startDow', 'daysInMonth',
             'bookingsByDate', 'slotsByDate', 'rinks',
-            'prevMonth', 'nextMonth'
-        ) + [
-            'prevMonth' => $currentMonth->copy()->subMonth()->format('Y-m'),
-            'nextMonth' => $currentMonth->copy()->addMonth()->format('Y-m'),
-        ]);
+            'prevMonth', 'nextMonth', 'bookingsJson', 'slotsJson'
+        ));
     }
 
     public function storeSlot(Request $request)

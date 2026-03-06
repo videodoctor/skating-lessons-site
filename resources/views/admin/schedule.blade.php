@@ -17,7 +17,8 @@
   .chip-slot{background:#eff6ff;color:#1e40af;}
   .slot-more{font-size:.62rem;color:#9ca3af;padding:1px 4px;}
   /* Modal */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.active{display:flex;}
   .modal-box{background:#fff;border-radius:12px;padding:2rem;max-width:420px;width:90%;max-height:80vh;overflow-y:auto;}
   .modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--navy);margin-bottom:1rem;}
   .form-label{display:block;font-weight:600;font-size:.85rem;color:#374151;margin-bottom:.3rem;}
@@ -79,10 +80,11 @@
       </span>
       @endforeach
 
-      @if($dayBookings->count() === 0)
-        @foreach($daySlots->take(2) as $s)
-        <span class="booking-chip chip-slot">{{ \Carbon\Carbon::parse($s->start_time)->format('g:ia') }}</span>
-        @endforeach
+      @foreach($daySlots->take(3) as $s)
+      <span class="booking-chip chip-slot">{{ \Carbon\Carbon::parse($s->start_time)->format('g:ia') }}</span>
+      @endforeach
+      @if($daySlots->count() > 3)
+      <div class="slot-more">+{{ $daySlots->count() - 3 }} more slots</div>
       @endif
 
       @if($dayBookings->count() > 3)
@@ -94,7 +96,7 @@
 </div>
 
 <!-- Day detail modal -->
-<div id="day-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal()">
+<div id="day-modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
     <h2 class="modal-title" id="modal-date-title">Date</h2>
     <div id="modal-content"></div>
@@ -107,7 +109,7 @@
 </div>
 
 <!-- Add Slot modal -->
-<div id="add-slot-modal" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+<div id="add-slot-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
   <div class="modal-box">
     <h2 class="modal-title">Add Open Slot</h2>
     <form method="POST" action="{{ route('admin.slots.store') }}">
@@ -136,7 +138,7 @@
       </div>
       <div class="flex gap-3">
         <button type="submit" class="btn-primary">Add Slot</button>
-        <button type="button" onclick="document.getElementById('add-slot-modal').classList.add('hidden')" class="btn-ghost">Cancel</button>
+        <button type="button" onclick="document.getElementById('add-slot-modal').classList.remove('active')" class="btn-ghost">Cancel</button>
       </div>
     </form>
   </div>
@@ -144,8 +146,8 @@
 
 @push('scripts')
 <script>
-const bookingData = @json($bookingsByDate->map(fn($b) => $b->map(fn($x) => ['id'=>$x->id,'client_name'=>$x->client_name,'status'=>$x->status,'start_time'=>$x->start_time,'service_name'=>$x->service->name ?? ''])));
-const slotData = @json($slotsByDate->map(fn($s) => $s->map(fn($x) => ['id'=>$x->id,'start_time'=>$x->start_time,'is_available'=>$x->is_available])));
+const bookingData = @json($bookingsJson);
+const slotData = @json($slotsJson);
 let currentDate = '';
 
 function openDay(dateStr, bookingCount, slotCount) {
@@ -183,14 +185,14 @@ function openDay(dateStr, bookingCount, slotCount) {
   }
   if (!bookings.length && !slots.length) html = '<p class="text-gray-400 text-sm">No bookings or slots for this day.</p>';
   document.getElementById('modal-content').innerHTML = html;
-  document.getElementById('day-modal').classList.remove('hidden');
+  document.getElementById('day-modal').classList.add('active');
 }
 
-function closeModal() { document.getElementById('day-modal').classList.add('hidden'); }
+function closeModal() { document.getElementById('day-modal').classList.remove('active'); }
 
 function showAddSlot() {
   document.getElementById('add-slot-date').value = currentDate;
-  document.getElementById('add-slot-modal').classList.remove('hidden');
+  document.getElementById('add-slot-modal').classList.add('active');
 }
 
 function showBlockDay() {

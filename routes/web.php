@@ -17,7 +17,13 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/rinks', function () {
     $rinks = \App\Models\Rink::orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
-    return view('rinks', compact('rinks'));
+    $todaySessions = \App\Models\RinkSession::with('rink')
+        ->where('date', today())
+        ->where('is_cancelled', false)
+        ->orderBy('start_time')
+        ->get()
+        ->groupBy('rink_id');
+    return view('rinks', compact('rinks', 'todaySessions'));
 })->name('rinks');
 
 Route::get('/', function () {

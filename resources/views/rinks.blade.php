@@ -217,6 +217,42 @@
     </div>
   </div>
 
+  <!-- ON THE ICE TODAY -->
+  @if($todaySessions->isNotEmpty())
+  <div style="margin-bottom:3.5rem;">
+    <p class="section-label mb-1">Live Now</p>
+    <h2 class="section-title mb-6">On the Ice Today</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;">
+      @foreach($todaySessions as $rinkId => $sessions)
+        @php $rink = $sessions->first()->rink; @endphp
+        <div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:12px;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,31,.05);">
+          <div style="font-weight:700;color:var(--navy);font-size:.95rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;">
+            🏒 {{ $rink->name }}
+          </div>
+          @foreach($sessions as $session)
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;">
+            <span style="background:var(--ice);color:var(--navy);border-radius:6px;padding:3px 10px;font-size:.82rem;font-weight:600;">
+              {{ \Carbon\Carbon::parse($session->start_time)->format('g:i A') }} – {{ \Carbon\Carbon::parse($session->end_time)->format('g:i A') }}
+            </span>
+            @php
+              $now = \Carbon\Carbon::now();
+              $start = \Carbon\Carbon::parse(today()->toDateString() . ' ' . $session->start_time);
+              $end   = \Carbon\Carbon::parse(today()->toDateString() . ' ' . $session->end_time);
+            @endphp
+            @if($now->between($start, $end))
+              <span style="background:#d1fae5;color:#065f46;border-radius:12px;padding:2px 8px;font-size:.72rem;font-weight:700;">● LIVE</span>
+            @endif
+          </div>
+          @endforeach
+          @if($rink->is_active)
+          <a href="/book" style="display:inline-block;margin-top:.75rem;font-size:.82rem;font-weight:600;color:var(--red);text-decoration:none;">Book a lesson here →</a>
+          @endif
+        </div>
+      @endforeach
+    </div>
+  </div>
+  @endif
+
   <!-- RINK CARDS -->
   <div class="mb-6">
     <p class="section-label mb-1">The Rinks</p>
