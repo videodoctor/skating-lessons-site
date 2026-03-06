@@ -79,9 +79,17 @@ class ScrapeRinkSchedules extends Command
      */
     private function clearFutureUnbookedSlots(Rink $rink): int
     {
+        // Exclude slots that have a booking referencing them (via bookings.time_slot_id)
+        // even if the slot itself has booking_id = null (data inconsistency safety net)
+        $bookedSlotIds = \DB::table('bookings')
+            ->whereNotNull('time_slot_id')
+            ->pluck('time_slot_id')
+            ->toArray();
+
         $deleted = TimeSlot::where('rink_id', $rink->id)
             ->where('date', '>=', today())
             ->whereNull('booking_id')
+            ->whereNotIn('id', $bookedSlotIds)
             ->delete();
 
         $this->info("  Cleared {$deleted} existing unbooked future slot(s) for {$rink->name}");
