@@ -24,7 +24,7 @@
 </head>
 <body>
 <div class="sidebar">
-  <div class="sidebar-logo">⛸️ KS Admin</div>
+  <div class="sidebar-logo"><img src="/images/HOCKEY_SKATER.png" style="width:28px;height:28px;display:inline-block;vertical-align:middle;margin-right:8px;object-fit:contain;filter:brightness(0) invert(1);">KRISTINE SKATES<br><span style="font-size:.7rem;opacity:.5;font-family:sans-serif;font-weight:400;">Admin Panel</span></div>
   <div class="sidebar-label">Main</div>
   <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
     📊 Dashboard
