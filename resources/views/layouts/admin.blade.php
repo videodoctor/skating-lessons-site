@@ -43,7 +43,7 @@
     👥 Clients
   </a>
   <div class="sidebar-label">Tools</div>
-  <a href="{{ route('admin.planner-ocr') }}" class="nav-link {{ request()->routeIs('admin.planner-ocr') ? 'active' : '' }}">
+  <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}">
     ✍️ Planner OCR
   </a>
   <a href="{{ route('admin.export') }}" class="nav-link {{ request()->routeIs('admin.export') ? 'active' : '' }}">

@@ -8,18 +8,21 @@
   :root { --navy:#001F5B; --red:#C8102E; --ice:#E8F5FB; --gold:#C9A84C; }
   body { font-family:'DM Sans',sans-serif; }
 
-  .hero { background:var(--navy); position:relative; overflow:hidden; min-height:92vh; display:flex; align-items:center; }
+  .hero { background:var(--navy); position:relative; overflow:hidden; min-height:92vh; display:flex; align-items:stretch; }
   .hero-lines { position:absolute;inset:0;pointer-events:none;opacity:.06;
     background-image:repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 120px),repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 80px); }
   .hero-accent { position:absolute;right:-60px;top:0;bottom:0;width:55%;
     background:linear-gradient(135deg,#0a3580 0%,#001240 100%);
     clip-path:polygon(12% 0,100% 0,100% 100%,0% 100%); }
   .hero-photo-wrap { position:absolute;right:0;top:0;bottom:0;width:52%;overflow:hidden; }
-  .hero-photo-wrap img { width:100%;height:100%;object-fit:cover;object-position:center -180px;opacity:.6;mix-blend-mode:luminosity; }
+  .hero-photo-wrap video { width:auto;height:100%;max-height:100%;object-fit:cover;object-position:center top;opacity:.6;mix-blend-mode:luminosity; }
+  .hero-photo-wrap img { width:100%;height:100%;object-fit:cover;object-position:center top;opacity:.6;mix-blend-mode:luminosity; }
   .hero-photo-wrap::after { content:'';position:absolute;inset:0;
-    background:linear-gradient(90deg,var(--navy) 0%,transparent 40%,transparent 70%,var(--navy) 100%); }
-  .hero-content { position:relative;z-index:2; }
+    background:linear-gradient(90deg,var(--navy) 0%,rgba(0,15,60,.6) 15%,transparent 40%); }
+  .hero-content { position:relative;z-index:2;display:flex;flex-direction:column;justify-content:space-between; }
   .hero-eyebrow { font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.35em;color:var(--gold); }
+  .mobile-break { display:none; }
+  @media(max-width:768px) { .mobile-break { display:inline; } }
   .hero-title { font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,8vw,7rem);line-height:.95;color:#fff; }
   .hero-title span { color:var(--red); }
   .hero-subtitle { font-family:'DM Serif Display',serif;font-style:italic;font-size:1.35rem;color:rgba(255,255,255,.75); }
@@ -63,7 +66,7 @@
   .step-num { font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--red);line-height:1;opacity:.25; }
   .cta-banner { background:linear-gradient(135deg,var(--navy) 0%,#002b87 100%);position:relative;overflow:hidden; }
   .cta-banner::before { content:'⛸️';position:absolute;right:3rem;top:50%;transform:translateY(-50%) rotate(-15deg);font-size:10rem;opacity:.07; }
-  @media(max-width:768px) { .hero-photo-wrap{position:absolute;inset:0;width:100%;opacity:.25;} .hero-photo-wrap img{object-position:-5% 65%;} .hero-accent{width:100%;clip-path:none;opacity:.6;} }
+  @media(max-width:768px) { .hero-photo-wrap{position:absolute;inset:0;width:100%;} .hero-photo-wrap video,.hero-photo-wrap img{object-position:center top;opacity:.4;} .hero-accent{width:100%;clip-path:none;opacity:.6;right:0;left:0;} .hero-photo-wrap::before{display:none;} .hero-photo-wrap::after{background:linear-gradient(to bottom,transparent 40%,var(--navy) 100%);} }
 </style>
 
 <!-- HERO -->
@@ -71,14 +74,22 @@
   <div class="hero-lines"></div>
   <div class="hero-accent"></div>
   <div class="hero-photo-wrap">
-    <img src="{{ asset('images/kristine_and_mick_001.jpg') }}" alt="Coach Kristine on ice" onerror="this.parentElement.style.display='none'">
+    <video id="hero-video" autoplay muted playsinline preload="auto"
+      poster="{{ asset('images/kristine_and_mick_001.jpg') }}">
+      <source id="hero-video-src" src="{{ asset('videos/mick_reel_001_optimized.mp4') }}" type="video/mp4">
+      <img src="{{ asset('images/kristine_and_mick_001.jpg') }}" alt="Coach Kristine on ice">
+    </video>
   </div>
-  <div class="hero-content max-w-7xl mx-auto px-6 lg:px-8 w-full py-12">
+  <div class="hero-content max-w-7xl mx-auto px-6 lg:px-8 w-full pt-10 pb-10">
+    {{-- TOP: eyebrow + title --}}
     <div class="max-w-2xl">
-      <p class="hero-eyebrow mb-4">St. Louis Area Hockey Skating</p>
-      <h1 class="hero-title mb-4">SKATE<br>LIKE A<br><span>PRO.</span></h1>
-      <p class="hero-subtitle mb-8">One-on-one instruction with Coach Kristine —<br>power, edges, and confidence on the ice.</p>
-      <div class="flex flex-wrap gap-4 mb-14">
+      <p class="hero-eyebrow mb-4">St. Louis Area<span class="mobile-break"><br></span> Hockey Skating</p>
+      <h1 class="hero-title mb-0">SKATE<br>LIKE A<br><span>PRO.</span></h1>
+    </div>
+    {{-- BOTTOM: subtitle + CTAs + stats --}}
+    <div class="max-w-2xl">
+      <p class="hero-subtitle mb-6">Private lessons with Coach Kristine.<br><span style="font-size:1.1rem;opacity:.85;">Power. Edges. Confidence.</span></p>
+      <div class="flex flex-wrap gap-4 mb-10">
         <a href="/book" class="hero-cta">Book a Lesson</a>
         <a href="#services" class="hero-cta-ghost">See Lessons ↓</a>
       </div>
@@ -228,7 +239,7 @@
       </div>
     </div>
     <div class="grid md:grid-cols-3 gap-4">
-      @foreach([['Creve Coeur Ice Arena','Creve Coeur','creve-coeur'],['Brentwood Ice Rink','Brentwood','brentwood'],['Webster Groves Ice Arena','Webster Groves','webster-groves']] as $rink)
+      @foreach([['Creve Coeur Ice Arena','Creve Coeur','creve-coeur'],['Brentwood Ice Rink','Brentwood','brentwood'],['Webster Groves Ice Arena','Webster Groves','webster-groves'],['Maryville Hockey Center','Chesterfield','maryville']] as $rink)
       <div class="rink-card">
         <div class="text-xs font-bold uppercase tracking-widest text-blue-300 mb-1">{{ $rink[1] }}</div>
         <div class="text-lg font-bold mb-3">{{ $rink[0] }}</div>
@@ -249,5 +260,42 @@
     <a href="/book" class="hero-cta text-lg px-12 py-4">Book a Lesson Now</a>
   </div>
 </section>
+
+
+<script>
+(function() {
+  const videos = [
+    '{{ asset("videos/mick_reel_001_optimized.mp4") }}',
+    '{{ asset("videos/mick_reel_002_optimized.mp4") }}',
+    '{{ asset("videos/mick_reel_003_optimized.mp4") }}',
+  ];
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  const queue = shuffle([...videos]);
+  let current = 0;
+
+  const video = document.getElementById('hero-video');
+  const src   = document.getElementById('hero-video-src');
+
+  src.src = queue[0];
+  video.load();
+  video.play().catch(() => {});
+
+  video.addEventListener('ended', function() {
+    current = (current + 1) % queue.length;
+    if (current === 0) shuffle(queue);
+    src.src = queue[current];
+    video.load();
+    video.play().catch(() => {});
+  });
+})();
+</script>
 
 @endsection

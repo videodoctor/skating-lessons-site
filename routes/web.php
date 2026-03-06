@@ -103,6 +103,16 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Planner OCR
     Route::get('/planner-ocr', [ScheduleController::class, 'plannerOcr'])->name('admin.planner-ocr');
 
+    // Planner (new)
+    Route::get('/planner', [App\Http\Controllers\Admin\PlannerController::class, 'index'])->name('admin.planner');
+    Route::post('/planner/analyze', [App\Http\Controllers\Admin\PlannerController::class, 'analyze'])->name('admin.planner.analyze');
+    Route::get('/planner/scan/{scan}', [App\Http\Controllers\Admin\PlannerController::class, 'show'])->name('admin.planner.scan');
+    Route::patch('/planner/entry/{entry}', [App\Http\Controllers\Admin\PlannerController::class, 'updateEntry'])->name('admin.planner.entry.update');
+    Route::post('/planner/entry/{entry}/confirm', [App\Http\Controllers\Admin\PlannerController::class, 'confirmEntry'])->name('admin.planner.entry.confirm');
+    Route::post('/planner/create-student', [App\Http\Controllers\Admin\PlannerController::class, 'createStudent'])->name('admin.planner.create-student');
+    Route::post('/planner/add-alias', [App\Http\Controllers\Admin\PlannerController::class, 'addAlias'])->name('admin.planner.add-alias');
+    Route::post('/planner/scan/{scan}/finalize', [App\Http\Controllers\Admin\PlannerController::class, 'finalize'])->name('admin.planner.finalize');
+
     // Export / Reports
     Route::get('/export', [ExportController::class, 'index'])->name('admin.export');
     Route::get('/export/bookings', [ExportController::class, 'bookingsCsv'])->name('admin.export.bookings');

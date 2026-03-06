@@ -35,4 +35,9 @@ return [
         'display_name' => env('VENMO_DISPLAY_NAME'),
     ],
 
+
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+    ],
+
 ];
