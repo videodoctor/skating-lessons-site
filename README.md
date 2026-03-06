@@ -171,8 +171,9 @@ Public skating session feeds:
 - `users` - Admin users
 - `clients` - Client accounts (with authentication)
 - `services` - Lesson types (Basic, Premium)
-- `rinks` - Ice rink information
+- `rinks` - Ice rink information (`schedule_url` = page to scrape, `schedule_pdf_url` = direct PDF for rinks with auth-gated pages e.g. Webster Groves)
 - `rink_sessions` - Scraped public skating sessions
+- `rink_scrape_runs` - Audit log of every scrape run with stored source file path, session counts, and errors
 - `time_slots` - 30-minute bookable lesson slots
 - `bookings` - Lesson bookings
 
@@ -265,6 +266,30 @@ routes/
 ### Rink Scrapers
 - ✅ Maryville University Hockey Center (Chesterfield) scraper added
 - ✅ Improved date handling for year transitions (Feb→Mar vs Dec→Jan)
+- ✅ Raw source storage — PDFs, images, and HTML saved to `storage/app/scrapes/{rink}/` for audit trail
+- ✅ `rink_scrape_runs` table tracks every scrape with session counts, error flags, and log output
+- ✅ Brentwood PDF parser fixed — handles dates embedded with session text on same line
+- ✅ Webster Groves — `schedule_pdf_url` field + curl bypass for CivicPlus 404 quirk (OAuth-gated site)
+- ✅ Storage ACL fix — `setfacl` ensures www-data can write to storage across all rink subdirectories
+- ✅ FK constraint safety net — scraper preserves slots referenced by bookings even if `booking_id` is NULL
+
+### Admin Tools
+- ✅ Schedule verification tool at `/admin/schedule/verify` — side-by-side view of raw source vs parsed calendar
+- ✅ Inline session add/edit/delete from verify tool
+- ✅ Per-rink re-scrape button with output log display
+- ✅ Scrape run info bar showing last scraped time, session count, error status
+- ✅ Raw source storage — PDFs, images, and HTML saved to `storage/app/scrapes/{rink}/` for audit trail
+- ✅ `rink_scrape_runs` table tracks every scrape with session counts, error flags, and log output
+- ✅ Brentwood PDF parser fixed — handles dates embedded with session text on same line
+- ✅ Webster Groves — `schedule_pdf_url` field + curl bypass for CivicPlus 404 quirk (OAuth-gated site)
+- ✅ Storage ACL fix — `setfacl` ensures www-data can write to storage across all rink subdirectories
+- ✅ FK constraint safety net — scraper preserves slots referenced by bookings even if `booking_id` is NULL
+
+### Admin Tools
+- ✅ Schedule verification tool at `/admin/schedule/verify` — side-by-side view of raw source vs parsed calendar
+- ✅ Inline session add/edit/delete from verify tool
+- ✅ Per-rink re-scrape button with output log display
+- ✅ Scrape run info bar showing last scraped time, session count, error status
 
 ### UI Improvements
 - ✅ Responsive calendar subscription grid (1 col mobile, 2 col tablet, 3 col desktop)
