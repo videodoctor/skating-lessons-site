@@ -35,6 +35,9 @@
   <a href="{{ route('admin.schedule') }}" class="nav-link {{ request()->routeIs('admin.schedule') ? 'active' : '' }}">
     📅 Schedule
   </a>
+  <a href="{{ route('admin.schedule.verify') }}" class="nav-link {{ request()->routeIs('admin.schedule.verify') ? 'active' : '' }}">
+    🔍 Verify Schedule
+  </a>
   <div class="sidebar-label">People</div>
   <a href="{{ route('admin.clients.index') }}" class="nav-link {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">
     👥 Clients

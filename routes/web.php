@@ -5,6 +5,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\ScheduleController;
+use App\Http\Controllers\Admin\ScheduleVerifyController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ExportController;
 use Illuminate\Support\Facades\Route;
@@ -79,6 +80,12 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
     // Schedule & Slots
     Route::get('/schedule', [ScheduleController::class, 'index'])->name('admin.schedule');
+    Route::get('/schedule/verify', [ScheduleVerifyController::class, 'index'])->name('admin.schedule.verify');
+    Route::get('/schedule/source/{run}', [ScheduleVerifyController::class, 'serveSource'])->name('admin.schedule.source');
+    Route::post('/schedule/rescrape', [ScheduleVerifyController::class, 'rescrape'])->name('admin.schedule.rescrape');
+    Route::post('/schedule/session', [ScheduleVerifyController::class, 'storeSession'])->name('admin.schedule.session.store');
+    Route::patch('/schedule/session/{id}', [ScheduleVerifyController::class, 'updateSession'])->name('admin.schedule.session.update');
+    Route::delete('/schedule/session/{id}', [ScheduleVerifyController::class, 'destroySession'])->name('admin.schedule.session.destroy');
     Route::post('/slots', [ScheduleController::class, 'storeSlot'])->name('admin.slots.store');
     Route::delete('/slots/{timeSlot}', [ScheduleController::class, 'destroySlot'])->name('admin.slots.destroy');
     Route::post('/slots/block-day', [ScheduleController::class, 'blockDay'])->name('admin.slots.block-day');
