@@ -46,6 +46,10 @@ class ClientAuthController extends Controller
             'phone'            => $validated['phone'],
             'password'         => Hash::make($validated['password']),
             'email_consent_at' => now(),
+            'sms_consent'      => $request->boolean('sms_consent'),
+            'sms_phone'        => $request->boolean('sms_consent')
+                ? (new \App\Services\SmsService)->normalizePhone($validated['phone'])
+                : null,
         ]);
 
         Auth::guard('client')->login($client);

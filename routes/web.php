@@ -26,6 +26,14 @@ Route::get('/rinks', function () {
     return view('rinks', compact('rinks', 'todaySessions'));
 })->name('rinks');
 
+Route::get('/terms-and-conditions', function () {
+    return view('terms');
+})->name('terms');
+
+Route::get('/privacy-policy', function () {
+    return view('privacy');
+})->name('privacy');
+
 Route::get('/', function () {
     $services = \App\Models\Service::where('is_active', true)->orderBy('price')->get();
     return view('home', compact('services'));
@@ -134,3 +142,7 @@ Route::get('/calendar/public-skating.ics', [\App\Http\Controllers\CalendarContro
 Route::get('/calendar/{rink}.ics', [\App\Http\Controllers\CalendarController::class, 'publicSessions']);
 
 require __DIR__.'/auth.php';
+
+// Twilio inbound SMS webhook (exempt from CSRF)
+Route::post('/webhooks/twilio/sms', [\App\Http\Controllers\TwilioWebhookController::class, 'inboundSms'])
+    ->name('webhooks.twilio.sms');

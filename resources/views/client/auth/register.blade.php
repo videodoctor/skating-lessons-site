@@ -66,6 +66,15 @@
         @error('email_consent')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
       </div>
 
+      <div class="mb-4">
+        <label class="flex items-start">
+          <input type="checkbox" name="sms_consent" class="mt-1 mr-3">
+          <span class="text-gray-700 text-sm">
+            I agree to receive SMS text message lesson reminders from Kristine Skates. Message and data rates may apply. Reply STOP at any time to opt out.
+          </span>
+        </label>
+      </div>
+
       {{-- Cloudflare Turnstile --}}
       <div class="mb-6">
         <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.key') }}" data-theme="light"></div>
@@ -77,6 +86,13 @@
       </button>
     </form>
 
+    <p class="text-center text-gray-500 text-xs mt-4">
+      By creating an account you agree to our
+      <a href="{{ route('terms') }}" class="text-blue-900 hover:underline" target="_blank">Terms &amp; Conditions</a>
+      and
+      <a href="{{ route('privacy') }}" class="text-blue-900 hover:underline" target="_blank">Privacy Policy</a>.
+    </p>
+
     <p class="text-center text-gray-600 mt-4">
       Already have an account?
       <a href="{{ route('client.login') }}" class="text-blue-900 hover:underline font-bold">Login</a>
@@ -85,3 +101,4 @@
 </div>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 @endsection
+{{-- NOTE: privacy policy link added to email consent checkbox above --}}

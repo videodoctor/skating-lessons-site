@@ -1,19 +1,20 @@
 {
-  "version": "2.4.0",
+  "version": "2.5.0",
   "date": "2026-03-07",
   "changes": [
-    "Booking admin: Link to Client button for unlinked bookings",
-    "Booking admin: student name shown when no client name",
-    "Client admin: Create Client modal with full form",
-    "Client admin: Edit client inline modal",
-    "Client admin: Orphaned students section with link UI",
-    "Client admin: Students column on index",
-    "Client show: Students section with booking history",
-    "Turnstile captcha on client registration (spam protection)",
-    "Booking model: student_id + payment_type fields added to fillable",
-    "ClientAuthController: Turnstile verification + first/last name split",
-    "Routes: store, update, link-student, booking link-client added",
-    "SMS TODO: Twilio integration scaffolded (pending credentials)",
-    "Todo list updated: cron done, Venmo not Stripe, bugs logged"
+    "Twilio SMS lesson reminders (30hr before lesson)",
+    "YES/NO reply handling via Twilio webhook",
+    "SmsService with phone normalization and message builder",
+    "SendLessonReminders artisan command (--dry-run support)",
+    "sms_reminders table migration",
+    "clients: sms_consent, sms_phone columns",
+    "bookings: reminder_sent, confirmed_via_sms, sms_confirmed_at, sms_cancelled_at columns",
+    "Console Kernel: reminders:send scheduled hourly",
+    "CSRF exemption for Twilio webhook",
+    "Twilio webhook controller for inbound SMS",
+    "Privacy Policy page at /privacy-policy",
+    "Terms & Conditions page at /terms-and-conditions",
+    "SMS consent checkbox on registration form",
+    "Privacy Policy + Terms links on registration form"
   ]
 }
