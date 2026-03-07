@@ -1,0 +1,19 @@
+{
+  "version": "2.4.0",
+  "date": "2026-03-07",
+  "changes": [
+    "Booking admin: Link to Client button for unlinked bookings",
+    "Booking admin: student name shown when no client name",
+    "Client admin: Create Client modal with full form",
+    "Client admin: Edit client inline modal",
+    "Client admin: Orphaned students section with link UI",
+    "Client admin: Students column on index",
+    "Client show: Students section with booking history",
+    "Turnstile captcha on client registration (spam protection)",
+    "Booking model: student_id + payment_type fields added to fillable",
+    "ClientAuthController: Turnstile verification + first/last name split",
+    "Routes: store, update, link-student, booking link-client added",
+    "SMS TODO: Twilio integration scaffolded (pending credentials)",
+    "Todo list updated: cron done, Venmo not Stripe, bugs logged"
+  ]
+}

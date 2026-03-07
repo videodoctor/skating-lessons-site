@@ -11,36 +11,45 @@ class Booking extends Model
 {
     use HasFactory;
 
-protected $fillable = [
-    'client_id',
-    'client_name',
-    'client_email',
-    'client_phone',
-    'service_id',
-    'time_slot_id',
-    'student_age',
-    'date',
-    'start_time',
-    'end_time',
-    'status',
-    'payment_method',
-    'payment_status',
-    'venmo_transaction_id',
-    'price_paid',
-    'notes',
-    'cancellation_reason',
-    'confirmation_code',
-];
+    protected $fillable = [
+        'client_id',
+        'student_id',
+        'client_name',
+        'client_email',
+        'client_phone',
+        'service_id',
+        'time_slot_id',
+        'student_age',
+        'date',
+        'start_time',
+        'end_time',
+        'status',
+        'payment_method',
+        'payment_type',
+        'payment_status',
+        'venmo_transaction_id',
+        'venmo_username',
+        'venmo_confirmed_at',
+        'cash_paid_at',
+        'cash_marked_by',
+        'price_paid',
+        'notes',
+        'cancellation_reason',
+        'confirmation_code',
+        'email_consent_at',
+    ];
 
     protected $casts = [
-        'date' => 'date',
-        'price_paid' => 'decimal:2',
+        'date'               => 'date',
+        'price_paid'         => 'decimal:2',
+        'venmo_confirmed_at' => 'datetime',
+        'cash_paid_at'       => 'datetime',
+        'email_consent_at'   => 'datetime',
     ];
 
     protected static function boot()
     {
         parent::boot();
-
         static::creating(function ($booking) {
             if (!$booking->confirmation_code) {
                 $booking->confirmation_code = strtoupper(substr(md5(uniqid()), 0, 8));
@@ -48,9 +57,16 @@ protected $fillable = [
         });
     }
 
+    // ── Relationships ──────────────────────────────────────────────────────────
+
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class);
     }
 
     public function service(): BelongsTo
@@ -68,6 +84,8 @@ protected $fillable = [
         return $this->hasOne(Assessment::class);
     }
 
+    // ── Scopes ─────────────────────────────────────────────────────────────────
+
     public function scopePending($query)
     {
         return $query->where('payment_status', 'pending');
@@ -84,6 +102,8 @@ protected $fillable = [
         return $query->where('date', today());
     }
 
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
     public function isPaid(): bool
     {
         return $this->payment_status === 'paid';
@@ -92,5 +112,27 @@ protected $fillable = [
     public function isUpcoming(): bool
     {
         return $this->date >= today() && in_array($this->status, ['pending', 'confirmed', 'paid']);
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        if ($this->client_name && trim($this->client_name) !== '') {
+            return $this->client_name;
+        }
+        if ($this->student) {
+            return $this->student->full_name;
+        }
+        if ($this->client) {
+            return $this->client->full_name;
+        }
+        return $this->client_email ?: 'Unknown';
+    }
+
+    public function getVenmoLinkAttribute(): string
+    {
+        $handle  = ltrim(config('services.venmo.handle', 'Kristine-Humphrey'), '@');
+        $amount  = number_format($this->price_paid, 2);
+        $note    = urlencode('Skating Lesson ' . $this->confirmation_code);
+        return "venmo://paycharge?txn=pay&recipients={$handle}&amount={$amount}&note={$note}";
     }
 }

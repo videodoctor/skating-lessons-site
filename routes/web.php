@@ -76,6 +76,7 @@ Route::prefix('client')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->middleware(['auth'])->group(function () {
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
@@ -83,6 +84,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
     Route::post('/bookings/{booking}/approve', [AdminBookingController::class, 'approve'])->name('admin.bookings.approve');
     Route::post('/bookings/{booking}/reject', [AdminBookingController::class, 'reject'])->name('admin.bookings.reject');
+    Route::post('/bookings/{booking}/link-client', [AdminBookingController::class, 'linkClient'])->name('admin.bookings.link-client');
+    Route::post('/bookings/{booking}/cash-paid', [AdminBookingController::class, 'markCashPaid'])->name('admin.bookings.cash-paid');
+    Route::post('/bookings/{booking}/venmo-paid', [AdminBookingController::class, 'markVenmoPaid'])->name('admin.bookings.venmo-paid');
 
     // Schedule & Slots
     Route::get('/schedule', [ScheduleController::class, 'index'])->name('admin.schedule');
@@ -98,20 +102,26 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
     // Clients
     Route::get('/clients', [ClientController::class, 'index'])->name('admin.clients.index');
+    Route::post('/clients/link-student', [ClientController::class, 'linkStudent'])->name('admin.clients.link-student');
     Route::get('/clients/{client}', [ClientController::class, 'show'])->name('admin.clients.show');
+    Route::post('/clients', [ClientController::class, 'store'])->name('admin.clients.store');
+    Route::patch('/clients/{client}', [ClientController::class, 'update'])->name('admin.clients.update');
 
-    // Planner OCR
+    // Planner OCR (legacy stub)
     Route::get('/planner-ocr', [ScheduleController::class, 'plannerOcr'])->name('admin.planner-ocr');
 
-    // Planner (new)
+    // Planner
     Route::get('/planner', [App\Http\Controllers\Admin\PlannerController::class, 'index'])->name('admin.planner');
     Route::post('/planner/analyze', [App\Http\Controllers\Admin\PlannerController::class, 'analyze'])->name('admin.planner.analyze');
     Route::get('/planner/scan/{scan}', [App\Http\Controllers\Admin\PlannerController::class, 'show'])->name('admin.planner.scan');
     Route::patch('/planner/entry/{entry}', [App\Http\Controllers\Admin\PlannerController::class, 'updateEntry'])->name('admin.planner.entry.update');
     Route::post('/planner/entry/{entry}/confirm', [App\Http\Controllers\Admin\PlannerController::class, 'confirmEntry'])->name('admin.planner.entry.confirm');
+    Route::post('/planner/entry/{entry}/ignore', [App\Http\Controllers\Admin\PlannerController::class, 'ignoreEntry'])->name('admin.planner.entry.ignore');
+    Route::post('/planner/entry/{entry}/unignore', [App\Http\Controllers\Admin\PlannerController::class, 'unignoreEntry'])->name('admin.planner.entry.unignore');
     Route::post('/planner/create-student', [App\Http\Controllers\Admin\PlannerController::class, 'createStudent'])->name('admin.planner.create-student');
     Route::post('/planner/add-alias', [App\Http\Controllers\Admin\PlannerController::class, 'addAlias'])->name('admin.planner.add-alias');
     Route::post('/planner/scan/{scan}/finalize', [App\Http\Controllers\Admin\PlannerController::class, 'finalize'])->name('admin.planner.finalize');
+    Route::post('/planner/create-booking', [App\Http\Controllers\Admin\PlannerController::class, 'createBooking'])->name('admin.planner.create-booking');
 
     // Export / Reports
     Route::get('/export', [ExportController::class, 'index'])->name('admin.export');

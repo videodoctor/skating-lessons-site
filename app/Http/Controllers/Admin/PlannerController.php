@@ -9,6 +9,7 @@ use App\Models\PlannerScan;
 use App\Models\PlannerScanEntry;
 use App\Models\Student;
 use App\Models\StudentAlias;
+use App\Models\TimeSlot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -17,8 +18,7 @@ use Carbon\Carbon;
 
 class PlannerController extends Controller
 {
-    const ANTHROPIC_MODEL  = 'claude-sonnet-4-20250514';
-    const WAIVER_VERSION   = '1.0';
+    const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
 
     const SYSTEM_PROMPT = <<<'PROMPT'
 You are analyzing a photo of a skating coach's paper planner. Extract all entries and return ONLY valid JSON with no markdown fences, no trailing commas, no explanation.
@@ -60,24 +60,16 @@ Rinks: creve-coeur, kirkwood, maryville, brentwood, webster-groves, unknown
 Normalize times to "HH:MM" 24-hour format. Separate entry per student. Return ONLY the JSON object.
 PROMPT;
 
-    // ── Index: show upload form + recent scans ─────────────────────────────────
+    // ── Index ──────────────────────────────────────────────────────────────────
 
     public function index()
     {
-        $recentScans = PlannerScan::with('entries')
-            ->orderByDesc('created_at')
-            ->take(10)
-            ->get();
-
-        $students = Student::with('aliases')
-            ->where('is_active', true)
-            ->orderBy('first_name')
-            ->get();
-
+        $recentScans = PlannerScan::with('entries')->orderByDesc('created_at')->take(10)->get();
+        $students    = Student::with('aliases')->where('is_active', true)->orderBy('first_name')->get();
         return view('admin.planner', compact('recentScans', 'students'));
     }
 
-    // ── Upload & analyze ───────────────────────────────────────────────────────
+    // ── Analyze uploaded images ────────────────────────────────────────────────
 
     public function analyze(Request $request)
     {
@@ -91,11 +83,10 @@ PROMPT;
 
         foreach ($request->file('images') as $image) {
             $path = $image->store('planner-scans', 'local');
-            Storage::disk('local')->setVisibility($path, 'private');
             $imagePaths[] = $path;
             $imageData[]  = [
-                'type'       => 'image',
-                'source'     => [
+                'type'   => 'image',
+                'source' => [
                     'type'       => 'base64',
                     'media_type' => $image->getMimeType(),
                     'data'       => base64_encode(file_get_contents($image->getRealPath())),
@@ -103,9 +94,8 @@ PROMPT;
             ];
         }
 
-        // Call Claude Vision API
-        $content   = array_merge($imageData, [['type' => 'text', 'text' => 'Extract all planner entries as JSON.']]);
-        $response  = Http::withHeaders([
+        $content  = array_merge($imageData, [['type' => 'text', 'text' => 'Extract all planner entries as JSON.']]);
+        $response = Http::withHeaders([
             'x-api-key'         => config('services.anthropic.key'),
             'anthropic-version' => '2023-06-01',
             'content-type'      => 'application/json',
@@ -118,35 +108,28 @@ PROMPT;
 
         if (!$response->successful()) {
             Log::error('Claude API error', ['status' => $response->status(), 'body' => $response->body()]);
-            return back()->withErrors(['api' => 'Claude API call failed: ' . $response->status()]);
+            return back()->withErrors(['api' => 'Claude API call failed: ' . $response->status() . ' — ' . $response->json('error.message', '')]);
         }
 
         $text = $response->json('content.0.text', '');
-
-        // Strip markdown fences if present
-        $text = preg_replace('/^```json\s*/i', '', $text);
+        $text = preg_replace('/^```json\s*/i', '', trim($text));
         $text = preg_replace('/```\s*$/', '', $text);
-        $text = trim($text);
-
-        // Remove trailing commas
-        $text = preg_replace('/,(\s*[}\]])/', '$1', $text);
+        $text = preg_replace('/,(\s*[}\]])/', '$1', trim($text));
 
         $extracted = json_decode($text, true);
         if (!$extracted || !isset($extracted['entries'])) {
             Log::error('Claude planner parse failed', ['raw' => $text]);
-            return back()->withErrors(['parse' => 'Could not parse Claude response. Raw: ' . substr($text, 0, 500)]);
+            return back()->withErrors(['parse' => 'Could not parse Claude response. Raw: ' . substr($text, 0, 300)]);
         }
 
-        // Create scan record
-        $scan = PlannerScan::create([
-            'month'              => $extracted['month'] ?? date('F'),
-            'year'               => $extracted['year']  ?? date('Y'),
-            'image_paths'        => $imagePaths,
-            'entries_extracted'  => count($extracted['entries']),
-            'scanned_by'         => auth()->id(),
+        $scan     = PlannerScan::create([
+            'month'             => $extracted['month'] ?? date('F'),
+            'year'              => $extracted['year']  ?? date('Y'),
+            'image_paths'       => $imagePaths,
+            'entries_extracted' => count($extracted['entries']),
+            'scanned_by'        => auth()->id(),
         ]);
 
-        // Process each entry — attempt student matching
         $students = Student::with('aliases')->where('is_active', true)->get();
 
         foreach ($extracted['entries'] as $entry) {
@@ -156,20 +139,20 @@ PROMPT;
 
             if ($entry['type'] === 'private_lesson' && !empty($entry['student_name'])) {
                 [$studentId, $matchStatus, $confidence] = $this->matchStudent($entry['student_name'], $students, $confidence);
+                // If matched student, check for existing booking
+                if ($studentId && $matchStatus === 'matched') {
+                    $booking = $this->findMatchingBooking($studentId, $entry['date'], $entry['time'] ?? null);
+                    if (!$booking) $matchStatus = 'no_booking_found';
+                }
             } elseif (in_array($entry['type'], ['personal_block', 'note'])) {
-                $matchStatus = 'personal';
+                $matchStatus = 'no_booking_expected';
             }
 
-            // Try to find matching booking
             $bookingId = null;
-            if ($studentId && $entry['type'] === 'private_lesson' && !empty($entry['date'])) {
-                $booking = $this->findMatchingBooking($studentId, $entry['date'], $entry['time'] ?? null);
-                if ($booking) {
-                    $bookingId   = $booking->id;
-                    $matchStatus = 'matched';
-                } elseif ($matchStatus !== 'unmatched') {
-                    $matchStatus = 'no_booking_found';
-                }
+            if ($studentId && $matchStatus === 'matched') {
+                $booking   = $this->findMatchingBooking($studentId, $entry['date'], $entry['time'] ?? null);
+                $bookingId = $booking?->id;
+                if (!$booking) $matchStatus = 'no_booking_found';
             }
 
             PlannerScanEntry::create([
@@ -191,33 +174,16 @@ PROMPT;
         return redirect()->route('admin.planner.scan', $scan->id);
     }
 
-    // ── View a scan's results ──────────────────────────────────────────────────
+    // ── Show scan results ──────────────────────────────────────────────────────
 
     public function show(PlannerScan $scan)
     {
         $scan->load(['entries.student.client', 'entries.booking.service']);
-
-        $students = Student::with(['aliases', 'client'])
-            ->where('is_active', true)
-            ->orderBy('first_name')
-            ->get();
-
-        $entriesByDate = $scan->entries
-            ->sortBy('date')
-            ->groupBy(fn($e) => Carbon::parse($e->date)->toDateString());
-
-        $needsReview   = $scan->entries->filter(fn($e) => $e->needsReview());
-        $matched       = $scan->entries->where('match_status', 'matched');
-        $unmatched     = $scan->entries->where('match_status', 'unmatched');
-        $noBooking     = $scan->entries->where('match_status', 'no_booking_found');
-
-        return view('admin.planner-scan', compact(
-            'scan', 'entriesByDate', 'students',
-            'needsReview', 'matched', 'unmatched', 'noBooking'
-        ));
+        $students = Student::with(['aliases', 'client'])->where('is_active', true)->orderBy('first_name')->get();
+        return view('admin.planner-scan', compact('scan', 'students'));
     }
 
-    // ── Update a single entry ──────────────────────────────────────────────────
+    // ── Update entry ───────────────────────────────────────────────────────────
 
     public function updateEntry(Request $request, PlannerScanEntry $entry)
     {
@@ -230,70 +196,154 @@ PROMPT;
             'notes'          => 'nullable|string',
             'match_status'   => 'nullable|string',
         ]);
-
         $entry->update($validated);
-
-        if ($request->confirm) {
-            $entry->update(['confirmed_at' => now()]);
-        }
-
         return back()->with('success', 'Entry updated.');
     }
 
-    // ── Confirm an entry ───────────────────────────────────────────────────────
+    // ── Confirm entry ──────────────────────────────────────────────────────────
 
     public function confirmEntry(PlannerScanEntry $entry)
     {
         $entry->update(['confirmed_at' => now()]);
-
-        // Update scan confirmed count
         $entry->scan->increment('entries_confirmed');
-
         return back()->with('success', 'Entry confirmed.');
     }
 
-    // ── Create student + alias from unmatched name ─────────────────────────────
+    // ── Ignore entry ───────────────────────────────────────────────────────────
+
+    public function ignoreEntry(PlannerScanEntry $entry)
+    {
+        $entry->update(['match_status' => 'ignored']);
+        return back()->with('success', 'Entry ignored.');
+    }
+
+    // ── Unignore entry ─────────────────────────────────────────────────────────
+
+    public function unignoreEntry(PlannerScanEntry $entry)
+    {
+        // Restore to appropriate status based on type
+        $status = 'no_booking_expected';
+        if ($entry->type === 'private_lesson') {
+            $status = $entry->student_id ? 'no_booking_found' : 'unmatched';
+        }
+        $entry->update(['match_status' => $status]);
+        return back()->with('success', 'Entry restored.');
+    }
+
+    // ── Create booking from planner entry ─────────────────────────────────────
+
+    public function createBooking(Request $request)
+    {
+        $validated = $request->validate([
+            'entry_id'     => 'required|exists:planner_scan_entries,id',
+            'student_id'   => 'required|exists:students,id',
+            'service_id'   => 'required|exists:services,id',
+            'date'         => 'required|date',
+            'time'         => 'required',
+            'rink'         => 'nullable|string',
+            'price'        => 'required|numeric|min:0',
+            'payment_type' => 'required|in:cash,venmo',
+            'status'       => 'required|in:confirmed,pending',
+        ]);
+
+        $entry   = PlannerScanEntry::findOrFail($validated['entry_id']);
+        $student = Student::findOrFail($validated['student_id']);
+        $client  = $student->client;
+
+        $start = Carbon::parse($validated['date'] . ' ' . $validated['time']);
+        $service = \App\Models\Service::findOrFail($validated['service_id']);
+        $end   = $start->copy()->addMinutes($service->duration_minutes);
+
+        // Find matching rink
+        $rinkId = null;
+        if ($validated['rink'] && $validated['rink'] !== 'unknown') {
+            $rink = \App\Models\Rink::where('slug', $validated['rink'])->first();
+            $rinkId = $rink?->id;
+        }
+
+        // Find matching time slot if available
+        $slot = null;
+        if ($rinkId) {
+            $slot = TimeSlot::where('rink_id', $rinkId)
+                ->where('date', $validated['date'])
+                ->where('start_time', $start->toTimeString())
+                ->whereNull('booking_id')
+                ->first();
+        }
+
+        $booking = Booking::create([
+            'student_id'        => $student->id,
+            'client_id'         => $client?->id,
+            'client_name'       => $client?->full_name ?? '',
+            'client_email'      => $client?->email ?? '',
+            'client_phone'      => $client?->phone ?? '',
+            'service_id'        => $validated['service_id'],
+            'time_slot_id'      => $slot?->id,
+            'date'              => $validated['date'],
+            'start_time'        => $start->toTimeString(),
+            'end_time'          => $end->toTimeString(),
+            'status'            => $validated['status'],
+            'payment_type'      => $validated['payment_type'],
+            'price_paid'        => $validated['price'],
+            'notes'             => 'Created from planner scan #' . $entry->planner_scan_id,
+            'confirmation_code' => strtoupper(substr(md5(uniqid()), 0, 8)),
+        ]);
+
+        // Mark slot as booked
+        if ($slot) {
+            $slot->update(['booking_id' => $booking->id, 'is_available' => false]);
+        }
+
+        $entry->update([
+            'booking_id'   => $booking->id,
+            'match_status' => 'matched',
+            'confirmed_at' => now(),
+        ]);
+
+        $entry->scan->increment('entries_confirmed');
+
+        return back()->with('success', "Booking created for {$student->first_name} on {$start->format('M j g:i A')}.");
+    }
+
+    // ── Create student ─────────────────────────────────────────────────────────
 
     public function createStudent(Request $request)
     {
         $validated = $request->validate([
-            'first_name'  => 'required|string',
-            'last_name'   => 'nullable|string',
-            'client_id'   => 'nullable|exists:clients,id',
-            'age'         => 'nullable|integer',
-            'alias'       => 'nullable|string',
-            'entry_id'    => 'nullable|exists:planner_scan_entries,id',
+            'first_name' => 'required|string',
+            'last_name'  => 'nullable|string',
+            'client_id'  => 'nullable|exists:clients,id',
+            'age'        => 'nullable|integer',
+            'alias'      => 'nullable|string',
+            'entry_id'   => 'nullable|exists:planner_scan_entries,id',
         ]);
 
         $student = Student::create([
-            'client_id'   => $validated['client_id'] ?? null,
-            'first_name'  => $validated['first_name'],
-            'last_name'   => $validated['last_name'] ?? null,
-            'age'         => $validated['age'] ?? null,
-            'is_active'   => true,
+            'client_id'  => $validated['client_id'] ?? null,
+            'first_name' => $validated['first_name'],
+            'last_name'  => $validated['last_name'] ?? null,
+            'age'        => $validated['age'] ?? null,
+            'is_active'  => true,
         ]);
 
         if (!empty($validated['alias'])) {
             StudentAlias::create(['student_id' => $student->id, 'alias' => $validated['alias']]);
         }
 
-        // Link to entry if provided
         if (!empty($validated['entry_id'])) {
             $entry = PlannerScanEntry::find($validated['entry_id']);
             if ($entry) {
                 $entry->update([
                     'student_id'   => $student->id,
-                    'match_status' => 'matched',
-                    'confirmed_at' => now(),
+                    'match_status' => 'no_booking_found',
                 ]);
-                $entry->scan->increment('entries_confirmed');
             }
         }
 
-        return back()->with('success', "Student {$student->first_name} created and linked.");
+        return back()->with('success', "Student {$student->first_name} created.");
     }
 
-    // ── Add alias to existing student ─────────────────────────────────────────
+    // ── Add alias ──────────────────────────────────────────────────────────────
 
     public function addAlias(Request $request)
     {
@@ -313,27 +363,24 @@ PROMPT;
             if ($entry) {
                 $entry->update([
                     'student_id'   => $validated['student_id'],
-                    'match_status' => 'matched',
-                    'confirmed_at' => now(),
+                    'match_status' => 'no_booking_found',
                 ]);
-                $entry->scan->increment('entries_confirmed');
             }
         }
 
         $student = Student::find($validated['student_id']);
-        return back()->with('success', "Alias '{$validated['alias']}' added to {$student->first_name}.");
+        return back()->with('success', "Alias '{$validated['alias']}' linked to {$student->first_name}.");
     }
 
-    // ── Finalize scan ─────────────────────────────────────────────────────────────
+    // ── Finalize scan ──────────────────────────────────────────────────────────
 
     public function finalize(PlannerScan $scan)
     {
         $scan->update([
-            'is_finalized'       => true,
-            'entries_confirmed'  => $scan->entries()->whereNotNull('confirmed_at')->count(),
+            'is_finalized'      => true,
+            'entries_confirmed' => $scan->entries()->whereNotNull('confirmed_at')->count(),
         ]);
-        return redirect()->route('admin.planner.scan', $scan->id)
-            ->with('success', 'Scan finalized successfully.');
+        return redirect()->route('admin.planner.scan', $scan->id)->with('success', 'Scan marked as reviewed.');
     }
 
     // ── Private helpers ────────────────────────────────────────────────────────
@@ -351,13 +398,9 @@ PROMPT;
             }
         }
 
-        if ($bestScore >= 90) {
-            return [$bestStudent->id, 'matched', min($baseConfidence, 95)];
-        } elseif ($bestScore >= 70) {
-            return [$bestStudent->id, 'matched', min($baseConfidence, 75)];
-        } else {
-            return [null, 'unmatched', min($baseConfidence, 60)];
-        }
+        if ($bestScore >= 90) return [$bestStudent->id, 'matched', min($baseConfidence, 95)];
+        if ($bestScore >= 70) return [$bestStudent->id, 'matched', min($baseConfidence, 75)];
+        return [null, 'unmatched', min($baseConfidence, 60)];
     }
 
     private function findMatchingBooking(int $studentId, string $date, ?string $time): ?Booking

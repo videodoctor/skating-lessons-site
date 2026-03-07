@@ -11,6 +11,14 @@
 
 ---
 
+## KNOWN BUGS
+
+- Planner scan page title renders raw PHP: `Planner Scan — <?php echo e($scan->month); ?>` — needs dynamic `@section('title')` fix in layout
+- Admin schedule page: modal CSS conflict between `.modal-overlay { display:flex }` and Tailwind `hidden` class — fixed with `.active` class but worth regression testing
+- Webster Groves `schedule_pdf_url` must be manually updated each month when new PDF published
+
+---
+
 ## HIGH PRIORITY
 
 ### 1. Admin: Schedule Verification Tool (Side-by-Side)
@@ -45,18 +53,21 @@
 ---
 
 ### 3. Finalize Scraper Deployment
-- Set up cron job for automated daily scraping (all active rinks)
+- ✅ Set up cron job for automated daily scraping (all active rinks) — runs at 3am via `sudo crontab -u www-data`
 - Test error handling for missing/malformed PDFs
 - Add scraper status dashboard in admin (last run, sessions found, errors)
 - Confirm Webster Groves and Maryville scrapers are working correctly
 
 ---
 
-### 4. Payment Integration (Stripe)
-- Accept payment at booking (not just reserve)
-- Handle cancellation refunds per policy
-- Store payment records in database
-- Gift certificates: purchase flow, redemption codes, PDF generation
+### 4. Venmo Payment Integration
+- Kristine's handle: `@Kristine-Humphrey` (already in .env as `VENMO_HANDLE`)
+- Admin can manually mark bookings as cash paid (with timestamp + admin name)
+- Admin can manually mark bookings as Venmo paid
+- Venmo deep-link on booking confirmation: `venmo://paycharge?txn=pay&recipients=Kristine-Humphrey&amount=XX&note=Booking+CODE`
+- Investigate Venmo API / webhook for auto-reconciliation of incoming payments
+- Flag unmatched Venmo payments for manual review
+- Payment status visible on admin booking list and client dashboard
 
 ---
 
