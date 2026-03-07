@@ -99,6 +99,10 @@
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;"><img src="/images/HOCKEY_SKATER.png" style="width:30px;height:30px;display:inline-block;vertical-align:middle;margin-right:6px;object-fit:contain;filter:brightness(0) invert(1);">Kristine Skates</div>
         <div class="text-sm">Elite hockey skating instruction · St. Louis, MO</div>
         <div class="text-sm">&copy; {{ date('Y') }} Kristine Skates. All rights reserved.</div>
+        <div class="text-sm" style="display:flex;gap:1.25rem;">
+          <a href="{{ route('privacy') }}" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">Privacy Policy</a>
+          <a href="{{ route('terms') }}" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">Terms &amp; Conditions</a>
+        </div>
       </div>
     </div>
   </footer>
