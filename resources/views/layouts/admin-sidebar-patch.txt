@@ -1,0 +1,8 @@
+ADD THIS LINE to admin.blade.php after the clients nav-link:
+
+  <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">
+    ⛸️ Students
+  </a>
+
+AFTER:
+  <a href="{{ route('admin.clients.index') }}" class="nav-link {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">

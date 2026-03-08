@@ -114,6 +114,18 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/clients/{client}', [ClientController::class, 'show'])->name('admin.clients.show');
     Route::post('/clients', [ClientController::class, 'store'])->name('admin.clients.store');
     Route::patch('/clients/{client}', [ClientController::class, 'update'])->name('admin.clients.update');
+    Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('admin.clients.destroy');
+    Route::post('/clients/{client}/students', [ClientController::class, 'addStudent'])->name('admin.clients.add-student');
+    Route::patch('/clients/{client}/students/{student}', [ClientController::class, 'updateStudent'])->name('admin.clients.update-student');
+    Route::delete('/clients/{client}/students/{student}', [ClientController::class, 'unlinkStudent'])->name('admin.clients.unlink-student');
+
+    // Students
+    Route::get('/students', [App\Http\Controllers\Admin\StudentController::class, 'index'])->name('admin.students.index');
+    Route::post('/students', [App\Http\Controllers\Admin\StudentController::class, 'store'])->name('admin.students.store');
+    Route::patch('/students/{student}', [App\Http\Controllers\Admin\StudentController::class, 'update'])->name('admin.students.update');
+    Route::delete('/students/{student}', [App\Http\Controllers\Admin\StudentController::class, 'destroy'])->name('admin.students.destroy');
+    Route::post('/students/{student}/aliases', [App\Http\Controllers\Admin\StudentController::class, 'addAlias'])->name('admin.students.add-alias');
+    Route::delete('/students/{student}/aliases/{alias}', [App\Http\Controllers\Admin\StudentController::class, 'removeAlias'])->name('admin.students.remove-alias');
 
     // Planner OCR (legacy stub)
     Route::get('/planner-ocr', [ScheduleController::class, 'plannerOcr'])->name('admin.planner-ocr');

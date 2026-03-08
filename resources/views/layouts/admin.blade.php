@@ -42,6 +42,9 @@
   <a href="{{ route('admin.clients.index') }}" class="nav-link {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">
     👥 Clients
   </a>
+  <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">
+    ⛸️ Students
+  </a>
   <div class="sidebar-label">Tools</div>
   <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}">
     ✍️ Planner OCR

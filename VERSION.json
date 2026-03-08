@@ -1,20 +1,14 @@
 {
-  "version": "2.5.0",
-  "date": "2026-03-07",
+  "version": "2.6.0",
+  "date": "2026-03-08",
   "changes": [
-    "Twilio SMS lesson reminders (30hr before lesson)",
-    "YES/NO reply handling via Twilio webhook",
-    "SmsService with phone normalization and message builder",
-    "SendLessonReminders artisan command (--dry-run support)",
-    "sms_reminders table migration",
-    "clients: sms_consent, sms_phone columns",
-    "bookings: reminder_sent, confirmed_via_sms, sms_confirmed_at, sms_cancelled_at columns",
-    "Console Kernel: reminders:send scheduled hourly",
-    "CSRF exemption for Twilio webhook",
-    "Twilio webhook controller for inbound SMS",
-    "Privacy Policy page at /privacy-policy",
-    "Terms & Conditions page at /terms-and-conditions",
-    "SMS consent checkbox on registration form",
-    "Privacy Policy + Terms links on registration form"
+    "Client admin: delete client (blocks if has bookings)",
+    "Client show: students section with add/edit/unlink + aliases",
+    "Client admin: phone numbers stored as E.164, displayed formatted",
+    "Phone input auto-formatter (area code parens + hyphen) on all forms",
+    "Students admin page at /admin/students",
+    "Students: create, edit, delete, add/remove aliases, link to client",
+    "Admin sidebar: Students link added",
+    "New routes: client destroy, add/update/unlink student, full student CRUD"
   ]
 }
