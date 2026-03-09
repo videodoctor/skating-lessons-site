@@ -31,10 +31,16 @@ class ScheduleController extends Controller
         $bookingsByDate = $bookings->groupBy(fn($b) => Carbon::parse($b->date)->format('Y-m-d'));
 
         // Open time slots (not booked)
+        // Also exclude slots where a booking exists at the same date+time even without slot link
+        $bookedTimes = $bookings->map(fn($b) => $b->date->format('Y-m-d') . '_' . $b->start_time)->values()->toArray();
         $slots = TimeSlot::whereBetween('date', [$startOfMonth, $endOfMonth])
             ->where('is_available', true)
             ->whereNull('booking_id')
-            ->get();
+            ->get()
+            ->filter(function($slot) use ($bookedTimes) {
+                $key = Carbon::parse($slot->date)->format('Y-m-d') . '_' . $slot->start_time;
+                return !in_array($key, $bookedTimes);
+            });
 
         $slotsByDate = $slots->groupBy(fn($s) => Carbon::parse($s->date)->format('Y-m-d'));
 

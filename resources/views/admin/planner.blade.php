@@ -26,52 +26,47 @@
   .scan-meta { flex:1; }
   .scan-title { font-weight:700; color:var(--navy); font-size:.95rem; }
   .scan-sub { font-size:.78rem; color:#6b7280; margin-top:2px; }
-  .scan-stats { display:flex; gap:.5rem; }
+  .scan-stats { display:flex; gap:.5rem; flex-wrap:wrap; }
   .stat-pill { padding:2px 8px; border-radius:10px; font-size:.72rem; font-weight:600; }
   .pill-blue { background:#dbeafe; color:#1e40af; }
   .pill-green { background:#d1fae5; color:#065f46; }
   .pill-red { background:#fee2e2; color:#991b1b; }
   .pill-yellow { background:#fef3c7; color:#92400e; }
+  .pill-gray { background:#f3f4f6; color:#6b7280; }
 
   .section-head { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; color:var(--navy); margin-bottom:1rem; }
+  .btn-sm { padding:4px 10px; border-radius:6px; font-size:.73rem; font-weight:600; cursor:pointer; border:none; }
 </style>
 
 <div class="max-w-4xl mx-auto">
 
-  {{-- Hero --}}
   <div class="planner-hero">
     <div style="font-size:.75rem;font-weight:700;letter-spacing:.15em;opacity:.6;text-transform:uppercase;margin-bottom:.5rem;">Admin Tool</div>
     <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;margin:0;line-height:1;">Planner OCR</h1>
-    <p style="opacity:.7;margin-top:.5rem;font-size:.95rem;">Upload Kristine's paper planner photos. Claude will extract lessons, classes, and cancellations — then match them against bookings.</p>
+    <p style="opacity:.7;margin-top:.5rem;font-size:.95rem;">Upload Kristine's paper planner photos. Claude will extract lessons, classes, and cancellations — cross-referenced against scraped rink session times.</p>
   </div>
 
   @if(session('success'))
-  <div style="background:#d1fae5;border:1.5px solid #a7f3d0;color:#065f46;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.88rem;font-weight:600;">
-    ✓ {{ session('success') }}
-  </div>
+  <div style="background:#d1fae5;border:1.5px solid #a7f3d0;color:#065f46;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.88rem;font-weight:600;">✓ {{ session('success') }}</div>
   @endif
-
   @if($errors->any())
   <div style="background:#fee2e2;border:1.5px solid #fecaca;color:#991b1b;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.88rem;">
-    @foreach($errors->all() as $error)
-      <div>✕ {{ $error }}</div>
-    @endforeach
+    @foreach($errors->all() as $error)<div>✕ {{ $error }}</div>@endforeach
   </div>
   @endif
 
   {{-- Upload form --}}
   <div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:14px;padding:2rem;margin-bottom:2rem;">
     <div class="section-head">📷 Upload Planner Pages</div>
-    <p style="color:#6b7280;font-size:.88rem;margin-bottom:1.5rem;">Upload 1 or 2 photos — one for each half of the week (Sun–Tue and Wed–Sat).</p>
+    <p style="color:#6b7280;font-size:.88rem;margin-bottom:1.5rem;">Upload 1 or 2 photos — one for each half of the week (Sun–Tue and Wed–Sat). Rink session times are automatically injected as context.</p>
 
     <form method="POST" action="{{ route('admin.planner.analyze') }}" enctype="multipart/form-data" id="planner-form">
       @csrf
-
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('image-input').click()">
         <input type="file" id="image-input" name="images[]" accept="image/*" multiple>
         <div style="font-size:2.5rem;margin-bottom:.75rem;">📸</div>
         <div style="font-weight:700;color:#374151;font-size:1.05rem;">Drop planner photos here or click to browse</div>
-        <div style="color:#9ca3af;font-size:.82rem;margin-top:.3rem;">JPEG or PNG • Up to 2 images • Max 10MB each</div>
+        <div style="color:#9ca3af;font-size:.82rem;margin-top:.3rem;">JPEG or PNG · Up to 2 images · Max 10MB each</div>
       </div>
 
       <div class="preview-grid" id="preview-grid"></div>
@@ -95,23 +90,39 @@
       $total     = $scan->entries->count();
       $unmatched = $scan->entries->where('match_status', 'unmatched')->count();
       $needsWork = $scan->entries->filter(fn($e) => $e->needsReview())->count();
+      $hasImages = collect($scan->image_paths ?? [])->every(fn($p) => \Illuminate\Support\Facades\Storage::disk('public')->exists($p));
     @endphp
     <div class="scan-card">
-      <div class="scan-badge">📓</div>
+      <div class="scan-badge">{{ $scan->is_finalized ? '✅' : '📓' }}</div>
       <div class="scan-meta">
-        <div class="scan-title">{{ $scan->month }} {{ $scan->year }}</div>
-        <div class="scan-sub">Scanned {{ $scan->created_at->diffForHumans() }} · {{ $total }} entries extracted</div>
+        <div class="scan-title">{{ $scan->month }} {{ $scan->year }} @if($scan->is_finalized)<span style="font-size:.7rem;color:#065f46;font-family:sans-serif;font-weight:400;"> · Reviewed</span>@endif</div>
+        <div class="scan-sub">Scanned {{ $scan->created_at->diffForHumans() }} · {{ $total }} entries</div>
         <div class="scan-stats" style="margin-top:.4rem;">
           <span class="stat-pill pill-blue">{{ $total }} total</span>
           <span class="stat-pill pill-green">{{ $confirmed }} confirmed</span>
           @if($unmatched > 0)<span class="stat-pill pill-red">{{ $unmatched }} unmatched</span>@endif
           @if($needsWork > 0)<span class="stat-pill pill-yellow">{{ $needsWork }} needs review</span>@endif
+          @if(!$hasImages)<span class="stat-pill pill-gray">⚠ images gone</span>@endif
         </div>
       </div>
-      <a href="{{ route('admin.planner.scan', $scan->id) }}"
-         style="background:var(--navy);color:#fff;padding:.5rem 1.25rem;border-radius:7px;font-size:.82rem;font-weight:700;text-decoration:none;white-space:nowrap;">
-        Review →
-      </a>
+      <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">
+        @if($hasImages)
+        <form method="POST" action="{{ route('admin.planner.rescan', $scan->id) }}" style="display:inline"
+              onsubmit="return confirm('Rescan will wipe all current entries and re-analyze with updated rink context. Continue?')">
+          @csrf
+          <button type="submit" class="btn-sm" style="background:#fef3c7;color:#92400e;">🔄 Rescan</button>
+        </form>
+        @endif
+        <a href="{{ route('admin.planner.scan', $scan->id) }}"
+           style="background:var(--navy);color:#fff;padding:.45rem 1.1rem;border-radius:7px;font-size:.82rem;font-weight:700;text-decoration:none;white-space:nowrap;">
+          Review →
+        </a>
+        <form method="POST" action="{{ route('admin.planner.destroy', $scan->id) }}" style="display:inline"
+              onsubmit="return confirm('Delete this scan and all its entries? This cannot be undone.')">
+          @csrf @method('DELETE')
+          <button type="submit" class="btn-sm" style="background:#fee2e2;color:#991b1b;">✕</button>
+        </form>
+      </div>
     </div>
     @endforeach
   </div>
@@ -147,26 +158,17 @@ function updatePreviews() {
   countLbl.textContent = files.length === 0 ? 'No files selected' : `${files.length} file${files.length>1?'s':''} selected`;
 }
 
-function removeFile(i) {
-  files.splice(i, 1);
-  updatePreviews();
-}
+function removeFile(i) { files.splice(i, 1); updatePreviews(); }
 
-input.addEventListener('change', e => {
-  files = Array.from(e.target.files).slice(0, 2);
-  updatePreviews();
-});
-
+input.addEventListener('change', e => { files = Array.from(e.target.files).slice(0, 2); updatePreviews(); });
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
 zone.addEventListener('drop', e => {
-  e.preventDefault();
-  zone.classList.remove('dragover');
+  e.preventDefault(); zone.classList.remove('dragover');
   files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')).slice(0, 2);
   updatePreviews();
 });
 
-// Override form submit to use our files array
 document.getElementById('planner-form').addEventListener('submit', function(e) {
   e.preventDefault();
   const dt = new DataTransfer();

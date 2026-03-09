@@ -82,7 +82,8 @@ PROMPT;
         $imageData  = [];
 
         foreach ($request->file('images') as $image) {
-            $path = $image->store('planner-scans', 'local');
+            // Store permanently in public disk so images persist for rescan
+            $path = $image->store('planner-scans', 'public');
             $imagePaths[] = $path;
             $imageData[]  = [
                 'type'   => 'image',
@@ -102,7 +103,7 @@ PROMPT;
         ])->timeout(60)->post('https://api.anthropic.com/v1/messages', [
             'model'      => self::ANTHROPIC_MODEL,
             'max_tokens' => 2000,
-            'system'     => self::SYSTEM_PROMPT,
+            'system'     => $this->buildSystemPrompt(null, null),
             'messages'   => [['role' => 'user', 'content' => $content]],
         ]);
 
@@ -122,7 +123,7 @@ PROMPT;
             return back()->withErrors(['parse' => 'Could not parse Claude response. Raw: ' . substr($text, 0, 300)]);
         }
 
-        $scan     = PlannerScan::create([
+        $scan = PlannerScan::create([
             'month'             => $extracted['month'] ?? date('F'),
             'year'              => $extracted['year']  ?? date('Y'),
             'image_paths'       => $imagePaths,
@@ -132,44 +133,7 @@ PROMPT;
 
         $students = Student::with('aliases')->where('is_active', true)->get();
 
-        foreach ($extracted['entries'] as $entry) {
-            $studentId   = null;
-            $matchStatus = 'no_booking_expected';
-            $confidence  = $entry['confidence'] ?? 100;
-
-            if ($entry['type'] === 'private_lesson' && !empty($entry['student_name'])) {
-                [$studentId, $matchStatus, $confidence] = $this->matchStudent($entry['student_name'], $students, $confidence);
-                // If matched student, check for existing booking
-                if ($studentId && $matchStatus === 'matched') {
-                    $booking = $this->findMatchingBooking($studentId, $entry['date'], $entry['time'] ?? null);
-                    if (!$booking) $matchStatus = 'no_booking_found';
-                }
-            } elseif (in_array($entry['type'], ['personal_block', 'note'])) {
-                $matchStatus = 'no_booking_expected';
-            }
-
-            $bookingId = null;
-            if ($studentId && $matchStatus === 'matched') {
-                $booking   = $this->findMatchingBooking($studentId, $entry['date'], $entry['time'] ?? null);
-                $bookingId = $booking?->id;
-                if (!$booking) $matchStatus = 'no_booking_found';
-            }
-
-            PlannerScanEntry::create([
-                'planner_scan_id' => $scan->id,
-                'date'            => $entry['date'],
-                'time'            => $entry['time'] ?? null,
-                'raw_text'        => $entry['student_name'] ?? $entry['notes'] ?? null,
-                'type'            => $entry['type'],
-                'rink'            => $entry['rink'] ?? null,
-                'extracted_name'  => $entry['student_name'] ?? null,
-                'student_id'      => $studentId,
-                'booking_id'      => $bookingId,
-                'confidence'      => $confidence,
-                'match_status'    => $matchStatus,
-                'notes'           => $entry['notes'] ?? null,
-            ]);
-        }
+        $this->processEntries($scan, $extracted['entries'], $students);
 
         return redirect()->route('admin.planner.scan', $scan->id);
     }
@@ -181,6 +145,94 @@ PROMPT;
         $scan->load(['entries.student.client', 'entries.booking.service']);
         $students = Student::with(['aliases', 'client'])->where('is_active', true)->orderBy('first_name')->get();
         return view('admin.planner-scan', compact('scan', 'students'));
+    }
+
+    // ── Rescan existing scan with updated rink context ─────────────────────────
+
+    public function rescan(PlannerScan $scan)
+    {
+        $imagePaths = $scan->image_paths ?? [];
+        $imageData  = [];
+
+        foreach ($imagePaths as $path) {
+            if (!Storage::disk('public')->exists($path)) {
+                return back()->withErrors(['rescan' => 'Original images are no longer available. Please upload a new scan instead.']);
+            }
+            $fullPath    = Storage::disk('public')->path($path);
+            $mimeType    = mime_content_type($fullPath);
+            $imageData[] = [
+                'type'   => 'image',
+                'source' => [
+                    'type'       => 'base64',
+                    'media_type' => $mimeType,
+                    'data'       => base64_encode(file_get_contents($fullPath)),
+                ],
+            ];
+        }
+
+        $content  = array_merge($imageData, [['type' => 'text', 'text' => 'Extract all planner entries as JSON.']]);
+        $response = Http::withHeaders([
+            'x-api-key'         => config('services.anthropic.key'),
+            'anthropic-version' => '2023-06-01',
+            'content-type'      => 'application/json',
+        ])->timeout(60)->post('https://api.anthropic.com/v1/messages', [
+            'model'      => self::ANTHROPIC_MODEL,
+            'max_tokens' => 2000,
+            'system'     => $this->buildSystemPrompt($scan->month, (string)$scan->year),
+            'messages'   => [['role' => 'user', 'content' => $content]],
+        ]);
+
+        if (!$response->successful()) {
+            Log::error('Claude rescan error', ['status' => $response->status(), 'body' => $response->body()]);
+            return back()->withErrors(['rescan' => 'Claude API call failed: ' . $response->status()]);
+        }
+
+        $text = $response->json('content.0.text', '');
+        $text = preg_replace('/^```json\s*/i', '', trim($text));
+        $text = preg_replace('/```\s*$/', '', $text);
+        $text = preg_replace('/,(\s*[}\]])/', '$1', trim($text));
+
+        $extracted = json_decode($text, true);
+        if (!$extracted || !isset($extracted['entries'])) {
+            return back()->withErrors(['rescan' => 'Could not parse Claude response.']);
+        }
+
+        // Wipe old entries and re-process
+        $scan->entries()->delete();
+        $students = Student::with('aliases')->where('is_active', true)->get();
+        $this->processEntries($scan, $extracted['entries'], $students);
+
+        $scan->update([
+            'entries_extracted' => count($extracted['entries']),
+            'entries_confirmed' => 0,
+            'is_finalized'      => false,
+        ]);
+
+        return redirect()->route('admin.planner.scan', $scan->id)
+            ->with('success', '🔄 Rescan complete — ' . count($extracted['entries']) . ' entries extracted with updated rink session context.');
+    }
+
+    // ── Delete a scan ──────────────────────────────────────────────────────────
+
+    public function destroy(PlannerScan $scan)
+    {
+        // Delete stored images
+        foreach ($scan->image_paths ?? [] as $path) {
+            Storage::disk('public')->delete($path);
+        }
+
+        // Unlink any bookings created from this scan's entries
+        PlannerScanEntry::where('planner_scan_id', $scan->id)
+            ->whereNotNull('booking_id')
+            ->each(function ($entry) {
+                // Just unlink, don't delete the booking
+                $entry->update(['booking_id' => null]);
+            });
+
+        $scan->entries()->delete();
+        $scan->delete();
+
+        return redirect()->route('admin.planner')->with('success', 'Scan deleted.');
     }
 
     // ── Update entry ───────────────────────────────────────────────────────────
@@ -221,7 +273,6 @@ PROMPT;
 
     public function unignoreEntry(PlannerScanEntry $entry)
     {
-        // Restore to appropriate status based on type
         $status = 'no_booking_expected';
         if ($entry->type === 'private_lesson') {
             $status = $entry->student_id ? 'no_booking_found' : 'unmatched';
@@ -249,19 +300,16 @@ PROMPT;
         $entry   = PlannerScanEntry::findOrFail($validated['entry_id']);
         $student = Student::findOrFail($validated['student_id']);
         $client  = $student->client;
-
-        $start = Carbon::parse($validated['date'] . ' ' . $validated['time']);
         $service = \App\Models\Service::findOrFail($validated['service_id']);
-        $end   = $start->copy()->addMinutes($service->duration_minutes);
+        $start   = Carbon::parse($validated['date'] . ' ' . $validated['time']);
+        $end     = $start->copy()->addMinutes($service->duration_minutes);
 
-        // Find matching rink
         $rinkId = null;
-        if ($validated['rink'] && $validated['rink'] !== 'unknown') {
-            $rink = \App\Models\Rink::where('slug', $validated['rink'])->first();
+        if (!empty($validated['rink']) && $validated['rink'] !== 'unknown') {
+            $rink   = \App\Models\Rink::where('slug', $validated['rink'])->first();
             $rinkId = $rink?->id;
         }
 
-        // Find matching time slot if available
         $slot = null;
         if ($rinkId) {
             $slot = TimeSlot::where('rink_id', $rinkId)
@@ -289,7 +337,6 @@ PROMPT;
             'confirmation_code' => strtoupper(substr(md5(uniqid()), 0, 8)),
         ]);
 
-        // Mark slot as booked
         if ($slot) {
             $slot->update(['booking_id' => $booking->id, 'is_available' => false]);
         }
@@ -299,7 +346,6 @@ PROMPT;
             'match_status' => 'matched',
             'confirmed_at' => now(),
         ]);
-
         $entry->scan->increment('entries_confirmed');
 
         return back()->with('success', "Booking created for {$student->first_name} on {$start->format('M j g:i A')}.");
@@ -333,10 +379,7 @@ PROMPT;
         if (!empty($validated['entry_id'])) {
             $entry = PlannerScanEntry::find($validated['entry_id']);
             if ($entry) {
-                $entry->update([
-                    'student_id'   => $student->id,
-                    'match_status' => 'no_booking_found',
-                ]);
+                $entry->update(['student_id' => $student->id, 'match_status' => 'no_booking_found']);
             }
         }
 
@@ -353,18 +396,12 @@ PROMPT;
             'entry_id'   => 'nullable|exists:planner_scan_entries,id',
         ]);
 
-        StudentAlias::firstOrCreate([
-            'student_id' => $validated['student_id'],
-            'alias'      => $validated['alias'],
-        ]);
+        StudentAlias::firstOrCreate(['student_id' => $validated['student_id'], 'alias' => $validated['alias']]);
 
         if (!empty($validated['entry_id'])) {
             $entry = PlannerScanEntry::find($validated['entry_id']);
             if ($entry) {
-                $entry->update([
-                    'student_id'   => $validated['student_id'],
-                    'match_status' => 'no_booking_found',
-                ]);
+                $entry->update(['student_id' => $validated['student_id'], 'match_status' => 'no_booking_found']);
             }
         }
 
@@ -381,6 +418,86 @@ PROMPT;
             'entries_confirmed' => $scan->entries()->whereNotNull('confirmed_at')->count(),
         ]);
         return redirect()->route('admin.planner.scan', $scan->id)->with('success', 'Scan marked as reviewed.');
+    }
+
+    // ── Build dynamic system prompt with rink session context ──────────────────
+
+    private function buildSystemPrompt(?string $month, ?string $year): string
+    {
+        $month = $month ?? date('F');
+        $year  = (int)($year ?? date('Y'));
+
+        $startDate = Carbon::createFromFormat('F Y', "{$month} {$year}")->startOfMonth();
+        $endDate   = $startDate->copy()->endOfMonth();
+
+        $sessions = \App\Models\RinkSession::with('rink')
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->where('is_cancelled', false)
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->get();
+
+        $sessionContext = '';
+        if ($sessions->isNotEmpty()) {
+            $byDow = $sessions->groupBy(fn($s) => Carbon::parse($s->date)->format('l'));
+            $sessionContext  = "\n\nKNOWN PUBLIC SKATE WINDOWS FOR {$month} {$year} (from rink schedules):\n";
+            $sessionContext .= "Private lessons can ONLY happen during public skate sessions. Use these to validate and correct extracted times.\n";
+            foreach ($byDow as $dow => $dowSessions) {
+                $sessionContext .= "{$dow}s:\n";
+                foreach ($dowSessions->unique(fn($s) => $s->rink_id . $s->start_time) as $s) {
+                    $start = Carbon::parse($s->start_time)->format('g:i A');
+                    $end   = Carbon::parse($s->end_time)->format('g:i A');
+                    $sessionContext .= "  - {$s->rink->name}: {$start} – {$end}\n";
+                }
+            }
+            $sessionContext .= "\nIMPORTANT: If a handwritten time is ambiguous (e.g. '2:30' could be AM or PM), ";
+            $sessionContext .= "always choose the interpretation that falls within a known public skate window. ";
+            $sessionContext .= "For example, if you see '2:30' and there is a public skate at 2:30 PM but not 2:30 AM, use 14:30. ";
+            $sessionContext .= "Morning times like 9:30 AM or 10:00 AM are almost certainly wrong if no public skate exists then.";
+        }
+
+        return self::SYSTEM_PROMPT . $sessionContext;
+    }
+
+    // ── Shared entry processing ────────────────────────────────────────────────
+
+    private function processEntries(PlannerScan $scan, array $entries, $students): void
+    {
+        foreach ($entries as $entry) {
+            $studentId   = null;
+            $matchStatus = 'no_booking_expected';
+            $confidence  = $entry['confidence'] ?? 100;
+
+            if ($entry['type'] === 'private_lesson' && !empty($entry['student_name'])) {
+                [$studentId, $matchStatus, $confidence] = $this->matchStudent($entry['student_name'], $students, $confidence);
+                if ($studentId && $matchStatus === 'matched') {
+                    $booking = $this->findMatchingBooking($studentId, $entry['date'], $entry['time'] ?? null);
+                    if (!$booking) $matchStatus = 'no_booking_found';
+                }
+            }
+
+            $bookingId = null;
+            if ($studentId && $matchStatus === 'matched') {
+                $booking   = $this->findMatchingBooking($studentId, $entry['date'], $entry['time'] ?? null);
+                $bookingId = $booking?->id;
+                if (!$booking) $matchStatus = 'no_booking_found';
+            }
+
+            PlannerScanEntry::create([
+                'planner_scan_id' => $scan->id,
+                'date'            => $entry['date'],
+                'time'            => $entry['time'] ?? null,
+                'raw_text'        => $entry['student_name'] ?? $entry['notes'] ?? null,
+                'type'            => $entry['type'],
+                'rink'            => $entry['rink'] ?? null,
+                'extracted_name'  => $entry['student_name'] ?? null,
+                'student_id'      => $studentId,
+                'booking_id'      => $bookingId,
+                'confidence'      => $confidence,
+                'match_status'    => $matchStatus,
+                'notes'           => $entry['notes'] ?? null,
+            ]);
+        }
     }
 
     // ── Private helpers ────────────────────────────────────────────────────────

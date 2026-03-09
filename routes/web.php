@@ -141,6 +141,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/planner/create-student', [App\Http\Controllers\Admin\PlannerController::class, 'createStudent'])->name('admin.planner.create-student');
     Route::post('/planner/add-alias', [App\Http\Controllers\Admin\PlannerController::class, 'addAlias'])->name('admin.planner.add-alias');
     Route::post('/planner/scan/{scan}/finalize', [App\Http\Controllers\Admin\PlannerController::class, 'finalize'])->name('admin.planner.finalize');
+    Route::post('/planner/scan/{scan}/rescan', [App\Http\Controllers\Admin\PlannerController::class, 'rescan'])->name('admin.planner.rescan');
+    Route::delete('/planner/scan/{scan}', [App\Http\Controllers\Admin\PlannerController::class, 'destroy'])->name('admin.planner.destroy');
     Route::post('/planner/create-booking', [App\Http\Controllers\Admin\PlannerController::class, 'createBooking'])->name('admin.planner.create-booking');
 
     // Export / Reports

@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Planner Scan — {{ $scan->month }} {{ $scan->year }}')
+@section('title', 'Planner Scan')
 @section('content')
 <style>
   :root { --navy:#001F5B; --red:#C8102E; --gold:#C9A84C; --ice:#E8F5FB; }
@@ -38,7 +38,6 @@
   .btn-amber  { background:#fef3c7; color:#92400e; } .btn-amber:hover  { background:#fde68a; }
 
   .day-header { background:var(--navy); color:#fff; padding:.45rem 1rem; border-radius:8px; font-weight:700; font-size:.82rem; margin-bottom:.4rem; margin-top:1.1rem; display:flex; align-items:center; justify-content:space-between; }
-
   .section-divider { border:none; border-top:2px dashed #e5e7eb; margin:2rem 0 1rem; }
   .section-label-lg { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; color:#9ca3af; margin-bottom:.75rem; }
 
@@ -62,27 +61,50 @@
 
   .summary-bar { display:flex; gap:.6rem; flex-wrap:wrap; margin-bottom:1.5rem; }
   .summary-pill { padding:4px 12px; border-radius:20px; font-size:.77rem; font-weight:700; }
-
   .booking-linked { background:#f0fdf4; border-top:1px solid #bbf7d0; padding:.45rem 1rem; font-size:.76rem; color:#166534; }
 </style>
 
 <div class="max-w-4xl mx-auto">
 
   {{-- Header --}}
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
     <div>
       <a href="{{ route('admin.planner') }}" style="color:#6b7280;font-size:.8rem;text-decoration:none;">← Back to Planner</a>
       <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--navy);margin:.2rem 0 0;">{{ $scan->month }} {{ $scan->year }} Scan</h1>
       <div style="font-size:.78rem;color:#6b7280;">Scanned {{ $scan->created_at->diffForHumans() }} · {{ $scan->entries->count() }} entries</div>
     </div>
-    @if(!$scan->is_finalized)
-    <form method="POST" action="{{ route('admin.planner.finalize', $scan->id) }}">
-      @csrf
-      <button type="submit" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:.6rem 1.4rem;font-weight:700;cursor:pointer;font-size:.86rem;">✓ Mark as Reviewed</button>
-    </form>
-    @else
-    <span style="background:#d1fae5;color:#065f46;padding:.4rem .9rem;border-radius:8px;font-size:.8rem;font-weight:700;">✓ Reviewed</span>
-    @endif
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+      {{-- Rescan --}}
+      @php $hasImages = collect($scan->image_paths ?? [])->every(fn($p) => \Illuminate\Support\Facades\Storage::disk('public')->exists($p)); @endphp
+      @if($hasImages)
+      <form method="POST" action="{{ route('admin.planner.rescan', $scan->id) }}"
+            onsubmit="return confirm('Rescan will wipe all current entries and re-analyze with updated rink session context. Continue?')">
+        @csrf
+        <button type="submit" style="background:#f59e0b;color:#fff;border:none;border-radius:8px;padding:.6rem 1.2rem;font-weight:700;cursor:pointer;font-size:.82rem;">
+          🔄 Rescan
+        </button>
+      </form>
+      @else
+      <span style="font-size:.75rem;color:#9ca3af;padding:.6rem 0;">⚠ Images unavailable — upload new scan to rescan</span>
+      @endif
+
+      {{-- Mark reviewed / finalized --}}
+      @if(!$scan->is_finalized)
+      <form method="POST" action="{{ route('admin.planner.finalize', $scan->id) }}">
+        @csrf
+        <button type="submit" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:.6rem 1.2rem;font-weight:700;cursor:pointer;font-size:.82rem;">✓ Mark Reviewed</button>
+      </form>
+      @else
+      <span style="background:#d1fae5;color:#065f46;padding:.4rem .9rem;border-radius:8px;font-size:.8rem;font-weight:700;">✓ Reviewed</span>
+      @endif
+
+      {{-- Delete scan --}}
+      <form method="POST" action="{{ route('admin.planner.destroy', $scan->id) }}"
+            onsubmit="return confirm('Delete this entire scan and all its entries? This cannot be undone.')">
+        @csrf @method('DELETE')
+        <button type="submit" style="background:#fee2e2;color:#991b1b;border:none;border-radius:8px;padding:.6rem 1rem;font-weight:700;cursor:pointer;font-size:.82rem;">🗑 Delete</button>
+      </form>
+    </div>
   </div>
 
   {{-- Flash --}}
@@ -181,7 +203,6 @@
         </div>
       </div>
 
-      {{-- Booking info if matched --}}
       @if($entry->booking)
       <div class="booking-linked">
         ✓ Booking #{{ $entry->booking->confirmation_code ?? $entry->booking->id }}
@@ -191,7 +212,6 @@
       </div>
       @endif
 
-      {{-- Inline create booking form --}}
       @if($isPrivate && $entry->match_status === 'no_booking_found' && $entry->student_id)
       <div class="create-booking-form" id="booking-form-{{ $entry->id }}">
         <form method="POST" action="{{ route('admin.planner.create-booking') }}">
@@ -207,7 +227,7 @@
               <label>Service</label>
               <select name="service_id">
                 @foreach(\App\Models\Service::where('is_active',true)->get() as $svc)
-                <option value="{{ $svc->id }}" {{ $svc->slug === 'private-skating-lesson' || $svc->id === 1 ? 'selected' : '' }}>{{ $svc->name }}</option>
+                <option value="{{ $svc->id }}" {{ $svc->id === 1 ? 'selected' : '' }}>{{ $svc->name }}</option>
                 @endforeach
               </select>
             </div>
@@ -237,23 +257,15 @@
       </div>
       @endif
 
-      {{-- Actions --}}
       <div class="entry-actions">
-        {{-- Create booking toggle --}}
         @if($isPrivate && $entry->match_status === 'no_booking_found' && $entry->student_id)
         <button class="btn-sm btn-amber" onclick="toggleBookingForm({{ $entry->id }})">⚡ Create Booking</button>
         @endif
-
-        {{-- Link/create student for unmatched --}}
         @if($entry->match_status === 'unmatched' && $isPrivate)
         <button class="btn-sm btn-blue" onclick="openLinkModal({{ $entry->id }}, '{{ addslashes($entry->extracted_name) }}')">👤 Link Student</button>
         <button class="btn-sm btn-purple" onclick="openNewStudentModal({{ $entry->id }}, '{{ addslashes($entry->extracted_name) }}')">+ New Student</button>
         @endif
-
-        {{-- Edit --}}
         <button class="btn-sm btn-gray" onclick="openEditModal({{ $entry->id }}, '{{ $entry->type }}', '{{ $entry->time }}', '{{ addslashes($entry->extracted_name ?? '') }}', '{{ $entry->rink }}', '{{ addslashes($entry->notes ?? '') }}')">✏ Edit</button>
-
-        {{-- Ignore --}}
         <form method="POST" action="{{ route('admin.planner.entry.ignore', $entry->id) }}" style="display:inline">
           @csrf
           <button type="submit" class="btn-sm btn-gray" style="opacity:.6;">— Ignore</button>

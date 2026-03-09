@@ -1,14 +1,17 @@
 {
-  "version": "2.6.0",
+  "version": "2.7.0",
   "date": "2026-03-08",
   "changes": [
-    "Client admin: delete client (blocks if has bookings)",
-    "Client show: students section with add/edit/unlink + aliases",
-    "Client admin: phone numbers stored as E.164, displayed formatted",
-    "Phone input auto-formatter (area code parens + hyphen) on all forms",
-    "Students admin page at /admin/students",
-    "Students: create, edit, delete, add/remove aliases, link to client",
-    "Admin sidebar: Students link added",
-    "New routes: client destroy, add/update/unlink student, full student CRUD"
+    "Planner OCR: images now stored permanently in public disk (storage/app/public/planner-scans/)",
+    "Planner OCR: Rescan button re-analyzes with updated rink session context",
+    "Planner OCR: Delete scan button removes scan, entries, and stored images",
+    "Planner OCR: buildSystemPrompt injects scraped public skate windows to fix AM/PM errors",
+    "Planner OCR: processEntries extracted to shared method (used by analyze + rescan)",
+    "Planner index: shows image availability warning, rescan/delete on each scan card",
+    "Planner scan: Rescan + Delete buttons in header",
+    "Twilio: updated to 314-314-SKATE vanity number",
+    "Admin mobile nav: hamburger drawer (v2.6.1)",
+    "Students admin page (v2.6.0)",
+    "Client delete, phone formatting (v2.6.0)"
   ]
 }
