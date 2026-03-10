@@ -10,12 +10,15 @@ class PlannerScanEntry extends Model
         'planner_scan_id', 'date', 'time', 'raw_text', 'type',
         'rink', 'extracted_name', 'student_id', 'booking_id',
         'confidence', 'match_status', 'notes', 'confirmed_at',
+        'bbox', 'image_index',
     ];
 
     protected $casts = [
         'date'         => 'date',
         'confirmed_at' => 'datetime',
         'confidence'   => 'integer',
+        'bbox'         => 'array',
+        'image_index'  => 'integer',
     ];
 
     public function scan()

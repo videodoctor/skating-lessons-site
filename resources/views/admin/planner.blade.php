@@ -62,6 +62,37 @@
 
     <form method="POST" action="{{ route('admin.planner.analyze') }}" enctype="multipart/form-data" id="planner-form">
       @csrf
+      {{-- Page side selector --}}
+      <div style="display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+        <label style="flex:1;min-width:200px;cursor:pointer;">
+          <input type="radio" name="page_side" value="left" style="display:none;" id="side-left">
+          <div class="page-side-btn" id="side-left-btn" onclick="selectSide('left')" style="border:2px solid #e5e7eb;border-radius:10px;padding:.85rem 1rem;text-align:center;transition:all .15s;">
+            <div style="font-size:1.4rem;">📖</div>
+            <div style="font-weight:700;font-size:.88rem;color:#374151;margin-top:.25rem;">Left Page</div>
+            <div style="font-size:.75rem;color:#9ca3af;">Notes · Sun · Mon · Tue</div>
+            <div style="font-size:.7rem;color:#9ca3af;margin-top:2px;">Binding on RIGHT</div>
+          </div>
+        </label>
+        <label style="flex:1;min-width:200px;cursor:pointer;">
+          <input type="radio" name="page_side" value="right" style="display:none;" id="side-right">
+          <div class="page-side-btn" id="side-right-btn" onclick="selectSide('right')" style="border:2px solid #e5e7eb;border-radius:10px;padding:.85rem 1rem;text-align:center;transition:all .15s;">
+            <div style="font-size:1.4rem;">📗</div>
+            <div style="font-weight:700;font-size:.88rem;color:#374151;margin-top:.25rem;">Right Page</div>
+            <div style="font-size:.75rem;color:#9ca3af;">Wed · Thu · Fri · Sat</div>
+            <div style="font-size:.7rem;color:#9ca3af;margin-top:2px;">Binding on LEFT</div>
+          </div>
+        </label>
+        <label style="flex:1;min-width:200px;cursor:pointer;">
+          <input type="radio" name="page_side" value="both" checked style="display:none;" id="side-both">
+          <div class="page-side-btn" id="side-both-btn" onclick="selectSide('both')" style="border:2px solid var(--navy);border-radius:10px;padding:.85rem 1rem;text-align:center;background:#f0f4ff;transition:all .15s;">
+            <div style="font-size:1.4rem;">📚</div>
+            <div style="font-weight:700;font-size:.88rem;color:var(--navy);margin-top:.25rem;">Both Pages</div>
+            <div style="font-size:.75rem;color:#9ca3af;">Full week · 2 images</div>
+            <div style="font-size:.7rem;color:#9ca3af;margin-top:2px;">Sun – Sat</div>
+          </div>
+        </label>
+      </div>
+
       <div class="upload-zone" id="upload-zone" onclick="document.getElementById('image-input').click()">
         <input type="file" id="image-input" name="images[]" accept="image/*" multiple>
         <div style="font-size:2.5rem;margin-bottom:.75rem;">📸</div>
@@ -131,6 +162,22 @@
 </div>
 
 <script>
+function selectSide(side) {
+  document.getElementById('side-' + side).checked = true;
+  ['left','right','both'].forEach(s => {
+    const btn = document.getElementById('side-' + s + '-btn');
+    if (s === side) {
+      btn.style.border = '2px solid var(--navy)';
+      btn.style.background = '#f0f4ff';
+      btn.querySelector('div:nth-child(2)').style.color = 'var(--navy)';
+    } else {
+      btn.style.border = '2px solid #e5e7eb';
+      btn.style.background = '#fff';
+      btn.querySelector('div:nth-child(2)').style.color = '#374151';
+    }
+  });
+}
+
 const input    = document.getElementById('image-input');
 const zone     = document.getElementById('upload-zone');
 const grid     = document.getElementById('preview-grid');

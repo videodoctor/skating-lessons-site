@@ -113,3 +113,13 @@ class BookingController extends Controller
         return back()->with('success', 'Booking marked as Venmo paid.');
     }
 }
+
+    public function cancel(Booking $booking)
+    {
+        $booking->update(['status' => 'cancelled']);
+        if ($booking->time_slot_id) {
+            \App\Models\TimeSlot::where('id', $booking->time_slot_id)
+                ->update(['is_available' => true, 'booking_id' => null]);
+        }
+        return back()->with('success', "Booking for " . ($booking->student?->first_name ?? $booking->client_name) . " marked as cancelled.");
+    }

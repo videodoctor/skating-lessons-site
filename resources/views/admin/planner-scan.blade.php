@@ -62,6 +62,20 @@
   .summary-bar { display:flex; gap:.6rem; flex-wrap:wrap; margin-bottom:1.5rem; }
   .summary-pill { padding:4px 12px; border-radius:20px; font-size:.77rem; font-weight:700; }
   .booking-linked { background:#f0fdf4; border-top:1px solid #bbf7d0; padding:.45rem 1rem; font-size:.76rem; color:#166534; }
+
+  .bbox-crop {
+    width:140px; height:60px; flex-shrink:0;
+    border-radius:6px; overflow:hidden; border:1.5px solid #e5e7eb;
+    cursor:pointer; position:relative; background:#f8fafc;
+  }
+  .bbox-crop img {
+    position:absolute;
+    transform-origin: top left;
+  }
+  .bbox-crop:hover { border-color:var(--navy); }
+  .bbox-expand { display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:2000; align-items:center; justify-content:center; cursor:pointer; }
+  .bbox-expand.open { display:flex; }
+  .bbox-expand img { max-width:95vw; max-height:90vh; border-radius:8px; object-fit:contain; }
 </style>
 
 <div class="max-w-4xl mx-auto">
@@ -139,6 +153,8 @@
       ->where('match_status','!=','ignored')
       ->sortBy('date')
       ->groupBy(fn($e) => \Carbon\Carbon::parse($e->date)->toDateString());
+    // Build public URLs for scan images
+    $imageUrls = collect($scan->image_paths ?? [])->map(fn($p) => Storage::disk('public')->exists($p) ? asset('storage/' . $p) : null)->values()->toArray();
   @endphp
 
   @foreach($activeEntries as $dateStr => $entries)
@@ -198,7 +214,32 @@
         @endif
         @if($entry->rink && $entry->rink !== 'unknown')<span style="color:#9ca3af;font-size:.72rem;">@ {{ $rinkNames[$entry->rink] ?? $entry->rink }}</span>@endif
         @if($entry->notes)<span style="color:#9ca3af;font-size:.72rem;font-style:italic;">{{ $entry->notes }}</span>@endif
-        <div style="margin-left:auto;">
+        <div style="margin-left:auto;display:flex;align-items:center;gap:.6rem;">
+          {{-- BBox crop thumbnail --}}
+          @if($entry->bbox && isset($imageUrls[$entry->image_index ?? 0]) && $imageUrls[$entry->image_index ?? 0])
+          @php
+            $bbox = $entry->bbox;
+            $imgUrl = $imageUrls[$entry->image_index ?? 0];
+            // We render the image at a fixed display width and crop to bbox
+            // Thumbnail container: 140x60px
+            // We scale the image so the bbox region fills the container
+            $thumbW = 140; $thumbH = 60;
+            $scaleX = $thumbW / ($bbox['w'] / 100);
+            $scaleY = $thumbH / ($bbox['h'] / 100);
+            $scale  = min($scaleX, $scaleY);
+            $imgW   = round($scale);
+            $imgH   = round($scale * (3024/4032)); // portrait correction for 4032x3024
+            $offX   = -round(($bbox['x'] / 100) * $imgW);
+            $offY   = -round(($bbox['y'] / 100) * $imgH);
+          @endphp
+          <div class="bbox-crop" onclick="expandImage('{{ $imgUrl }}', {{ json_encode($bbox) }})" title="Click to expand">
+            <img src="{{ $imgUrl }}"
+                 width="{{ $imgW }}"
+                 height="{{ $imgH }}"
+                 style="left:{{ $offX }}px;top:{{ $offY }}px;"
+                 loading="lazy">
+          </div>
+          @endif
           <span class="state-badge {{ $badgeClass }}">{{ $badgeLabel }}</span>
         </div>
       </div>
@@ -265,7 +306,7 @@
         <button class="btn-sm btn-blue" onclick="openLinkModal({{ $entry->id }}, '{{ addslashes($entry->extracted_name) }}')">👤 Link Student</button>
         <button class="btn-sm btn-purple" onclick="openNewStudentModal({{ $entry->id }}, '{{ addslashes($entry->extracted_name) }}')">+ New Student</button>
         @endif
-        <button class="btn-sm btn-gray" onclick="openEditModal({{ $entry->id }}, '{{ $entry->type }}', '{{ $entry->time }}', '{{ addslashes($entry->extracted_name ?? '') }}', '{{ $entry->rink }}', '{{ addslashes($entry->notes ?? '') }}')">✏ Edit</button>
+        <button class="btn-sm btn-gray" onclick="openEditModal({{ $entry->id }}, '{{ $entry->type }}', '{{ \Carbon\Carbon::parse($entry->date)->toDateString() }}', '{{ $entry->time }}', '{{ addslashes($entry->extracted_name ?? '') }}', '{{ $entry->rink }}', '{{ addslashes($entry->notes ?? '') }}')">✏ Edit</button>
         <form method="POST" action="{{ route('admin.planner.entry.ignore', $entry->id) }}" style="display:inline">
           @csrf
           <button type="submit" class="btn-sm btn-gray" style="opacity:.6;">— Ignore</button>
@@ -274,6 +315,42 @@
     </div>
   @endforeach
   @endforeach
+
+  {{-- ⚠ Missing from planner — possible cancellations --}}
+  @if($missingBookings->isNotEmpty())
+  <hr class="section-divider">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#dc2626;margin-bottom:.5rem;">⚠ Bookings Not Found in Planner ({{ $missingBookings->count() }})</div>
+  <p style="font-size:.8rem;color:#6b7280;margin-bottom:.75rem;">These confirmed/pending bookings exist in the database for {{ $scan->month }} {{ $scan->year }} but were not detected in this planner scan. They may have been cancelled, rescheduled, or missed by OCR.</p>
+  @foreach($missingBookings as $b)
+  <div style="background:#fff;border:1.5px solid #fecaca;border-left:4px solid #ef4444;border-radius:10px;padding:.75rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+    <div style="flex:1;">
+      <div style="font-weight:700;color:#991b1b;font-size:.88rem;">
+        {{ \Carbon\Carbon::parse($b->date)->format('l, M j') }}
+        @if($b->start_time) · {{ \Carbon\Carbon::parse($b->start_time)->format('g:i A') }}@endif
+      </div>
+      <div style="font-size:.8rem;color:#374151;margin-top:2px;">
+        {{ $b->student?->full_name ?? $b->client_name ?? 'Unknown' }}
+        @if($b->service) · {{ $b->service->name }}@endif
+        · <span style="font-weight:600;">${{ number_format($b->price_paid, 0) }}</span>
+        · <span style="text-transform:capitalize;">{{ $b->status }}</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+      {{-- Mark as cancelled --}}
+      <form method="POST" action="{{ route('admin.bookings.cancel', $b->id) }}" style="display:inline"
+            onsubmit="return confirm('Mark booking #{{ $b->id }} for {{ addslashes($b->student?->first_name ?? $b->client_name) }} as cancelled?')">
+        @csrf @method('PATCH')
+        <button type="submit" class="btn-sm btn-red">✕ Mark Cancelled</button>
+      </form>
+      {{-- Dismiss — it was just missed by OCR --}}
+      <form method="POST" action="{{ route('admin.planner.dismiss-missing', ['scan' => $scan->id, 'booking' => $b->id]) }}" style="display:inline">
+        @csrf
+        <button type="submit" class="btn-sm btn-gray">— Dismiss</button>
+      </form>
+    </div>
+  </div>
+  @endforeach
+  @endif
 
   {{-- Ignored section --}}
   @php $ignoredEntries = $scan->entries->where('match_status','ignored')->sortBy('date'); @endphp
@@ -316,6 +393,7 @@
           <option value="note">📝 Note</option>
         </select>
       </div>
+      <div class="mfg"><label>Date</label><input type="date" name="date" id="edit-date"></div>
       <div class="mfg"><label>Time</label><input type="time" name="time" id="edit-time"></div>
       <div class="mfg"><label>Student / Name</label><input type="text" name="extracted_name" id="edit-name"></div>
       <div class="mfg"><label>Rink</label>
@@ -389,10 +467,25 @@
   </div>
 </div>
 
+{{-- BBox image expander lightbox --}}
+<div class="bbox-expand" id="bboxExpand" onclick="closeExpand()">
+  <img id="bboxExpandImg" src="" alt="Planner scan">
+</div>
+
 <script>
-function openEditModal(id, type, time, name, rink, notes) {
+function expandImage(url, bbox) {
+  document.getElementById('bboxExpandImg').src = url;
+  document.getElementById('bboxExpand').classList.add('open');
+}
+function closeExpand() {
+  document.getElementById('bboxExpand').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') { closeExpand(); closeModals(); } });
+
+function openEditModal(id, type, date, time, name, rink, notes) {
   document.getElementById('editForm').action = `/admin/planner/entry/${id}`;
   document.getElementById('edit-type').value  = type || '';
+  document.getElementById('edit-date').value  = date || '';
   document.getElementById('edit-time').value  = time ? time.substring(0,5) : '';
   document.getElementById('edit-name').value  = name || '';
   document.getElementById('edit-rink').value  = rink || 'unknown';

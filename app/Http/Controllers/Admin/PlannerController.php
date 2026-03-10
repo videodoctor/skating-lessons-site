@@ -38,6 +38,17 @@ Context:
 - Personal events (birthday parties, concerts, family events) = type "personal_block"
 - Confidence: 100=certain, 80=likely, 60=unsure, 40=guessing
 
+PLANNER LAYOUT INSTRUCTIONS:
+- The planner is a two-page weekly spread photographed as separate images
+- LEFT PAGE (binding on the RIGHT side of the image): has 4 columns with printed headers: "Notes", "Sunday", "Monday", "Tuesday" — in that order left to right
+- RIGHT PAGE (binding on the LEFT side of the image): has 4 columns with printed headers: "Wednesday", "Thursday", "Friday", "Saturday" — in that order left to right
+- The "Notes" column on the left page is NOT a day — ignore it for lesson entries or mark as type "note"
+- Each day column has the DATE NUMBER printed in the TOP LEFT corner of that column's cell
+- ALL handwritten entries below a date number belong to THAT date — not the adjacent column
+- Do NOT assign entries to the previous or next day based on spatial proximity — always use the printed column header and the date number in the top left of the cell
+- Entries near the right edge of a left-page column belong to that column, NOT to the next day's column on the same page
+- When in doubt about which column an entry belongs to, identify the nearest column header above it
+
 Return this exact JSON structure:
 {
   "month": "March",
@@ -50,7 +61,9 @@ Return this exact JSON structure:
       "type": "private_lesson",
       "rink": "creve-coeur",
       "notes": null,
-      "confidence": 95
+      "confidence": 95,
+      "image_index": 0,
+      "bbox": {"x": 45.2, "y": 23.1, "w": 18.5, "h": 4.2}
     }
   ]
 }
@@ -58,6 +71,17 @@ Return this exact JSON structure:
 Types: private_lesson, lts, ltp, cancelled_public, cancelled_class, personal_block, note
 Rinks: creve-coeur, kirkwood, maryville, brentwood, webster-groves, unknown
 Normalize times to "HH:MM" 24-hour format. Separate entry per student. Return ONLY the JSON object.
+
+BOUNDING BOX INSTRUCTIONS:
+- image_index: 0 for first image, 1 for second image (if two images uploaded)
+- bbox: the bounding box of the handwritten entry in the image, as percentages of image dimensions (0-100)
+  - x: left edge percentage
+  - y: top edge percentage  
+  - w: width percentage
+  - h: height percentage
+- Be generous with bbox — include some padding around the text so context is visible
+- For entries spanning multiple lines, include all lines in the bbox
+- If you cannot determine bbox with reasonable confidence, return null for bbox
 PROMPT;
 
     // ── Index ──────────────────────────────────────────────────────────────────
@@ -95,15 +119,16 @@ PROMPT;
             ];
         }
 
-        $content  = array_merge($imageData, [['type' => 'text', 'text' => 'Extract all planner entries as JSON.']]);
+        $refs     = $this->loadHandwritingRefs();
+        $content  = array_merge($refs, $imageData, [['type' => 'text', 'text' => 'Extract all planner entries as JSON.']]);
         $response = Http::withHeaders([
             'x-api-key'         => config('services.anthropic.key'),
             'anthropic-version' => '2023-06-01',
             'content-type'      => 'application/json',
         ])->timeout(60)->post('https://api.anthropic.com/v1/messages', [
             'model'      => self::ANTHROPIC_MODEL,
-            'max_tokens' => 2000,
-            'system'     => $this->buildSystemPrompt(null, null),
+            'max_tokens' => 4000,
+            'system'     => $this->buildSystemPrompt(null, null, $request->input('page_side', 'both')),
             'messages'   => [['role' => 'user', 'content' => $content]],
         ]);
 
@@ -129,6 +154,7 @@ PROMPT;
             'image_paths'       => $imagePaths,
             'entries_extracted' => count($extracted['entries']),
             'scanned_by'        => auth()->id(),
+            'page_side'         => $request->input('page_side', 'both'),
         ]);
 
         $students = Student::with('aliases')->where('is_active', true)->get();
@@ -144,7 +170,23 @@ PROMPT;
     {
         $scan->load(['entries.student.client', 'entries.booking.service']);
         $students = Student::with(['aliases', 'client'])->where('is_active', true)->orderBy('first_name')->get();
-        return view('admin.planner-scan', compact('scan', 'students'));
+
+        // Find bookings in this scan's month that are NOT referenced in any entry
+        // These are potential cancellations or lessons not written in the planner
+        $startDate = Carbon::createFromFormat('F Y', "{$scan->month} {$scan->year}")->startOfMonth();
+        $endDate   = $startDate->copy()->endOfMonth();
+
+        // Get all booking IDs already linked to entries
+        $linkedBookingIds = $scan->entries->pluck('booking_id')->filter()->values()->toArray();
+
+        // Find confirmed/pending bookings in this month not in the planner
+        $missingBookings = Booking::with(['student', 'service'])
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->whereNotIn('id', $linkedBookingIds)
+            ->get();
+
+        return view('admin.planner-scan', compact('scan', 'students', 'missingBookings'));
     }
 
     // ── Rescan existing scan with updated rink context ─────────────────────────
@@ -170,15 +212,16 @@ PROMPT;
             ];
         }
 
-        $content  = array_merge($imageData, [['type' => 'text', 'text' => 'Extract all planner entries as JSON.']]);
+        $refs     = $this->loadHandwritingRefs();
+        $content  = array_merge($refs, $imageData, [['type' => 'text', 'text' => 'Extract all planner entries as JSON.']]);
         $response = Http::withHeaders([
             'x-api-key'         => config('services.anthropic.key'),
             'anthropic-version' => '2023-06-01',
             'content-type'      => 'application/json',
         ])->timeout(60)->post('https://api.anthropic.com/v1/messages', [
             'model'      => self::ANTHROPIC_MODEL,
-            'max_tokens' => 2000,
-            'system'     => $this->buildSystemPrompt($scan->month, (string)$scan->year),
+            'max_tokens' => 4000,
+            'system'     => $this->buildSystemPrompt($scan->month, (string)$scan->year, $scan->page_side ?? 'both'),
             'messages'   => [['role' => 'user', 'content' => $content]],
         ]);
 
@@ -241,6 +284,7 @@ PROMPT;
     {
         $validated = $request->validate([
             'type'           => 'required|string',
+            'date'           => 'required|date',
             'time'           => 'nullable|string',
             'extracted_name' => 'nullable|string',
             'student_id'     => 'nullable|exists:students,id',
@@ -409,6 +453,28 @@ PROMPT;
         return back()->with('success', "Alias '{$validated['alias']}' linked to {$student->first_name}.");
     }
 
+    // ── Dismiss a "missing" booking (it was just missed by OCR, not cancelled) ─
+
+    public function dismissMissing(Request $request, PlannerScan $scan, Booking $booking)
+    {
+        // Create a placeholder confirmed entry so it won't show as missing again
+        PlannerScanEntry::create([
+            'planner_scan_id' => $scan->id,
+            'date'            => $booking->date,
+            'time'            => $booking->start_time,
+            'type'            => 'private_lesson',
+            'extracted_name'  => $booking->student?->first_name ?? $booking->client_name,
+            'student_id'      => $booking->student_id,
+            'booking_id'      => $booking->id,
+            'match_status'    => 'matched',
+            'confidence'      => 100,
+            'notes'           => 'Manually linked — missed by OCR',
+            'confirmed_at'    => now(),
+        ]);
+        $scan->increment('entries_confirmed');
+        return back()->with('success', 'Booking dismissed and linked to this scan.');
+    }
+
     // ── Finalize scan ──────────────────────────────────────────────────────────
 
     public function finalize(PlannerScan $scan)
@@ -420,12 +486,73 @@ PROMPT;
         return redirect()->route('admin.planner.scan', $scan->id)->with('success', 'Scan marked as reviewed.');
     }
 
+    // ── Load handwriting reference images ─────────────────────────────────────
+
+    private function loadHandwritingRefs(): array
+    {
+        $refDir  = storage_path('app/handwriting-ref');
+        $refData = [];
+
+        if (!is_dir($refDir)) return [];
+
+        $files = glob($refDir . '/*.{png,jpg,jpeg,PNG,JPG,JPEG}', GLOB_BRACE);
+        if (empty($files)) return [];
+
+        // Sort so digits come first (0-9, then colon, then combos)
+        sort($files);
+
+        // Build label from filename e.g. "2a.png" → "2", "colon.png" → ":"
+        $labels = [];
+        foreach ($files as $file) {
+            $base = pathinfo($file, PATHINFO_FILENAME);
+            // Strip trailing letters for variants: "2a" → "2", "30" → "30"
+            $label = preg_replace('/[a-z]+$/i', '', $base);
+            $label = $label === 'colon' ? ':' : $label;
+            $labels[$file] = $label;
+        }
+
+        // Group by label for intro text
+        $uniqueLabels = array_unique(array_values($labels));
+        sort($uniqueLabels);
+
+        // Intro text block
+        $refData[] = [
+            'type' => 'text',
+            'text' => "HANDWRITING REFERENCE: The following " . count($files) . " image(s) show examples of this coach's actual handwriting for digits and characters (" . implode(', ', $uniqueLabels) . "). Use these to correctly identify ambiguous digits in the planner scan — especially when distinguishing between similar-looking numbers like 2 vs 9, or 3 vs 8.",
+        ];
+
+        foreach ($files as $file) {
+            $mimeType  = mime_content_type($file);
+            $refData[] = [
+                'type' => 'text',
+                'text' => "Reference character: \"" . $labels[$file] . "\"",
+            ];
+            $refData[] = [
+                'type'   => 'image',
+                'source' => [
+                    'type'       => 'base64',
+                    'media_type' => $mimeType,
+                    'data'       => base64_encode(file_get_contents($file)),
+                ],
+            ];
+        }
+
+        return $refData;
+    }
+
     // ── Build dynamic system prompt with rink session context ──────────────────
 
-    private function buildSystemPrompt(?string $month, ?string $year): string
+    private function buildSystemPrompt(?string $month, ?string $year, string $pageSide = 'both'): string
     {
         $month = $month ?? date('F');
         $year  = (int)($year ?? date('Y'));
+
+        // Page-specific layout context
+        $pageContext = match($pageSide) {
+            'left'  => "\nPAGE IDENTIFICATION: This is the LEFT page of the weekly spread (binding is on the RIGHT side of the image).\nThis page contains ONLY these columns in order from left to right: Notes, Sunday, Monday, Tuesday.\nDo NOT extract any Wednesday, Thursday, Friday, or Saturday entries from this image — they are on the other page.\nThe leftmost column is 'Notes' — it is not a day. Any entries there should be type 'note'.\n",
+            'right' => "\nPAGE IDENTIFICATION: This is the RIGHT page of the weekly spread (binding is on the LEFT side of the image).\nThis page contains ONLY these columns in order from left to right: Wednesday, Thursday, Friday, Saturday.\nDo NOT extract any Sunday, Monday, or Tuesday entries from this image — they are on the other page.\n",
+            default => "\nPAGE IDENTIFICATION: Both pages of the weekly spread are provided (2 images).\nimage_index 0 = LEFT page: Notes, Sunday, Monday, Tuesday (binding on right).\nimage_index 1 = RIGHT page: Wednesday, Thursday, Friday, Saturday (binding on left).\n",
+        };
 
         $startDate = Carbon::createFromFormat('F Y', "{$month} {$year}")->startOfMonth();
         $endDate   = $startDate->copy()->endOfMonth();
@@ -456,7 +583,7 @@ PROMPT;
             $sessionContext .= "Morning times like 9:30 AM or 10:00 AM are almost certainly wrong if no public skate exists then.";
         }
 
-        return self::SYSTEM_PROMPT . $sessionContext;
+        return self::SYSTEM_PROMPT . $pageContext . $sessionContext;
     }
 
     // ── Shared entry processing ────────────────────────────────────────────────
@@ -496,6 +623,8 @@ PROMPT;
                 'confidence'      => $confidence,
                 'match_status'    => $matchStatus,
                 'notes'           => $entry['notes'] ?? null,
+                'bbox'            => isset($entry['bbox']) ? $entry['bbox'] : null,
+                'image_index'     => $entry['image_index'] ?? 0,
             ]);
         }
     }

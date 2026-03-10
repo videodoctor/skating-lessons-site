@@ -1,17 +1,14 @@
 {
-  "version": "2.7.0",
-  "date": "2026-03-08",
+  "version": "2.8.3",
+  "date": "2026-03-09",
   "changes": [
-    "Planner OCR: images now stored permanently in public disk (storage/app/public/planner-scans/)",
-    "Planner OCR: Rescan button re-analyzes with updated rink session context",
-    "Planner OCR: Delete scan button removes scan, entries, and stored images",
-    "Planner OCR: buildSystemPrompt injects scraped public skate windows to fix AM/PM errors",
-    "Planner OCR: processEntries extracted to shared method (used by analyze + rescan)",
-    "Planner index: shows image availability warning, rescan/delete on each scan card",
-    "Planner scan: Rescan + Delete buttons in header",
-    "Twilio: updated to 314-314-SKATE vanity number",
-    "Admin mobile nav: hamburger drawer (v2.6.1)",
-    "Students admin page (v2.6.0)",
-    "Client delete, phone formatting (v2.6.0)"
+    "Planner OCR: edit modal now includes date field (fix wrong-date OCR errors)",
+    "Planner OCR: missing bookings section — flags DB bookings not found in planner scan",
+    "Planner OCR: Mark Cancelled button on missing bookings",
+    "Planner OCR: Dismiss button on missing bookings (links to scan, marks as OCR miss)",
+    "Planner OCR: page_side selector on upload form (Left/Right/Both)",
+    "Planner OCR: system prompt includes exact column layout per page side",
+    "BookingController: cancel() method added",
+    "New routes: dismiss-missing, booking cancel"
   ]
 }

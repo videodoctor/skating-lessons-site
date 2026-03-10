@@ -143,6 +143,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/planner/scan/{scan}/finalize', [App\Http\Controllers\Admin\PlannerController::class, 'finalize'])->name('admin.planner.finalize');
     Route::post('/planner/scan/{scan}/rescan', [App\Http\Controllers\Admin\PlannerController::class, 'rescan'])->name('admin.planner.rescan');
     Route::delete('/planner/scan/{scan}', [App\Http\Controllers\Admin\PlannerController::class, 'destroy'])->name('admin.planner.destroy');
+    Route::post('/planner/scan/{scan}/dismiss-missing/{booking}', [App\Http\Controllers\Admin\PlannerController::class, 'dismissMissing'])->name('admin.planner.dismiss-missing');
+    Route::patch('/bookings/{booking}/cancel', [App\Http\Controllers\Admin\BookingController::class, 'cancel'])->name('admin.bookings.cancel');
     Route::post('/planner/create-booking', [App\Http\Controllers\Admin\PlannerController::class, 'createBooking'])->name('admin.planner.create-booking');
 
     // Export / Reports
