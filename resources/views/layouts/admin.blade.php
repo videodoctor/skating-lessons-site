@@ -78,6 +78,7 @@
     <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" onclick="closeDrawer()">⛸️ Students</a>
     <div class="sidebar-label">Tools</div>
     <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}" onclick="closeDrawer()">✍️ Planner OCR</a>
+    <a href="{{ route('admin.scraper.index') }}" class="nav-link {{ request()->routeIs('admin.scraper*') ? 'active' : '' }}" onclick="closeDrawer()">🔧 Scraper</a>
     <a href="{{ route('admin.export') }}" class="nav-link {{ request()->routeIs('admin.export') ? 'active' : '' }}" onclick="closeDrawer()">📤 Export</a>
     <div style="margin-top:auto;padding:1rem 0 0;border-top:1px solid rgba(255,255,255,.1);">
       <div class="sidebar-label">Account</div>
@@ -107,6 +108,7 @@
   <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">⛸️ Students</a>
   <div class="sidebar-label">Tools</div>
   <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}">✍️ Planner OCR</a>
+  <a href="{{ route('admin.scraper.index') }}" class="nav-link {{ request()->routeIs('admin.scraper*') ? 'active' : '' }}">🔧 Scraper</a>
   <a href="{{ route('admin.export') }}" class="nav-link {{ request()->routeIs('admin.export') ? 'active' : '' }}">📤 Export</a>
   <div class="sidebar-footer">
     <div class="sidebar-label">Account</div>

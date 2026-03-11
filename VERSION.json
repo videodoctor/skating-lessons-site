@@ -1,14 +1,18 @@
 {
-  "version": "2.8.3",
+  "version": "2.9.0",
   "date": "2026-03-09",
   "changes": [
-    "Planner OCR: edit modal now includes date field (fix wrong-date OCR errors)",
-    "Planner OCR: missing bookings section — flags DB bookings not found in planner scan",
-    "Planner OCR: Mark Cancelled button on missing bookings",
-    "Planner OCR: Dismiss button on missing bookings (links to scan, marks as OCR miss)",
-    "Planner OCR: page_side selector on upload form (Left/Right/Both)",
-    "Planner OCR: system prompt includes exact column layout per page side",
-    "BookingController: cancel() method added",
-    "New routes: dismiss-missing, booking cancel"
+    "Liability waiver e-sign at /waiver — 3 checkboxes, typed signature, IP + timestamp recorded",
+    "Waiver prompt on booking confirmation if not yet signed",
+    "Waiver signed badge on confirmation page",
+    "WaiverController: show + sign, versioned, client waiver fields updated",
+    "Migration: liability_waivers table (if not exists)",
+    "Venmo deep-link on booking confirmation — opens Venmo app with pre-filled amount + note",
+    "Venmo web fallback link + copy instructions for non-app users",
+    "Scraper status dashboard at /admin/scraper",
+    "Scraper dashboard: per-rink status, run history, upcoming sessions, log viewer",
+    "Scraper dashboard: Run All + Run individual rink buttons",
+    "Admin sidebar: Scraper link added (desktop + mobile)",
+    "Cron fix: updated to use /usr/bin/php instead of missing paddle-env"
   ]
 }

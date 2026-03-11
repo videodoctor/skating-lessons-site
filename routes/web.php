@@ -26,6 +26,10 @@ Route::get('/rinks', function () {
     return view('rinks', compact('rinks', 'todaySessions'));
 })->name('rinks');
 
+// Waiver
+Route::get('/waiver', [App\Http\Controllers\WaiverController::class, 'show'])->name('waiver.show');
+Route::post('/waiver/sign', [App\Http\Controllers\WaiverController::class, 'sign'])->name('waiver.sign');
+
 Route::get('/terms-and-conditions', function () {
     return view('terms');
 })->name('terms');
@@ -120,6 +124,11 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::delete('/clients/{client}/students/{student}', [ClientController::class, 'unlinkStudent'])->name('admin.clients.unlink-student');
 
     // Students
+    // Scraper dashboard
+    Route::get('/scraper', [App\Http\Controllers\Admin\ScraperController::class, 'index'])->name('admin.scraper.index');
+    Route::post('/scraper/run-all', [App\Http\Controllers\Admin\ScraperController::class, 'runAll'])->name('admin.scraper.run-all');
+    Route::post('/scraper/run/{rinkSlug}', [App\Http\Controllers\Admin\ScraperController::class, 'runOne'])->name('admin.scraper.run-one');
+
     Route::get('/students', [App\Http\Controllers\Admin\StudentController::class, 'index'])->name('admin.students.index');
     Route::post('/students', [App\Http\Controllers\Admin\StudentController::class, 'store'])->name('admin.students.store');
     Route::patch('/students/{student}', [App\Http\Controllers\Admin\StudentController::class, 'update'])->name('admin.students.update');
