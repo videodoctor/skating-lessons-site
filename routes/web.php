@@ -124,6 +124,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::delete('/clients/{client}/students/{student}', [ClientController::class, 'unlinkStudent'])->name('admin.clients.unlink-student');
 
     // Students
+    // Waivers
+    Route::get('/waivers', [App\Http\Controllers\Admin\WaiverAdminController::class, 'index'])->name('admin.waivers.index');
+
     // Scraper dashboard
     Route::get('/scraper', [App\Http\Controllers\Admin\ScraperController::class, 'index'])->name('admin.scraper.index');
     Route::post('/scraper/run-all', [App\Http\Controllers\Admin\ScraperController::class, 'runAll'])->name('admin.scraper.run-all');

@@ -1,18 +1,10 @@
 {
-  "version": "2.9.0",
+  "version": "2.9.1",
   "date": "2026-03-09",
   "changes": [
-    "Liability waiver e-sign at /waiver — 3 checkboxes, typed signature, IP + timestamp recorded",
-    "Waiver prompt on booking confirmation if not yet signed",
-    "Waiver signed badge on confirmation page",
-    "WaiverController: show + sign, versioned, client waiver fields updated",
-    "Migration: liability_waivers table (if not exists)",
-    "Venmo deep-link on booking confirmation — opens Venmo app with pre-filled amount + note",
-    "Venmo web fallback link + copy instructions for non-app users",
-    "Scraper status dashboard at /admin/scraper",
-    "Scraper dashboard: per-rink status, run history, upcoming sessions, log viewer",
-    "Scraper dashboard: Run All + Run individual rink buttons",
-    "Admin sidebar: Scraper link added (desktop + mobile)",
-    "Cron fix: updated to use /usr/bin/php instead of missing paddle-env"
+    "Admin waivers page at /admin/waivers — lists all signed waivers with client, version, IP, timestamp",
+    "Waiver page shows unsigned client count + warning banner",
+    "Outdated version flagging on waiver list",
+    "Waivers link added to admin sidebar (desktop + mobile)"
   ]
 }

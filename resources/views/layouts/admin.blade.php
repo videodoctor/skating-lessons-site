@@ -76,6 +76,7 @@
     <div class="sidebar-label">People</div>
     <a href="{{ route('admin.clients.index') }}" class="nav-link {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}" onclick="closeDrawer()">👥 Clients</a>
     <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" onclick="closeDrawer()">⛸️ Students</a>
+    <a href="{{ route('admin.waivers.index') }}" class="nav-link {{ request()->routeIs('admin.waivers.*') ? 'active' : '' }}" onclick="closeDrawer()">📋 Waivers</a>
     <div class="sidebar-label">Tools</div>
     <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}" onclick="closeDrawer()">✍️ Planner OCR</a>
     <a href="{{ route('admin.scraper.index') }}" class="nav-link {{ request()->routeIs('admin.scraper*') ? 'active' : '' }}" onclick="closeDrawer()">🔧 Scraper</a>
@@ -106,6 +107,7 @@
   <div class="sidebar-label">People</div>
   <a href="{{ route('admin.clients.index') }}" class="nav-link {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">👥 Clients</a>
   <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">⛸️ Students</a>
+  <a href="{{ route('admin.waivers.index') }}" class="nav-link {{ request()->routeIs('admin.waivers.*') ? 'active' : '' }}">📋 Waivers</a>
   <div class="sidebar-label">Tools</div>
   <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}">✍️ Planner OCR</a>
   <a href="{{ route('admin.scraper.index') }}" class="nav-link {{ request()->routeIs('admin.scraper*') ? 'active' : '' }}">🔧 Scraper</a>
