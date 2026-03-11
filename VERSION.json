@@ -1,10 +1,16 @@
 {
-  "version": "2.9.1",
+  "version": "2.9.2",
   "date": "2026-03-09",
   "changes": [
-    "Admin waivers page at /admin/waivers — lists all signed waivers with client, version, IP, timestamp",
-    "Waiver page shows unsigned client count + warning banner",
-    "Outdated version flagging on waiver list",
-    "Waivers link added to admin sidebar (desktop + mobile)"
+    "Microsoft Graph mail transport — replaces SMTP Gmail with Office 365 Graph API",
+    "MicrosoftGraphTransport: OAuth2 client credentials, token cached 58min, HTML+text+attachments",
+    "AppServiceProvider: registers microsoft-graph mail transport",
+    "config/mail.php: microsoft-graph as default mailer, failover to log",
+    "config/services.php: microsoft_graph credentials added",
+    "Deploy script: now syncs config/ directory",
+    "Admin waivers page (v2.9.1)",
+    "Venmo deep-link on booking confirmation (v2.9.0)",
+    "Liability waiver e-sign (v2.9.0)",
+    "Scraper status dashboard (v2.9.0)"
   ]
 }
