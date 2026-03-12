@@ -96,7 +96,7 @@
       <div class="flex gap-10">
         <div><div class="hero-stat-num">3</div><div class="hero-stat-label">Area Rinks</div></div>
         <div><div class="hero-stat-num">30<span style="font-size:1.4rem">min</span></div><div class="hero-stat-label">Sessions</div></div>
-        <div><div class="hero-stat-num">6+</div>
+        <div><div class="hero-stat-num">4+</div>
         <div class="hero-stat-label">Ages Welcome</div></div>
       </div>
     </div>
@@ -239,7 +239,7 @@
       </div>
     </div>
     <div class="grid md:grid-cols-3 gap-4">
-      @foreach([['Creve Coeur Ice Arena','Creve Coeur','creve-coeur'],['Brentwood Ice Rink','Brentwood','brentwood'],['Webster Groves Ice Arena','Webster Groves','webster-groves'],['Maryville Hockey Center','Chesterfield','maryville']] as $rink)
+      @foreach([['Creve Coeur Ice Arena','Creve Coeur','creve-coeur'],['Kirkwood Ice Arena','Kirkwood','kirkwood'],['Brentwood Ice Rink','Brentwood','brentwood'],['Webster Groves Ice Arena','Webster Groves','webster-groves'],['Maryville Hockey Center','Chesterfield','maryville']] as $rink)
       <div class="rink-card">
         <div class="text-xs font-bold uppercase tracking-widest text-blue-300 mb-1">{{ $rink[1] }}</div>
         <div class="text-lg font-bold mb-3">{{ $rink[0] }}</div>
