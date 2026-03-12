@@ -266,7 +266,7 @@
         'brentwood'    => ['color'=>'#C8102E','mapq'=>'Brentwood+Ice+Rink+2505+S+Brentwood+Blvd+Brentwood+MO','notes'=>'Community rink with a friendly atmosphere. Central location — easy to reach from most of St. Louis County.'],
         'webster-groves'=>['color'=>'#1a5276','mapq'=>'Webster+Groves+Ice+Arena+33+E+Glendale+Rd+Webster+Groves+MO','notes'=>'Cozy neighborhood rink with dedicated public skate sessions and a loyal local crowd.'],
         'maryville'    => ['color'=>'#1e8449','mapq'=>'Maryville+University+Hockey+Center+18383+Chesterfield+Airport+Rd+Chesterfield+MO','notes'=>'Premier hockey facility in Chesterfield. Full-size NHL ice sheet with top-notch amenities.'],
-        'kirkwood'     => ['color'=>'#7f8c8d','mapq'=>'Kirkwood+Ice+Arena+111+S+Geyer+Rd+Kirkwood+MO','notes'=>'Currently not available for lessons. Check back for updates.'],
+        'kirkwood'     => ['color'=>'#7f8c8d','mapq'=>'Kirkwood+Ice+Arena+111+S+Geyer+Rd+Kirkwood+MO','notes'=>'Currently not available for lessons due to ice rink upgrades. Lessons will resume at this location in August.'],
       ];
       $n = 0;
     @endphp

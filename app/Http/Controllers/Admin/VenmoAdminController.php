@@ -10,20 +10,23 @@ use Illuminate\Support\Facades\Artisan;
 
 class VenmoAdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $showIgnored = $request->boolean('show_ignored');
+
         $payments = VenmoPayment::with(['booking.student', 'client'])
+            ->when(!$showIgnored, fn($q) => $q->where('match_status', '!=', 'ignored'))
             ->orderByDesc('paid_at')
             ->paginate(30);
 
         $stats = [
-            'total'        => VenmoPayment::count(),
-            'total_amount' => VenmoPayment::sum('amount'),
+            'total'        => VenmoPayment::where('match_status', '!=', 'ignored')->count(),
+            'total_amount' => VenmoPayment::where('match_status', '!=', 'ignored')->sum('amount'),
             'matched'      => VenmoPayment::where('match_status', 'matched')->count(),
             'unmatched'    => VenmoPayment::where('match_status', 'unmatched')->count(),
         ];
 
-        return view('admin.venmo', compact('payments', 'stats'));
+        return view('admin.venmo', compact('payments', 'stats', 'showIgnored'));
     }
 
     public function parseNow()

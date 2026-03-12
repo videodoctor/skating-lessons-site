@@ -5,6 +5,15 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', 'Kristine Skates — Hockey Skating Lessons')</title>
+  <meta property="og:title" content="@yield('title', 'Kristine Skates — Private Skating Lessons in St. Louis')">
+  <meta property="og:description" content="Private 1-on-1 skating lessons with Coach Kristine in St. Louis. All ages, all skill levels. Book online.">
+  <meta property="og:image" content="{{ asset('images/og-preview.png') }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ url()->current() }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="{{ asset('images/og-preview.png') }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root { --navy:#001F5B; --red:#C8102E; }

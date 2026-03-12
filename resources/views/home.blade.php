@@ -94,7 +94,7 @@
         <a href="#services" class="hero-cta-ghost">See Lessons ↓</a>
       </div>
       <div class="flex gap-10">
-        <div><div class="hero-stat-num">3</div><div class="hero-stat-label">Area Rinks</div></div>
+        <div><div class="hero-stat-num">4</div><div class="hero-stat-label">Area Rinks</div></div>
         <div><div class="hero-stat-num">30<span style="font-size:1.4rem">min</span></div><div class="hero-stat-label">Sessions</div></div>
         <div><div class="hero-stat-num">4+</div>
         <div class="hero-stat-label">Ages Welcome</div></div>
@@ -110,7 +110,7 @@
     <span>✓ Youth &amp; Adult</span>
     <span>✓ Power Skating Focus</span>
     <span>✓ Edge Control &amp; Footwork</span>
-    <span>✓ Creve Coeur · Brentwood · Webster Groves</span>
+    <span>✓ Creve Coeur · Kirkwood · Brentwood · Webster Groves</span>
   </div>
 </div>
 
@@ -179,13 +179,14 @@
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="grid md:grid-cols-2 gap-16 items-center">
       <div>
-        <img src="{{ asset('images/kristine_and_mick_001.jpg') }}" alt="Coach Kristine" class="bio-photo"
+        @php $bioPhotos = ['images/kristine_and_mick_004.png','images/kristine_and_mick_005.png']; $bioPhoto = $bioPhotos[array_rand($bioPhotos)]; @endphp
+        <img src="{{ asset($bioPhoto) }}" alt="Coach Kristine" class="bio-photo"
              onerror="this.style.cssText='display:flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:8px;width:100%;aspect-ratio:4/5;font-size:5rem;'">
       </div>
       <div>
         <p class="section-label mb-3">Meet Your Coach</p>
         <h2 class="section-title mb-6">Coach Kristine</h2>
-        <blockquote class="bio-quote mb-8">"Every skater has untapped speed and power waiting to be unlocked. I'm here to find it."</blockquote>
+        <blockquote class="bio-quote mb-8">"Every skater has untapped speed and power waiting to be unlocked. I'm here to help them find it."</blockquote>
         <p class="text-gray-600 leading-relaxed mb-6">Kristine brings years of competitive hockey experience and a genuine passion for teaching to every session. Whether you're stepping on the ice for the first time or refining your edge work for competitive play, her structured, one-on-one approach cuts through the guesswork and gets you results fast.</p>
         <div class="flex flex-wrap gap-3 mb-8">
           <span class="credential-chip">🏒 Hockey Skating Specialist</span>
@@ -232,7 +233,7 @@
           <div>
             <div class="text-xs font-bold uppercase tracking-widest text-red-200 mb-1">All Rinks Combined</div>
             <div class="text-2xl font-bold">Every Public Skate Session</div>
-            <div class="text-red-200 text-sm mt-1">One feed for all three rinks</div>
+            <div class="text-red-200 text-sm mt-1">One feed for all four rinks</div>
           </div>
           <a href="{{ str_replace('https://', 'webcal://', url('/calendar/public-skating.ics')) }}" class="rink-subscribe-btn text-base px-6 py-3" style="border-color:rgba(255,255,255,.6)">+ Subscribe to All</a>
         </div>
