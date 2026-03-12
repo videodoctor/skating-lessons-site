@@ -21,6 +21,12 @@ class Kernel extends ConsoleKernel
                  ->hourly()
                  ->withoutOverlapping()
                  ->runInBackground();
+
+        // Parse Venmo payment emails every 15 minutes
+        $schedule->command('venmo:parse-emails')
+                 ->everyFifteenMinutes()
+                 ->withoutOverlapping()
+                 ->runInBackground();
     }
 
     protected function commands(): void

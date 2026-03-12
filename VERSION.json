@@ -1,16 +1,16 @@
 {
-  "version": "2.9.2",
+  "version": "2.9.3",
   "date": "2026-03-09",
   "changes": [
-    "Microsoft Graph mail transport — replaces SMTP Gmail with Office 365 Graph API",
-    "MicrosoftGraphTransport: OAuth2 client credentials, token cached 58min, HTML+text+attachments",
-    "AppServiceProvider: registers microsoft-graph mail transport",
-    "config/mail.php: microsoft-graph as default mailer, failover to log",
-    "config/services.php: microsoft_graph credentials added",
-    "Deploy script: now syncs config/ directory",
-    "Admin waivers page (v2.9.1)",
-    "Venmo deep-link on booking confirmation (v2.9.0)",
-    "Liability waiver e-sign (v2.9.0)",
-    "Scraper status dashboard (v2.9.0)"
+    "Venmo email parser: reads venmo@kristineskates.com via Graph API every 15 minutes",
+    "Venmo parser: extracts sender name, amount, note, transaction ID from Venmo receipt emails",
+    "Venmo parser: matches to bookings by confirmation code in note, then by amount+client name",
+    "Venmo parser: auto-marks matching bookings as Venmo paid",
+    "Venmo parser: --dry-run flag for testing without saving",
+    "venmo_payments table: stores all parsed payments with match status",
+    "Admin Venmo page at /admin/venmo: stats, payment list, manual link modal",
+    "Admin Venmo: Parse Now button triggers parser on demand",
+    "Scheduler: venmo:parse-emails runs every 15 minutes",
+    "Admin sidebar: Payments section with Venmo link"
   ]
 }
