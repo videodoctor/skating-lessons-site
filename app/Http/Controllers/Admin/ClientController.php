@@ -88,7 +88,7 @@ class ClientController extends Controller
             'last_name'  => $validated['last_name'] ?? null,
             'name'       => trim($validated['first_name'] . ' ' . ($validated['last_name'] ?? '')),
             'email'      => $validated['email'],
-            'phone'      => $phone,
+            'phone'      => $phone ?? '',
             'sms_phone'  => $phone,
             'notes'      => $validated['notes'] ?? null,
             'password'   => Hash::make(str()->random(16)),

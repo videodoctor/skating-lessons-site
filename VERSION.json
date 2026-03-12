@@ -1,16 +1,11 @@
 {
-  "version": "2.9.3",
-  "date": "2026-03-09",
+  "version": "2.9.4",
+  "date": "2026-03-11",
   "changes": [
-    "Venmo email parser: reads venmo@kristineskates.com via Graph API every 15 minutes",
-    "Venmo parser: extracts sender name, amount, note, transaction ID from Venmo receipt emails",
-    "Venmo parser: matches to bookings by confirmation code in note, then by amount+client name",
-    "Venmo parser: auto-marks matching bookings as Venmo paid",
-    "Venmo parser: --dry-run flag for testing without saving",
-    "venmo_payments table: stores all parsed payments with match status",
-    "Admin Venmo page at /admin/venmo: stats, payment list, manual link modal",
-    "Admin Venmo: Parse Now button triggers parser on demand",
-    "Scheduler: venmo:parse-emails runs every 15 minutes",
-    "Admin sidebar: Payments section with Venmo link"
+    "Reminders: now sends email AND SMS when both are available",
+    "Reminder email: branded HTML with lesson details, Venmo pay button, confirmation code",
+    "SMS reminder: includes Venmo link with pre-filled amount and confirmation code in note",
+    "Fix: Create Client 500 error — phone column NOT NULL, now defaults to empty string",
+    "Venmo parser + admin dashboard (v2.9.3)"
   ]
 }

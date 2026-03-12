@@ -73,7 +73,6 @@ class SmsService
         $rinkName = $booking->timeSlot?->rink?->name ?? 'the rink';
         $student  = $booking->student;
 
-        // "tomorrow at 3:30 PM" vs "on Saturday, March 14 at 3:30 PM"
         $when = $date->isTomorrow()
             ? 'tomorrow at ' . $time->format('g:i A')
             : 'on ' . $date->format('l, F j') . ' at ' . $time->format('g:i A');
@@ -81,13 +80,21 @@ class SmsService
         $studentPart = $student ? " for {$student->first_name}" : '';
 
         $price = $booking->price_paid
-            ? ' Lessons cancelled less than 24 hours before the scheduled time will be billed at the quoted rate of $' . number_format($booking->price_paid, 0) . '.'
-            : ' Cancellations less than 24 hours before scheduled lesson time will be billed at the rate quoted for the lesson.';
+            ? ' $' . number_format($booking->price_paid, 0) . ' due at lesson.'
+            : '';
 
-        return "Your private 1-on-1 skating lesson{$studentPart} is {$when} at {$rinkName}. "
-             . "To confirm this lesson time slot, reply with YES. "
-             . "To cancel this lesson, reply with NO."
-             . $price;
+        // Venmo deep link
+        $venmoHandle = ltrim(config('services.venmo.handle', 'Kristine-Humphrey'), '@');
+        $amount      = $booking->price_paid ? number_format($booking->price_paid, 2) : '';
+        $note        = 'Lesson ' . ($booking->confirmation_code ?? '');
+        $venmoLink   = $amount
+            ? "Pay via Venmo: venmo.com/{$venmoHandle}?txn=pay&amount={$amount}&note=" . urlencode($note)
+            : '';
+
+        $cancellationNote = ' Reply YES to confirm, NO to cancel (cancellations <24hrs will be billed).';
+
+        return "Reminder: Your skating lesson{$studentPart} is {$when} at {$rinkName}.{$price}{$cancellationNote}"
+             . ($venmoLink ? " {$venmoLink}" : '');
     }
 
     // ── Handle inbound YES/NO reply ────────────────────────────────────────────
