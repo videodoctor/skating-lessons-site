@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /client/login
+Disallow: /client/register
+
+Sitemap: https://kristineskates.com/sitemap.xml
