@@ -1,21 +1,12 @@
 {
-  "version": "2.10.0",
+  "version": "2.10.2",
   "date": "2026-03-13",
   "changes": [
-    "Guest booking: Turnstile captcha added",
-    "Guest booking: SMS consent checkbox with full A2P compliant text (optional, unchecked by default)",
-    "Guest booking: phone number auto-formatter",
-    "Guest booking: guest_sms_consent + guest_convert_token saved on booking",
-    "Guest → Account conversion: password form on confirmation page, creates client account from booking details",
-    "Email verification: sent on registration and guest conversion, verify link route",
-    "Phone verification: 6-digit SMS code sent on SMS opt-in, verify-phone page with resend",
-    "ClientAuthController: email + phone verification wired up",
-    "VerificationService: handles email token + phone code generation, sending, validation",
-    "Migration: phone_verified_at, email_verify_token, phone_verify_code, phone_verify_sent_at on clients",
-    "Migration: guest_sms_consent, guest_convert_token on bookings",
-    "Client model: new verification fields in fillable + casts",
-    "Booking model: guest fields in fillable + casts",
-    "Privacy policy: Reply HELP for assistance added to both SMS sections",
-    "SMS opt-in text updated on registration form for A2P compliance"
+    "Player Highlight page at /player/grant-schaible with Grant Schaible's story and EHL journey",
+    "Home page: added Kyle A. quote",
+    "Home page: fixed Nikki C. and Chad C. names",
+    "SMS reminders: only send to verified phone numbers (A2P compliance)",
+    "Fix: $rinks undefined on home page",
+    "Kristine Humphrey in bio + meta description tags"
   ]
 }

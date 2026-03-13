@@ -208,7 +208,7 @@
       <h2 class="section-title">From the Ice</h2>
     </div>
     <div class="grid md:grid-cols-3 gap-8">
-      @foreach([["Coach Kristine is a great instructor who has helped my child increase his skating ability by leaps and bounds. She helps her students to grow by pushing them to their limits, being both firm and very encouraging. My child loves the sessions.","Nikki"],["Years of working with Kristine and I can confidently say she is the real deal. No-nonsense, elite edge work, and unmatched results. I hunted her down in the parking lot several years ago and I'd do it again! She turns skaters into artists on edges. ⛸️🔥","Chad C."]] as $t)
+      @foreach([["Coach Kristine is a great instructor who has helped my child increase his skating ability by leaps and bounds. She helps her students to grow by pushing them to their limits, being both firm and very encouraging. My child loves the sessions.","Nikki C."],["If you can't skate, you can't play. If you can't skate after lessons with Kristine, you don't want to play.","Kyle A."],["Years of working with Kristine and I can confidently say she is the real deal. No-nonsense, elite edge work, and unmatched results. I hunted her down in the parking lot several years ago and I'd do it again! She turns skaters into artists on edges. ⛸️🔥","Chad C."]] as $t)
       <div class="testi-card">
         <div class="stars mb-3">★★★★★</div>
         <p class="text-gray-700 italic mb-4 leading-relaxed">"{{ $t[0] }}"</p>

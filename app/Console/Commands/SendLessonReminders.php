@@ -64,9 +64,9 @@ class SendLessonReminders extends Command
 
             // ── SMS ───────────────────────────────────────────────────────────
             if ($phone) {
-                // Only send SMS to clients with verified phone numbers (A2P compliance)
+                // Only send SMS if phone is verified (A2P compliance)
                 if ($booking->client && !$booking->client->phone_verified_at) {
-                    $this->line('  — Phone not verified, skipping SMS (email only)');
+                    $this->line('  — Phone not verified, skipping SMS (will send email only)');
                 } else {
                     $reminder = $sms->sendLessonReminder($booking);
                     if ($reminder) {

@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Route;
 | Public Routes
 |--------------------------------------------------------------------------
 */
+Route::get('/player/grant-schaible', function () {
+    return view('player-highlight');
+})->name('player.grant');
+
 Route::get('/rinks', function () {
     $rinks = \App\Models\Rink::orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
     $todaySessions = \App\Models\RinkSession::with('rink')
@@ -40,8 +44,7 @@ Route::get('/privacy-policy', function () {
 
 Route::get('/', function () {
     $services = \App\Models\Service::where('is_active', true)->orderBy('price')->get();
-    $rinks = \App\Models\Rink::where('is_active', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
-    return view('home', compact('services', 'rinks'));
+    return view('home', compact('services'));
 });
 
 // Public Booking Flow
