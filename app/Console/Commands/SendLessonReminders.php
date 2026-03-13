@@ -64,12 +64,17 @@ class SendLessonReminders extends Command
 
             // ── SMS ───────────────────────────────────────────────────────────
             if ($phone) {
-                $reminder = $sms->sendLessonReminder($booking);
-                if ($reminder) {
-                    $smsSent = true;
-                    $this->info("  ✅ SMS → {$phone} (SID: {$reminder->twilio_sid})");
+                // Only send SMS to clients with verified phone numbers (A2P compliance)
+                if ($booking->client && !$booking->client->phone_verified_at) {
+                    $this->line('  — Phone not verified, skipping SMS (email only)');
                 } else {
-                    $this->warn("  ⚠ SMS failed for booking #{$booking->id}");
+                    $reminder = $sms->sendLessonReminder($booking);
+                    if ($reminder) {
+                        $smsSent = true;
+                        $this->info("  ✅ SMS → {$phone} (SID: {$reminder->twilio_sid})");
+                    } else {
+                        $this->warn("  ⚠ SMS failed for booking #{$booking->id}");
+                    }
                 }
             } else {
                 $this->line('  — No phone, skipping SMS');

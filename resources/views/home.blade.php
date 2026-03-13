@@ -185,9 +185,9 @@
       </div>
       <div>
         <p class="section-label mb-3">Meet Your Coach</p>
-        <h2 class="section-title mb-6">Coach Kristine</h2>
+        <h2 class="section-title mb-6">Coach Kristine Humphrey</h2>
         <blockquote class="bio-quote mb-8">"Every skater has untapped speed and power waiting to be unlocked. I'm here to help them find it."</blockquote>
-        <p class="text-gray-600 leading-relaxed mb-6">Kristine brings years of competitive hockey experience and a genuine passion for teaching to every session. Whether you're stepping on the ice for the first time or refining your edge work for competitive play, her structured, one-on-one approach cuts through the guesswork and gets you results fast.</p>
+        <p class="text-gray-600 leading-relaxed mb-6">Kristine Humphrey brings years of competitive hockey experience and a genuine passion for teaching to every session. Whether you're stepping on the ice for the first time or refining your edge work for competitive play, her structured, one-on-one approach cuts through the guesswork and gets you results fast.</p>
         <div class="flex flex-wrap gap-3 mb-8">
           <span class="credential-chip">🏒 Hockey Skating Specialist</span>
           <span class="credential-chip">⛸️ Power Skating Focus</span>
