@@ -240,11 +240,11 @@
       </div>
     </div>
     <div class="grid md:grid-cols-3 gap-4">
-      @foreach([['Creve Coeur Ice Arena','Creve Coeur','creve-coeur'],['Kirkwood Ice Arena','Kirkwood','kirkwood'],['Brentwood Ice Rink','Brentwood','brentwood'],['Webster Groves Ice Arena','Webster Groves','webster-groves'],['Maryville Hockey Center','Chesterfield','maryville']] as $rink)
+      @foreach($rinks as $rink)
       <div class="rink-card">
-        <div class="text-xs font-bold uppercase tracking-widest text-blue-300 mb-1">{{ $rink[1] }}</div>
-        <div class="text-lg font-bold mb-3">{{ $rink[0] }}</div>
-        <a href="{{ str_replace('https://', 'webcal://', url('/calendar/' . $rink[2] . '.ics')) }}" class="rink-subscribe-btn">+ Subscribe</a>
+        <div class="text-xs font-bold uppercase tracking-widest text-blue-300 mb-1">{{ $rink->name }}</div>
+        <div class="text-lg font-bold mb-3">{{ $rink->name }}</div>
+        <a href="{{ str_replace('https://', 'webcal://', url('/calendar/' . $rink->slug . '.ics')) }}" class="rink-subscribe-btn">+ Subscribe</a>
       </div>
       @endforeach
     </div>

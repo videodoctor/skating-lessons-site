@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::get('/rinks', function () {
-    $rinks = \App\Models\Rink::orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
+    $rinks = \App\Models\Rink::where('is_active', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
     $todaySessions = \App\Models\RinkSession::with('rink')
         ->where('date', today())
         ->where('is_cancelled', false)
@@ -40,7 +40,8 @@ Route::get('/privacy-policy', function () {
 
 Route::get('/', function () {
     $services = \App\Models\Service::where('is_active', true)->orderBy('price')->get();
-    return view('home', compact('services'));
+    $rinks = \App\Models\Rink::where('is_active', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
+    return view('home', compact('services', 'rinks'));
 });
 
 // Public Booking Flow
