@@ -70,4 +70,16 @@ class VenmoAdminController extends Controller
         return redirect()->route('admin.venmo.index')
             ->with('success', "Payment from {$payment->sender_name} linked to booking #{$booking->confirmation_code} and marked as paid.");
     }
+
+    public function ignore(VenmoPayment $payment)
+    {
+        $payment->update(['match_status' => 'ignored']);
+        return back()->with('success', "Payment from {$payment->sender_name} ignored.");
+    }
+
+    public function unignore(VenmoPayment $payment)
+    {
+        $payment->update(['match_status' => 'unmatched']);
+        return back()->with('success', "Payment from {$payment->sender_name} restored.");
+    }
 }

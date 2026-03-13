@@ -1,11 +1,21 @@
 {
-  "version": "2.9.4",
-  "date": "2026-03-11",
+  "version": "2.10.0",
+  "date": "2026-03-13",
   "changes": [
-    "Reminders: now sends email AND SMS when both are available",
-    "Reminder email: branded HTML with lesson details, Venmo pay button, confirmation code",
-    "SMS reminder: includes Venmo link with pre-filled amount and confirmation code in note",
-    "Fix: Create Client 500 error — phone column NOT NULL, now defaults to empty string",
-    "Venmo parser + admin dashboard (v2.9.3)"
+    "Guest booking: Turnstile captcha added",
+    "Guest booking: SMS consent checkbox with full A2P compliant text (optional, unchecked by default)",
+    "Guest booking: phone number auto-formatter",
+    "Guest booking: guest_sms_consent + guest_convert_token saved on booking",
+    "Guest → Account conversion: password form on confirmation page, creates client account from booking details",
+    "Email verification: sent on registration and guest conversion, verify link route",
+    "Phone verification: 6-digit SMS code sent on SMS opt-in, verify-phone page with resend",
+    "ClientAuthController: email + phone verification wired up",
+    "VerificationService: handles email token + phone code generation, sending, validation",
+    "Migration: phone_verified_at, email_verify_token, phone_verify_code, phone_verify_sent_at on clients",
+    "Migration: guest_sms_consent, guest_convert_token on bookings",
+    "Client model: new verification fields in fillable + casts",
+    "Booking model: guest fields in fillable + casts",
+    "Privacy policy: Reply HELP for assistance added to both SMS sections",
+    "SMS opt-in text updated on registration form for A2P compliance"
   ]
 }

@@ -104,7 +104,7 @@
       <li>You may reply YES to confirm your lesson or NO to cancel</li>
       <li>Cancellations received via SMS less than 24 hours before the lesson may be subject to a cancellation fee at the quoted lesson rate</li>
       <li>Message and data rates may apply depending on your mobile carrier</li>
-      <li>You may opt out at any time by replying STOP to any SMS message</li>
+      <li>You may opt out at any time by replying STOP to any SMS message. Reply HELP for assistance.</li>
       <li>SMS reminders are sent from a dedicated Kristine Skates phone number via Twilio</li>
     </ul>
     <p>We will never sell your phone number or use it for marketing unrelated to your skating lessons.</p>
@@ -158,7 +158,7 @@
       <li>Access the personal information we hold about you</li>
       <li>Request correction of inaccurate information</li>
       <li>Request deletion of your account and data</li>
-      <li>Opt out of SMS communications at any time by replying STOP</li>
+      <li>Opt out of SMS communications at any time by replying STOP. Reply HELP for assistance.</li>
       <li>Contact us with any privacy concerns</li>
     </ul>
   </div>

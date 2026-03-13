@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Services\SmsService;
+use App\Services\VerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,45 +18,54 @@ class ClientAuthController extends Controller
         return view('client.auth.register');
     }
 
-    public function register(Request $request)
+    public function register(Request $request, VerificationService $verification, SmsService $sms)
     {
-        // Verify Turnstile token
-        $turnstileResponse = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+        $turnstile = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
             'secret'   => config('services.turnstile.secret'),
             'response' => $request->input('cf-turnstile-response'),
             'remoteip' => $request->ip(),
         ]);
-
-        if (!$turnstileResponse->json('success')) {
+        if (!$turnstile->json('success')) {
             return back()->withErrors(['captcha' => 'Security check failed. Please try again.'])->withInput();
         }
 
         $validated = $request->validate([
-            'first_name'   => 'required|string|max:100',
-            'last_name'    => 'nullable|string|max:100',
-            'email'        => 'required|email|unique:clients,email',
-            'phone'        => 'required|string',
-            'password'     => 'required|string|min:8|confirmed',
-            'email_consent'=> 'required|accepted',
+            'first_name'    => 'required|string|max:100',
+            'last_name'     => 'nullable|string|max:100',
+            'email'         => 'required|email|unique:clients,email',
+            'phone'         => 'required|string',
+            'password'      => 'required|string|min:8|confirmed',
+            'email_consent' => 'required|accepted',
         ]);
+
+        $normalizedPhone = $sms->normalizePhone($validated['phone']);
+        $smsConsent      = $request->boolean('sms_consent');
 
         $client = Client::create([
             'first_name'       => $validated['first_name'],
             'last_name'        => $validated['last_name'] ?? null,
             'name'             => trim($validated['first_name'] . ' ' . ($validated['last_name'] ?? '')),
             'email'            => $validated['email'],
-            'phone'            => $validated['phone'],
+            'phone'            => $normalizedPhone,
             'password'         => Hash::make($validated['password']),
             'email_consent_at' => now(),
-            'sms_consent'      => $request->boolean('sms_consent'),
-            'sms_phone'        => $request->boolean('sms_consent')
-                ? (new \App\Services\SmsService)->normalizePhone($validated['phone'])
-                : null,
+            'sms_consent'      => $smsConsent,
+            'sms_phone'        => $smsConsent ? $normalizedPhone : null,
         ]);
+
+        // Send email verification
+        $verification->sendEmailVerification($client);
+
+        // Send phone verification SMS if opted in
+        if ($smsConsent && $client->sms_phone) {
+            $verification->sendPhoneVerification($client, $sms);
+        }
 
         Auth::guard('client')->login($client);
 
-        return redirect()->route('client.dashboard')->with('success', 'Account created successfully!');
+        return redirect()->route('client.dashboard')
+            ->with('success', 'Account created! Please check your email to verify your address.'
+                . ($smsConsent ? ' A 6-digit code was sent to your phone to verify your number.' : ''));
     }
 
     public function showLogin()
@@ -83,5 +94,57 @@ class ClientAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
+    }
+
+    // ── Email verification ─────────────────────────────────────────────────────
+
+    public function verifyEmail(string $token, VerificationService $verification)
+    {
+        $client = $verification->verifyEmail($token);
+
+        if (!$client) {
+            return redirect()->route('client.login')
+                ->withErrors(['email' => 'Invalid or expired verification link. Please log in and request a new one.']);
+        }
+
+        Auth::guard('client')->login($client);
+
+        return redirect()->route('client.dashboard')
+            ->with('success', '✓ Email verified! Your account is fully set up.');
+    }
+
+    // ── Phone verification ─────────────────────────────────────────────────────
+
+    public function showVerifyPhone()
+    {
+        return view('client.auth.verify-phone');
+    }
+
+    public function verifyPhone(Request $request, VerificationService $verification)
+    {
+        $client = Auth::guard('client')->user();
+        if (!$client) return redirect()->route('client.login');
+
+        $request->validate(['code' => 'required|string|size:6']);
+
+        if ($verification->verifyPhone($client, $request->input('code'))) {
+            return redirect()->route('client.dashboard')
+                ->with('success', '✓ Phone verified! You\'ll now receive SMS lesson reminders.');
+        }
+
+        return back()->withErrors(['code' => 'Invalid or expired code. Codes expire after 10 minutes.']);
+    }
+
+    public function resendPhoneCode(VerificationService $verification, SmsService $sms)
+    {
+        $client = Auth::guard('client')->user();
+        if (!$client || !$client->sms_phone) {
+            return back()->withErrors(['code' => 'No phone number on file.']);
+        }
+
+        $sent = $verification->sendPhoneVerification($client, $sms);
+
+        return back()->with($sent ? 'success' : 'error',
+            $sent ? 'Verification code resent to your phone.' : 'Please wait at least 60 seconds before requesting a new code.');
     }
 }

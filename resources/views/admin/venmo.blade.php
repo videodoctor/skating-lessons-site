@@ -26,9 +26,15 @@
   <form method="POST" action="{{ route('admin.venmo.parse-now') }}"
         onsubmit="return confirm('Run Venmo email parser now?')">
     @csrf
-    <button type="submit" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:.5rem 1.1rem;font-size:.82rem;font-weight:700;cursor:pointer;">
-      📬 Parse Now
-    </button>
+    <div style="display:flex;gap:.5rem;align-items:center;">
+      <a href="{{ route('admin.venmo.index', ['show_ignored' => $showIgnored ? 0 : 1]) }}"
+         style="background:#f3f4f6;color:#374151;padding:.5rem 1rem;border-radius:7px;font-size:.82rem;font-weight:600;text-decoration:none;">
+        {{ $showIgnored ? '🙈 Hide Ignored' : '👁 Show Ignored' }}
+      </a>
+      <button type="submit" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:.5rem 1.1rem;font-size:.82rem;font-weight:700;cursor:pointer;">
+        📬 Parse Now
+      </button>
+    </div>
   </form>
 </div>
 
@@ -118,16 +124,29 @@
           <span class="pill pill-green">✓ Matched</span>
         @elseif($payment->match_status === 'client_only')
           <span class="pill pill-yellow">~ Client only</span>
+        @elseif($payment->match_status === 'ignored')
+          <span class="pill pill-gray">— Ignored</span>
         @else
           <span class="pill pill-red">⚠ Unmatched</span>
         @endif
       </td>
-      <td>
-        @if($payment->match_status !== 'matched')
-        <button class="btn-sm" style="background:#dbeafe;color:#1e40af;"
-          onclick="openLinkModal({{ $payment->id }}, '{{ addslashes($payment->sender_name) }}', '{{ $payment->amount }}')">
-          Link
-        </button>
+      <td style="white-space:nowrap;">
+        @if($payment->match_status === 'ignored')
+          <form method="POST" action="{{ route('admin.venmo.unignore', $payment) }}" style="display:inline">
+            @csrf @method('PATCH')
+            <button type="submit" class="btn-sm" style="background:#f3f4f6;color:#374151;">↩ Restore</button>
+          </form>
+        @else
+          @if($payment->match_status !== 'matched')
+          <button class="btn-sm" style="background:#dbeafe;color:#1e40af;"
+            onclick="openLinkModal({{ $payment->id }}, '{{ addslashes($payment->sender_name) }}', '{{ $payment->amount }}')">
+            Link
+          </button>
+          <form method="POST" action="{{ route('admin.venmo.ignore', $payment) }}" style="display:inline;margin-left:2px;">
+            @csrf @method('PATCH')
+            <button type="submit" class="btn-sm" style="background:#f3f4f6;color:#6b7280;">— Ignore</button>
+          </form>
+          @endif
         @endif
       </td>
     </tr>

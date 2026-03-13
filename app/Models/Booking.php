@@ -37,6 +37,8 @@ class Booking extends Model
         'cancellation_reason',
         'confirmation_code',
         'email_consent_at',
+        'guest_sms_consent',
+        'guest_convert_token',
     ];
 
     protected $casts = [
@@ -45,6 +47,7 @@ class Booking extends Model
         'venmo_confirmed_at' => 'datetime',
         'cash_paid_at'       => 'datetime',
         'email_consent_at'   => 'datetime',
+        'guest_sms_consent'  => 'boolean',
     ];
 
     protected static function boot()

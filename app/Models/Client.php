@@ -13,15 +13,22 @@ class Client extends Authenticatable
         'name', 'first_name', 'last_name',
         'email', 'password', 'phone', 'notes',
         'email_consent_at',
+        'sms_consent', 'sms_phone',
+        'email_verify_token', 'email_verified_at',
+        'phone_verify_code', 'phone_verify_sent_at', 'phone_verified_at',
         'waiver_signed_at', 'waiver_version', 'waiver_ip',
+        'access_token',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'phone_verify_code'];
 
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'email_consent_at'  => 'datetime',
-        'waiver_signed_at'  => 'datetime',
+        'email_verified_at'    => 'datetime',
+        'email_consent_at'     => 'datetime',
+        'waiver_signed_at'     => 'datetime',
+        'phone_verified_at'    => 'datetime',
+        'phone_verify_sent_at' => 'datetime',
+        'sms_consent'          => 'boolean',
     ];
 
     // ── Relationships ──────────────────────────────────────────────────────────

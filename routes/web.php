@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::get('/rinks', function () {
-    $rinks = \App\Models\Rink::where('is_active', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
+    $rinks = \App\Models\Rink::orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
     $todaySessions = \App\Models\RinkSession::with('rink')
         ->where('date', today())
         ->where('is_cancelled', false)
@@ -40,8 +40,7 @@ Route::get('/privacy-policy', function () {
 
 Route::get('/', function () {
     $services = \App\Models\Service::where('is_active', true)->orderBy('price')->get();
-    $rinks = \App\Models\Rink::where('is_active', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
-    return view('home', compact('services', 'rinks'));
+    return view('home', compact('services'));
 });
 
 // Public Booking Flow
@@ -75,11 +74,20 @@ Route::prefix('client')->group(function () {
     Route::post('/login', [\App\Http\Controllers\Auth\ClientAuthController::class, 'login']);
     Route::post('/logout', [\App\Http\Controllers\Auth\ClientAuthController::class, 'logout'])->name('client.logout');
 
-    Route::middleware('auth:client')->group(function () {
+    // Email verification (no auth required — link in email)
+Route::get('/verify-email/{token}', [App\Http\Controllers\Auth\ClientAuthController::class, 'verifyEmail'])->name('client.verify-email');
+
+// Guest booking conversion
+Route::post('/booking/convert-guest', [App\Http\Controllers\BookingController::class, 'convertGuest'])->name('booking.convert-guest');
+
+Route::middleware('auth:client')->group(function () {
         Route::get('/dashboard', function () {
             $bookings = auth('client')->user()->bookings()->with(['service', 'timeSlot.rink'])->latest()->get();
             return view('client.dashboard', compact('bookings'));
         })->name('client.dashboard');
+        Route::get('/verify-phone', [App\Http\Controllers\Auth\ClientAuthController::class, 'showVerifyPhone'])->name('client.verify-phone');
+        Route::post('/verify-phone', [App\Http\Controllers\Auth\ClientAuthController::class, 'verifyPhone'])->name('client.verify-phone.submit');
+        Route::post('/verify-phone/resend', [App\Http\Controllers\Auth\ClientAuthController::class, 'resendPhoneCode'])->name('client.verify-phone.resend');
     });
 });
 
