@@ -1,12 +1,10 @@
 {
-  "version": "2.10.2",
+  "version": "2.10.4",
   "date": "2026-03-13",
   "changes": [
-    "Player Highlight page at /player/grant-schaible with Grant Schaible's story and EHL journey",
-    "Home page: added Kyle A. quote",
-    "Home page: fixed Nikki C. and Chad C. names",
-    "SMS reminders: only send to verified phone numbers (A2P compliance)",
-    "Fix: $rinks undefined on home page",
-    "Kristine Humphrey in bio + meta description tags"
+    "Player highlight: grant_schaible_001.jpg as full-width hero photo below navy banner",
+    "Player highlight: kristine_and_grant_young_001.jpg alongside timeline (side by side grid)",
+    "Player highlight: kristine_grant_mick_001.jpg group shot after full quote",
+    "Player highlight: responsive mobile layout for timeline grid"
   ]
 }

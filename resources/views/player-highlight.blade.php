@@ -283,6 +283,7 @@
     .stat-item { min-width: 100px; padding: .85rem .5rem; }
     .stat-val { font-size: 1.4rem; }
     .full-quote { padding: 1.75rem 1.25rem; }
+    .timeline-grid { grid-template-columns: 1fr !important; }
   }
 </style>
 
@@ -309,6 +310,13 @@
   </div>
 </div>
 
+{{-- Hero photo --}}
+<div style="max-height:480px;overflow:hidden;line-height:0;">
+  <img src="{{ asset('images/grant_schaible_001.jpg') }}"
+       alt="Grant Schaible — Eastern Hockey League"
+       style="width:100%;object-fit:cover;object-position:center 20%;max-height:480px;">
+</div>
+
 {{-- Story --}}
 <div class="content-section">
 
@@ -333,22 +341,30 @@
   </p>
 
   {{-- Timeline --}}
-  <div class="timeline">
-    <div class="timeline-item">
-      <div class="timeline-year">Age 2 — The Beginning</div>
-      <div class="timeline-text">Grant takes his first steps on the ice under Coach Kristine's guidance. The foundation is set.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;margin:2.5rem 0;">
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-year">Age 2 — The Beginning</div>
+        <div class="timeline-text">Grant takes his first steps on the ice under Coach Kristine's guidance. The foundation is set.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">Youth Hockey</div>
+        <div class="timeline-text">Private lessons sharpen edge work, skating mechanics, and hockey-specific skills through youth development years.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">Teen Years</div>
+        <div class="timeline-text">Coach Kristine helps Grant push to the next level — refining the technical details that separate good skaters from great ones.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">Today — EHL</div>
+        <div class="timeline-text">Grant competes in the Eastern Hockey League, one of the premier junior leagues in the country. The journey continues.</div>
+      </div>
     </div>
-    <div class="timeline-item">
-      <div class="timeline-year">Youth Hockey</div>
-      <div class="timeline-text">Private lessons sharpen edge work, skating mechanics, and hockey-specific skills through youth development years.</div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-year">Teen Years</div>
-      <div class="timeline-text">Coach Kristine helps Grant push to the next level — refining the technical details that separate good skaters from great ones.</div>
-    </div>
-    <div class="timeline-item">
-      <div class="timeline-year">Today — EHL</div>
-      <div class="timeline-text">Grant competes in the Eastern Hockey League, one of the premier junior leagues in the country. The journey continues.</div>
+    <div>
+      <img src="{{ asset('images/kristine_and_grant_young_001.jpg') }}"
+           alt="Young Grant with Coach Kristine"
+           style="width:100%;border-radius:10px;box-shadow:8px 8px 0 var(--navy);object-fit:cover;">
+      <p style="font-size:.72rem;color:#9ca3af;text-align:center;margin-top:.75rem;">Coach Kristine &amp; Grant — early days on the ice</p>
     </div>
   </div>
 
@@ -368,6 +384,13 @@
   <p class="story-body">
     Grant's trajectory is proof of what's possible with the right foundation. If you're looking for lessons for a young child or a developing teen player, Grant's story is a 20-year answer to the question of whether private coaching makes a difference.
   </p>
+
+  {{-- Group photo --}}
+  <div style="margin:2rem 0;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,31,91,.15);">
+    <img src="{{ asset('images/kristine_grant_mick_001.jpg') }}"
+         alt="Coach Kristine, Grant, and Mick"
+         style="width:100%;object-fit:cover;max-height:420px;object-position:center top;">
+  </div>
 
   {{-- CTA --}}
   <div class="cta-section">
