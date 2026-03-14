@@ -174,7 +174,7 @@
   }
 
   .full-quote::before {
-    content: '"';
+    content: '\201C';
     font-family: Georgia, serif;
     font-size: 12rem;
     color: rgba(255,255,255,.04);
@@ -209,7 +209,7 @@
   .timeline {
     border-left: 3px solid var(--gold);
     padding-left: 1.5rem;
-    margin: 2.5rem 0;
+    margin: 0;
   }
 
   .timeline-item {
@@ -284,7 +284,7 @@
     .stat-item { min-width: 100px; padding: .85rem .5rem; }
     .stat-val { font-size: 1.4rem; }
     .full-quote { padding: 1.75rem 1.25rem; }
-    .timeline-grid { grid-template-columns: 1fr !important; }
+    .timeline-photo-grid { grid-template-columns: 1fr !important; }
   }
 </style>
 
@@ -311,22 +311,25 @@
   </div>
 </div>
 
-{{-- Hero photo --}}
-<div style="max-height:480px;overflow:hidden;line-height:0;">
-  <img src="{{ asset('images/grant_schaible_001.jpg') }}"
-       alt="Grant Schaible — Eastern Hockey League"
-       style="width:100%;object-fit:cover;object-position:center 20%;max-height:480px;">
-</div>
-
 {{-- Story --}}
 <div class="content-section">
+
+  {{-- Grant action photo — inset portrait, floats right on desktop --}}
+  <div style="float:right;margin:0 0 1.5rem 2rem;width:260px;max-width:45%;">
+    <img src="{{ asset('images/grant_schaible_001.jpg') }}"
+         alt="Grant Schaible — Eastern Hockey League"
+         style="width:100%;border-radius:10px;box-shadow:8px 8px 0 var(--navy);display:block;">
+    <p style="font-size:.72rem;color:#9ca3af;text-align:center;margin-top:.6rem;">Grant Schaible · EHL</p>
+  </div>
 
   <p class="section-eyebrow">The Story</p>
   <h2 class="story-heading">From First Steps on Ice<br>to Junior Hockey</h2>
 
   <p class="story-body">
-    Some athletes find their coach. Grant Schaible got lucky enough to have his coach find him at age two — before he could even lace up his own skates. What followed was more than two decades of development, discipline, and a bond that shaped not just a hockey player, but a person.
+    Some athletes find their coach. Grant Schaible got lucky enough to have his coach find him at age two — before he could even lace up his own skates. What followed was more than a decade and a half of development, discipline, and a bond that shaped not just a hockey player, but a person.
   </p>
+
+  <div style="clear:both;"></div>
 
   <div class="pullquote">
     <p>"I've known Coach Kristine since I was two years old, and I truly wouldn't be the player I am today without her."</p>
@@ -341,8 +344,8 @@
     What sets Coach Kristine apart, according to Grant, isn't just technical knowledge. It's her ability to connect with players at every stage — from the three-year-old just learning to balance, to the teenager chasing a junior roster spot. That range is rare, and it's exactly what Grant experienced over the years.
   </p>
 
-  {{-- Timeline --}}
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;margin:2.5rem 0;">
+  {{-- Timeline + young photo --}}
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center;margin:2.5rem 0;" class="timeline-photo-grid">
     <div class="timeline">
       <div class="timeline-item">
         <div class="timeline-year">Age 2 — The Beginning</div>
@@ -364,8 +367,9 @@
     <div>
       <img src="{{ asset('images/kristine_and_grant_young_002.jpg') }}"
            alt="Young Grant with Coach Kristine"
-           style="width:100%;border-radius:10px;box-shadow:8px 8px 0 var(--navy);object-fit:cover;">
-      <p style="font-size:.72rem;color:#9ca3af;text-align:center;margin-top:.75rem;">Coach Kristine &amp; Grant — early days on the ice</p>
+           style="width:100%;border-radius:10px;box-shadow:6px 6px 0 var(--navy);display:block;">
+      <p style="font-size:.72rem;color:#9ca3af;text-align:center;margin-top:.5rem;">Coach Kristine &amp; Grant — early days on the ice</p>
+      {{-- kristine_and_grant_young_003.jpg — reserved for future use --}}
     </div>
   </div>
 
@@ -387,10 +391,13 @@
   </p>
 
   {{-- Group photo --}}
-  <div style="margin:2rem 0;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,31,91,.15);">
-    <img src="{{ asset('images/kristine_grant_mick_001.jpg') }}"
-         alt="Coach Kristine, Grant, and Mick"
-         style="width:100%;object-fit:cover;max-height:420px;object-position:center top;">
+  <div style="margin:2rem 0;">
+    <div style="border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,31,91,.15);">
+      <img src="{{ asset('images/kristine_grant_mick_001.jpg') }}"
+           alt="Coach Kristine, Grant, and Mick"
+           style="width:100%;display:block;">
+    </div>
+    <p style="font-size:.78rem;color:#6b7280;text-align:center;margin-top:.75rem;font-style:italic;">From left to right: Grant, Coach Kristine, and up-and-coming star Mick Murray</p>
   </div>
 
   {{-- CTA --}}
