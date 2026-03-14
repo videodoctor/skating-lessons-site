@@ -164,59 +164,33 @@
     <div class="grid md:grid-cols-4 gap-8">
       @foreach([['Pick a Service','Choose the lesson package that fits your goals.'],['Select a Date & Time','Browse available slots at your preferred rink.'],['Submit Your Request','Fill in your details and agree to the booking policy.'],['Skate!','Once confirmed, show up 10 minutes early and lace up.']] as $n => $step)
       <div class="text-center">
-        <div class="step-num">{{ $n + 1 }}</div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">{{ $step[0] }}</h3>
-        <p class="text-gray-500 text-sm">{{ $step[1] }}</p>
+        <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold mx-auto mb-4">{{ $n+1 }}</div>
+        <h3 class="font-bold text-lg mb-2">{{ $step[0] }}</h3>
+        <p class="text-gray-600 text-sm">{{ $step[1] }}</p>
       </div>
       @endforeach
     </div>
-    <div class="text-center mt-12"><a href="/book" class="hero-cta">Request a Time Slot →</a></div>
   </div>
-</section>
-
-<!-- BIO -->
-<section class="bio-section py-20">
-  <div class="max-w-7xl mx-auto px-6 lg:px-8">
-    <div class="grid md:grid-cols-2 gap-16 items-center">
-      <div>
-        @php $bioPhotos = ['images/kristine_and_mick_004.png','images/kristine_and_mick_005.png']; $bioPhoto = $bioPhotos[array_rand($bioPhotos)]; @endphp
-        <img src="{{ asset($bioPhoto) }}" alt="Coach Kristine" class="bio-photo"
-             onerror="this.style.cssText='display:flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:8px;width:100%;aspect-ratio:4/5;font-size:5rem;'">
-      </div>
-      <div>
-        <p class="section-label mb-3">Meet Your Coach</p>
-        <h2 class="section-title mb-6">Coach Kristine Humphrey</h2>
-        <blockquote class="bio-quote mb-8">"Every skater has untapped speed and power waiting to be unlocked. I'm here to help them find it."</blockquote>
-        <p class="text-gray-600 leading-relaxed mb-6">Kristine Humphrey brings years of competitive hockey experience and a genuine passion for teaching to every session. Whether you're stepping on the ice for the first time or refining your edge work for competitive play, her structured, one-on-one approach cuts through the guesswork and gets you results fast.</p>
-        <div class="flex flex-wrap gap-3 mb-8">
-          <span class="credential-chip">🏒 Hockey Skating Specialist</span>
-          <span class="credential-chip">⛸️ Power Skating Focus</span>
-          <span class="credential-chip">👶 Youth &amp; Adult</span>
-          <span class="credential-chip">📍 St. Louis Area</span>
-        </div>
-        <a href="/book" class="hero-cta">Book With Kristine →</a>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- TESTIMONIALS -->
+</div>
+</section>
 <section class="py-20 bg-white">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="text-center mb-14">
-      <p class="section-label mb-2">What Parents & Players Say</p>
+      <p class="section-label mb-2">What Parents &amp; Players Say</p>
       <h2 class="section-title">From the Ice</h2>
     </div>
-    <div class="grid md:grid-cols-3 gap-8">
-      @foreach([["Coach Kristine is a great instructor who has helped my child increase his skating ability by leaps and bounds. She helps her students to grow by pushing them to their limits, being both firm and very encouraging. My child loves the sessions.","Nikki C."],["If you can't skate, you can't play. If you can't skate after lessons with Kristine, you don't want to play.","Kyle A."],["Years of working with Kristine and I can confidently say she is the real deal. No-nonsense, elite edge work, and unmatched results. I hunted her down in the parking lot several years ago and I'd do it again! She turns skaters into artists on edges. ⛸️🔥","Chad C."]] as $t)
+    @php $testimonials = \App\Models\Testimonial::active()->get(); $cols = min($testimonials->count(), 4); @endphp
+    <div class="grid md:grid-cols-{{ $cols }} gap-8">
+      @foreach($testimonials as $t)
       <div class="testi-card">
         <div class="stars mb-3">★★★★★</div>
-        <p class="text-gray-700 italic mb-4 leading-relaxed">"{{ $t[0] }}"</p>
-        <p class="text-sm font-semibold text-gray-500">— {{ $t[1] }}</p>
+        <p class="text-gray-700 italic mb-4 leading-relaxed">"{{ $t->quote }}"</p>
+        <p class="text-sm font-semibold text-gray-500">— {{ $t->author }}{{ $t->source_type ? ', ' . App\Models\Testimonial::sourceTypes()[$t->source_type] : '' }}</p>
       </div>
       @endforeach
     </div>
-  </div>
 
     {{-- Player Highlight teaser --}}
     <div class="max-w-7xl mx-auto px-6 lg:px-8" style="margin-top:3rem;">
@@ -312,4 +286,5 @@
 })();
 </script>
 
+<style>#main-footer{margin-top:0!important;}</style>
 @endsection

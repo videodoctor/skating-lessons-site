@@ -138,6 +138,13 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::delete('/clients/{client}/students/{student}', [ClientController::class, 'unlinkStudent'])->name('admin.clients.unlink-student');
 
     // Students
+    // Testimonials
+    Route::get('/testimonials', [App\Http\Controllers\Admin\TestimonialController::class, 'index'])->name('admin.testimonials.index');
+    Route::post('/testimonials', [App\Http\Controllers\Admin\TestimonialController::class, 'store'])->name('admin.testimonials.store');
+    Route::patch('/testimonials/{testimonial}', [App\Http\Controllers\Admin\TestimonialController::class, 'update'])->name('admin.testimonials.update');
+    Route::patch('/testimonials/{testimonial}/toggle', [App\Http\Controllers\Admin\TestimonialController::class, 'toggle'])->name('admin.testimonials.toggle');
+    Route::delete('/testimonials/{testimonial}', [App\Http\Controllers\Admin\TestimonialController::class, 'destroy'])->name('admin.testimonials.destroy');
+
     // Venmo payments
     Route::get('/venmo', [App\Http\Controllers\Admin\VenmoAdminController::class, 'index'])->name('admin.venmo.index');
     Route::post('/venmo/parse-now', [App\Http\Controllers\Admin\VenmoAdminController::class, 'parseNow'])->name('admin.venmo.parse-now');

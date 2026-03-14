@@ -1,10 +1,13 @@
 {
-  "version": "2.10.4",
+  "version": "2.10.6",
   "date": "2026-03-13",
   "changes": [
-    "Player highlight: grant_schaible_001.jpg as full-width hero photo below navy banner",
-    "Player highlight: kristine_and_grant_young_001.jpg alongside timeline (side by side grid)",
-    "Player highlight: kristine_grant_mick_001.jpg group shot after full quote",
-    "Player highlight: responsive mobile layout for timeline grid"
+    "Testimonials: source_type field (Hockey Parent, Player, Adult Skater, Youth Skater)",
+    "Testimonials: byline shows type e.g. '— Chad C., Player' on home page",
+    "Testimonials: source type dropdown in admin add/edit modals",
+    "Testimonials: type badge shown in admin table",
+    "Calendar: ⛸️ emoji prefix on all public skate event titles",
+    "Calendar: 💔 emoji for Creve Coeur specifically",
+    "Footer: no top margin on home page"
   ]
 }

@@ -103,7 +103,7 @@
 
   <main>@yield('content')</main>
 
-  <footer style="background:#0f172a;color:#94a3b8;margin-top:4rem;">
+  <footer id="main-footer" style="background:#0f172a;color:#94a3b8;margin-top:4rem;">
     <div class="max-w-7xl mx-auto px-4 py-8">
       <div class="flex flex-wrap justify-between items-center gap-4">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;"><img src="/images/HOCKEY_SKATER.png" style="width:30px;height:30px;display:inline-block;vertical-align:middle;margin-right:6px;object-fit:contain;filter:brightness(0) invert(1);">Kristine Skates</div>

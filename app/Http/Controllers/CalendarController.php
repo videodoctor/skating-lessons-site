@@ -35,7 +35,7 @@ class CalendarController extends Controller
         foreach ($sessions as $session) {
             $calendar->event(
                 Event::create()
-                    ->name('Public Skate - ' . $session->rink->name)
+                    ->name('⛸️ Public Skate - ' . ($session->rink->slug === 'creve-coeur' ? '💔 ' : '') . $session->rink->name)
                     ->description('Public skating session. Book a lesson with Coach Kristine at kristineskates.com')
                     ->startsAt(new \DateTime($session->date->format('Y-m-d') . ' ' . $session->start_time))
                     ->endsAt(new \DateTime($session->date->format('Y-m-d') . ' ' . $session->end_time))

@@ -79,6 +79,8 @@
     <a href="{{ route('admin.waivers.index') }}" class="nav-link {{ request()->routeIs('admin.waivers.*') ? 'active' : '' }}" onclick="closeDrawer()">📋 Waivers</a>
     <div class="sidebar-label">Payments</div>
     <a href="{{ route('admin.venmo.index') }}" class="nav-link {{ request()->routeIs('admin.venmo*') ? 'active' : '' }}" onclick="closeDrawer()">💜 Venmo</a>
+    <div class="sidebar-label">Content</div>
+    <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ request()->routeIs('admin.testimonials*') ? 'active' : '' }}" onclick="closeDrawer()">⭐ Testimonials</a>
     <div class="sidebar-label">Tools</div>
     <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}" onclick="closeDrawer()">✍️ Planner OCR</a>
     <a href="{{ route('admin.scraper.index') }}" class="nav-link {{ request()->routeIs('admin.scraper*') ? 'active' : '' }}" onclick="closeDrawer()">🔧 Scraper</a>
@@ -112,6 +114,8 @@
   <a href="{{ route('admin.waivers.index') }}" class="nav-link {{ request()->routeIs('admin.waivers.*') ? 'active' : '' }}">📋 Waivers</a>
   <div class="sidebar-label">Payments</div>
   <a href="{{ route('admin.venmo.index') }}" class="nav-link {{ request()->routeIs('admin.venmo*') ? 'active' : '' }}">💜 Venmo</a>
+  <div class="sidebar-label">Content</div>
+  <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ request()->routeIs('admin.testimonials*') ? 'active' : '' }}">⭐ Testimonials</a>
   <div class="sidebar-label">Tools</div>
   <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}">✍️ Planner OCR</a>
   <a href="{{ route('admin.scraper.index') }}" class="nav-link {{ request()->routeIs('admin.scraper*') ? 'active' : '' }}">🔧 Scraper</a>
