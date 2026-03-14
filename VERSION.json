@@ -1,12 +1,8 @@
 {
-  "version": "2.10.9",
+  "version": "2.10.10",
   "date": "2026-03-13",
   "changes": [
-    "Player highlight: complete clean rewrite — no duplicate sections, no mangled tags",
-    "Grant photo: inset portrait float:right in story (not banner)",
-    "Timeline: align-items:center, timeline-photo-grid mobile class",
-    "Group photo: full display, with Mick Murray caption",
-    "OG image: single correct reference to grant_schaible_001.jpg",
-    "003 photo: commented out cleanly for future use"
+    "Deploy script: pings IndexNow after every deploy for home, book, rinks, player highlight",
+    "IndexNow key: cb4658a3ef244241946af0e1ef0c2d24"
   ]
 }
