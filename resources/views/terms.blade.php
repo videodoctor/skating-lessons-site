@@ -122,7 +122,7 @@
 
   <div class="policy-section">
     <h2>SMS Lesson Reminders</h2>
-    <p>By providing your phone number and opting in to SMS communications, you consent to receive text message lesson reminders approximately 30 hours before each scheduled lesson. You may reply YES to confirm or NO to cancel your lesson. Standard message and data rates may apply. Reply STOP at any time to opt out of SMS reminders.</p>
+    <p>By providing your phone number and opting in to SMS communications, you consent to receive text message lesson reminders from Kristine Skates approximately 30 hours before each scheduled lesson. Message frequency varies based on your scheduled lessons. You may reply YES to confirm or NO to cancel your lesson. Message and data rates may apply. Reply <strong>STOP</strong> at any time to opt out of SMS reminders. Reply <strong>HELP</strong> for assistance or contact us at <a href="mailto:kristine@kristineskates.com">kristine@kristineskates.com</a>.</p>
     <p>Cancellations via SMS reply received less than 24 hours before the scheduled lesson are subject to the cancellation fee described above.</p>
   </div>
 
