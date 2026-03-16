@@ -83,28 +83,79 @@ class SmsService
             ? ' $' . number_format($booking->price_paid, 0) . ' due at lesson.'
             : '';
 
-        // Venmo deep link
-        $venmoHandle = ltrim(config('services.venmo.handle', 'Kristine-Humphrey'), '@');
-        $amount      = $booking->price_paid ? number_format($booking->price_paid, 2) : '';
-        $note        = 'Lesson ' . ($booking->confirmation_code ?? '');
-        $venmoLink   = $amount
-            ? "Pay via Venmo: venmo.com/{$venmoHandle}?txn=pay&amount={$amount}&note=" . urlencode($note)
-            : '';
-
         $cancellationNote = ' Reply YES to confirm, NO to cancel (cancellations <24hrs will be billed).';
 
-        return "Reminder: Your skating lesson{$studentPart} is {$when} at {$rinkName}.{$price}{$cancellationNote}"
-             . ($venmoLink ? " {$venmoLink}" : '');
+        return "Reminder: Your skating lesson{$studentPart} is {$when} at {$rinkName}.{$price}{$cancellationNote} — Kristine Skates";
     }
 
-    // ── Handle inbound YES/NO reply ────────────────────────────────────────────
+    // ── Handle inbound YES/NO/LESSONS/SKATE/HELP reply ───────────────────────
 
     public function handleReply(string $fromNumber, string $body): string
     {
         $normalized = $this->normalizePhone($fromNumber);
         $reply      = strtoupper(trim($body));
 
-        // Find the most recent unanswered reminder for this number
+        // ── HELP ──────────────────────────────────────────────────────────────
+        if ($reply === 'HELP') {
+            return "Kristine Skates help: Reply YES to confirm a lesson, NO to cancel, LESSONS for upcoming lessons, SKATE for today's public skate times. Contact: kristine@kristineskates.com or kristineskates.com. Reply STOP to opt out.";
+        }
+
+        // ── LESSONS — upcoming bookings for this number ───────────────────────
+        if ($reply === 'LESSONS') {
+            $client = Client::where('sms_phone', $normalized)
+                ->orWhere('phone', $normalized)
+                ->first();
+
+            if (!$client) {
+                return "We couldn't find an account for this number. Visit kristineskates.com to book a lesson. Reply STOP to opt out.";
+            }
+
+            $bookings = Booking::where('client_id', $client->id)
+                ->whereIn('status', ['confirmed', 'pending'])
+                ->where('date', '>=', today())
+                ->orderBy('date')
+                ->take(5)
+                ->get();
+
+            if ($bookings->isEmpty()) {
+                return "Hi {$client->first_name}! No upcoming lessons found. Book at kristineskates.com — Coach Kristine";
+            }
+
+            $lines = $bookings->map(function ($b) {
+                $date = Carbon::parse($b->date)->format('D M j');
+                $time = Carbon::parse($b->start_time)->format('g:iA');
+                $rink = $b->timeSlot?->rink?->name ?? 'TBD';
+                // Shorten rink name
+                $rink = str_replace(['Ice Arena', 'Ice Rink', 'Hockey Center'], '', $rink);
+                return "{$date} {$time} " . trim($rink);
+            })->implode(', ');
+
+            return "Upcoming lessons for {$client->first_name}: {$lines}. Reply HELP for assistance or STOP to opt out. — Kristine Skates";
+        }
+
+        // ── SKATE — today's public skate sessions ─────────────────────────────
+        if ($reply === 'SKATE') {
+            $sessions = \App\Models\RinkSession::with('rink')
+                ->where('date', today())
+                ->where('is_cancelled', false)
+                ->orderBy('start_time')
+                ->get();
+
+            if ($sessions->isEmpty()) {
+                return "No public skate sessions found for today. Check kristineskates.com/rinks for the full schedule. — Kristine Skates";
+            }
+
+            $lines = $sessions->map(function ($s) {
+                $start = Carbon::parse($s->start_time)->format('g:iA');
+                $end   = Carbon::parse($s->end_time)->format('g:iA');
+                $rink  = str_replace(['Ice Arena', 'Ice Rink', 'Hockey Center'], '', $s->rink->name);
+                return trim($rink) . " {$start}-{$end}";
+            })->implode(', ');
+
+            return "Today's public skate: {$lines}. Book a lesson at kristineskates.com — Kristine Skates";
+        }
+
+        // ── YES / NO — lesson confirmation ────────────────────────────────────
         $reminder = SmsReminder::where('to_number', $normalized)
             ->whereNull('reply')
             ->whereHas('booking', fn($q) => $q->whereIn('status', ['pending', 'confirmed']))
@@ -112,7 +163,7 @@ class SmsService
             ->first();
 
         if (!$reminder) {
-            return "We couldn't find an upcoming lesson for this number. Questions? Visit kristineskates.com";
+            return "We couldn't find an upcoming lesson for this number. Reply LESSONS for your schedule, SKATE for today's public skate times, or HELP for assistance. — Kristine Skates";
         }
 
         $reminder->update([
@@ -133,25 +184,33 @@ class SmsService
             $time        = Carbon::parse($booking->start_time ?? $booking->timeSlot?->start_time)->format('g:i A');
             $date        = Carbon::parse($booking->date ?? $booking->timeSlot?->date)->format('M j');
             $who         = $studentName ? " for {$studentName}" : '';
-            return "✅ Confirmed! We'll see you{$who} on {$date} at {$time}. See you on the ice! — Coach Kristine";
+
+            // Include Venmo link on confirmation
+            $venmoHandle = ltrim(config('services.venmo.handle', 'Kristine-Humphrey'), '@');
+            $amount      = $booking->price_paid ? number_format($booking->price_paid, 2) : '';
+            $note        = 'Lesson ' . ($booking->confirmation_code ?? '');
+            $venmoLink   = $amount
+                ? " Pay via Venmo: venmo.com/{$venmoHandle}?txn=pay&amount={$amount}&note=" . urlencode($note)
+                : '';
+
+            return "Confirmed! We'll see you{$who} on {$date} at {$time}.{$venmoLink} — Coach Kristine";
 
         } elseif ($reply === 'NO') {
             $booking->update([
-                'status'           => 'cancelled',
-                'sms_cancelled_at' => now(),
+                'status'              => 'cancelled',
+                'sms_cancelled_at'    => now(),
                 'cancellation_reason' => 'Cancelled via SMS reply',
             ]);
 
-            // Release time slot
             if ($booking->timeSlot) {
                 $booking->timeSlot->update(['booking_id' => null, 'is_available' => true]);
             }
 
             Log::info("Booking #{$booking->id} cancelled via SMS by {$fromNumber}");
-            return "Your lesson has been cancelled. If this was a mistake, please contact Coach Kristine directly. Thank you!";
+            return "Your lesson has been cancelled. If this was a mistake, please contact Coach Kristine directly at kristine@kristineskates.com. Thank you! — Kristine Skates";
 
         } else {
-            return "Sorry, we didn't understand that. Please reply YES to confirm or NO to cancel your lesson.";
+            return "Sorry, we didn't understand that. Reply YES to confirm, NO to cancel, LESSONS for your schedule, SKATE for today's public skate, or HELP for assistance. — Kristine Skates";
         }
     }
 

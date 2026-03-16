@@ -1,8 +1,13 @@
 {
-  "version": "2.10.10",
+  "version": "2.10.11",
   "date": "2026-03-13",
   "changes": [
-    "Deploy script: pings IndexNow after every deploy for home, book, rinks, player highlight",
-    "IndexNow key: cb4658a3ef244241946af0e1ef0c2d24"
+    "SMS: LESSONS keyword — returns upcoming bookings for the texting number",
+    "SMS: SKATE keyword — returns today's public skate sessions at all active rinks",
+    "SMS: HELP keyword — returns help message with all available keywords",
+    "SMS: YES confirmation now includes Venmo payment link",
+    "SMS: Venmo link removed from reminder (now only sent on YES confirmation)",
+    "SMS: Unknown reply message updated to list all available keywords",
+    "SMS: NO cancellation message updated to include contact email"
   ]
 }
