@@ -1,0 +1,245 @@
+@extends('layouts.admin')
+@section('title', 'Lesson Packages — Admin')
+@section('content')
+<style>
+  :root{--navy:#001F5B;--red:#C8102E;--gold:#C9A84C;}
+  .pkg-card{background:#fff;border-radius:12px;border:1.5px solid #e5eaf2;padding:1.5rem;margin-bottom:1.25rem;position:relative;}
+  .pkg-card.inactive{opacity:.55;border-style:dashed;}
+  .pkg-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:1rem;flex-wrap:wrap;}
+  .pkg-name{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--navy);}
+  .pkg-price{font-size:1.6rem;font-weight:800;color:var(--navy);}
+  .pkg-meta{font-size:.78rem;color:#9ca3af;}
+  .form-label{display:block;font-size:.75rem;font-weight:700;color:#374151;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;}
+  .form-input{width:100%;border:1.5px solid #e5eaf2;border-radius:7px;padding:.55rem .85rem;font-size:.88rem;color:#111;}
+  .form-input:focus{outline:none;border-color:var(--navy);}
+  textarea.form-input{min-height:80px;resize:vertical;}
+  .btn-sm{padding:5px 12px;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;border:none;}
+  .pill{padding:2px 9px;border-radius:10px;font-size:.7rem;font-weight:700;}
+  .pill-green{background:#d1fae5;color:#065f46;}
+  .pill-gray{background:#f3f4f6;color:#6b7280;}
+  .feature-item{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;}
+  .feature-input{flex:1;border:1.5px solid #e5eaf2;border-radius:6px;padding:.4rem .7rem;font-size:.85rem;}
+  .feature-input:focus{outline:none;border-color:var(--navy);}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
+  .modal-box{background:#fff;border-radius:14px;padding:1.75rem;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,31,91,.2);}
+</style>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;">
+  <div>
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--navy);margin:0;">Lesson Packages</h1>
+    <p style="color:#6b7280;font-size:.85rem;margin-top:2px;">{{ $services->where('is_active',true)->count() }} active · {{ $services->count() }} total</p>
+  </div>
+  <button onclick="openAdd()" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:.55rem 1.2rem;font-weight:700;font-size:.85rem;cursor:pointer;">+ New Package</button>
+</div>
+
+@if(session('success'))
+<div style="background:#d1fae5;border:1.5px solid #a7f3d0;color:#065f46;padding:.65rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.83rem;font-weight:600;">✓ {{ session('success') }}</div>
+@endif
+@if(session('error'))
+<div style="background:#fee2e2;border:1.5px solid #fecaca;color:#991b1b;padding:.65rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.83rem;">{{ session('error') }}</div>
+@endif
+
+@foreach($services as $service)
+<div class="pkg-card {{ !$service->is_active ? 'inactive' : '' }}">
+  <div class="pkg-card-header">
+    <div>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <span class="pkg-name">{{ $service->name }}</span>
+        @if($service->is_active)
+          <span class="pill pill-green">Active</span>
+        @else
+          <span class="pill pill-gray">Hidden</span>
+        @endif
+      </div>
+      <div class="pkg-meta">{{ $service->duration_minutes }} min · slug: {{ $service->slug }}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span class="pkg-price">${{ number_format($service->price, 0) }}</span>
+      <button class="btn-sm" style="background:#dbeafe;color:#1e40af;"
+        onclick="openEdit({{ $service->id }})">Edit</button>
+      <form method="POST" action="{{ route('admin.packages.toggle', $service) }}" style="display:inline;">
+        @csrf @method('PATCH')
+        <button type="submit" class="btn-sm" style="background:{{ $service->is_active ? '#fef3c7' : '#d1fae5' }};color:{{ $service->is_active ? '#92400e' : '#065f46' }};">
+          {{ $service->is_active ? 'Hide' : 'Show' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <p style="font-size:.88rem;color:#6b7280;margin:0 0 .75rem;">{{ $service->description }}</p>
+
+  @if($service->features)
+  <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+    @foreach($service->features as $feature)
+    <span style="background:#f0f4ff;color:#1e40af;font-size:.73rem;padding:2px 8px;border-radius:10px;">✓ {{ $feature }}</span>
+    @endforeach
+  </div>
+  @endif
+</div>
+@endforeach
+
+{{-- Edit Modal --}}
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--navy);margin-bottom:1rem;">Edit Package</div>
+    <form method="POST" id="editForm" action="">
+      @csrf @method('PATCH')
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+        <div>
+          <label class="form-label">Package Name *</label>
+          <input type="text" name="name" id="edit_name" class="form-input" required>
+        </div>
+        <div>
+          <label class="form-label">Slug *</label>
+          <input type="text" name="slug" id="edit_slug" class="form-input" required>
+        </div>
+      </div>
+
+      <div style="margin-bottom:.75rem;">
+        <label class="form-label">Description *</label>
+        <textarea name="description" id="edit_description" class="form-input" required></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+        <div>
+          <label class="form-label">Price ($) *</label>
+          <input type="number" name="price" id="edit_price" class="form-input" step="0.01" min="0" required>
+        </div>
+        <div>
+          <label class="form-label">Duration (minutes) *</label>
+          <input type="number" name="duration_minutes" id="edit_duration" class="form-input" min="1" required>
+        </div>
+      </div>
+
+      <div style="margin-bottom:.75rem;">
+        <label class="form-label">Features (bullet points)</label>
+        <div id="edit_features_list"></div>
+        <button type="button" onclick="addFeatureRow()" style="background:#f0f4ff;color:#1e40af;border:none;border-radius:6px;padding:4px 12px;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:.4rem;">+ Add Feature</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;">
+        <input type="checkbox" name="is_active" value="1" id="edit_is_active">
+        <label for="edit_is_active" style="font-size:.85rem;color:#374151;">Show on booking page</label>
+      </div>
+
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+        <button type="button" onclick="closeModals()" style="background:#f3f4f6;color:#374151;border:none;border-radius:7px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer;">Cancel</button>
+        <button type="submit" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:.55rem 1.4rem;font-weight:700;cursor:pointer;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{{-- Add Modal --}}
+<div class="modal-overlay" id="addModal">
+  <div class="modal-box">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--navy);margin-bottom:1rem;">New Package</div>
+    <form method="POST" action="{{ route('admin.packages.store') }}">
+      @csrf
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+        <div>
+          <label class="form-label">Package Name *</label>
+          <input type="text" name="name" class="form-input" required>
+        </div>
+        <div>
+          <label class="form-label">Slug *</label>
+          <input type="text" name="slug" class="form-input" placeholder="e.g. private-lesson" required>
+        </div>
+      </div>
+
+      <div style="margin-bottom:.75rem;">
+        <label class="form-label">Description *</label>
+        <textarea name="description" class="form-input" required></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+        <div>
+          <label class="form-label">Price ($) *</label>
+          <input type="number" name="price" class="form-input" step="0.01" min="0" required>
+        </div>
+        <div>
+          <label class="form-label">Duration (minutes) *</label>
+          <input type="number" name="duration_minutes" class="form-input" min="1" value="30" required>
+        </div>
+      </div>
+
+      <div style="margin-bottom:.75rem;">
+        <label class="form-label">Features (bullet points)</label>
+        <div id="add_features_list">
+          <div class="feature-item">
+            <input type="text" name="features[]" class="feature-input" placeholder="e.g. 30 minutes of personalized instruction">
+            <button type="button" onclick="this.parentElement.remove()" style="background:#fee2e2;color:#991b1b;border:none;border-radius:5px;padding:3px 8px;cursor:pointer;font-weight:700;">✕</button>
+          </div>
+        </div>
+        <button type="button" onclick="addAddFeatureRow()" style="background:#f0f4ff;color:#1e40af;border:none;border-radius:6px;padding:4px 12px;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:.4rem;">+ Add Feature</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;">
+        <input type="checkbox" name="is_active" value="1" checked>
+        <label style="font-size:.85rem;color:#374151;">Show on booking page</label>
+      </div>
+
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+        <button type="button" onclick="closeModals()" style="background:#f3f4f6;color:#374151;border:none;border-radius:7px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer;">Cancel</button>
+        <button type="submit" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:.55rem 1.4rem;font-weight:700;cursor:pointer;">Create Package</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{{-- Service data for JS --}}
+<script>
+const services = @json($services->keyBy('id'));
+
+function openEdit(id) {
+  const s = services[id];
+  document.getElementById('editForm').action = `/admin/packages/${id}`;
+  document.getElementById('edit_name').value = s.name;
+  document.getElementById('edit_slug').value = s.slug;
+  document.getElementById('edit_description').value = s.description;
+  document.getElementById('edit_price').value = s.price;
+  document.getElementById('edit_duration').value = s.duration_minutes;
+  document.getElementById('edit_is_active').checked = !!s.is_active;
+
+  // Populate features
+  const list = document.getElementById('edit_features_list');
+  list.innerHTML = '';
+  const features = s.features || [];
+  features.forEach(f => addFeatureRow(f));
+
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function addFeatureRow(value = '') {
+  const list = document.getElementById('edit_features_list');
+  const div = document.createElement('div');
+  div.className = 'feature-item';
+  div.innerHTML = `<input type="text" name="features[]" class="feature-input" value="${value.replace(/"/g, '&quot;')}" placeholder="e.g. 30 minutes of personalized instruction">
+    <button type="button" onclick="this.parentElement.remove()" style="background:#fee2e2;color:#991b1b;border:none;border-radius:5px;padding:3px 8px;cursor:pointer;font-weight:700;">✕</button>`;
+  list.appendChild(div);
+}
+
+function addAddFeatureRow() {
+  const list = document.getElementById('add_features_list');
+  const div = document.createElement('div');
+  div.className = 'feature-item';
+  div.innerHTML = `<input type="text" name="features[]" class="feature-input" placeholder="e.g. 30 minutes of personalized instruction">
+    <button type="button" onclick="this.parentElement.remove()" style="background:#fee2e2;color:#991b1b;border:none;border-radius:5px;padding:3px 8px;cursor:pointer;font-weight:700;">✕</button>`;
+  list.appendChild(div);
+}
+
+function openAdd() {
+  document.getElementById('addModal').style.display = 'flex';
+}
+
+function closeModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModals(); });
+});
+</script>
+@endsection

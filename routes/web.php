@@ -138,6 +138,12 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::delete('/clients/{client}/students/{student}', [ClientController::class, 'unlinkStudent'])->name('admin.clients.unlink-student');
 
     // Students
+    // Packages
+    Route::get('/packages', [App\Http\Controllers\Admin\PackageController::class, 'index'])->name('admin.packages.index');
+    Route::post('/packages', [App\Http\Controllers\Admin\PackageController::class, 'store'])->name('admin.packages.store');
+    Route::patch('/packages/{package}', [App\Http\Controllers\Admin\PackageController::class, 'update'])->name('admin.packages.update');
+    Route::patch('/packages/{package}/toggle', [App\Http\Controllers\Admin\PackageController::class, 'toggle'])->name('admin.packages.toggle');
+
     // Testimonials
     Route::get('/testimonials', [App\Http\Controllers\Admin\TestimonialController::class, 'index'])->name('admin.testimonials.index');
     Route::post('/testimonials', [App\Http\Controllers\Admin\TestimonialController::class, 'store'])->name('admin.testimonials.store');

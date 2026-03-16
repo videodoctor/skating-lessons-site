@@ -1,13 +1,11 @@
 {
-  "version": "2.10.11",
+  "version": "2.10.12",
   "date": "2026-03-13",
   "changes": [
-    "SMS: LESSONS keyword — returns upcoming bookings for the texting number",
-    "SMS: SKATE keyword — returns today's public skate sessions at all active rinks",
-    "SMS: HELP keyword — returns help message with all available keywords",
-    "SMS: YES confirmation now includes Venmo payment link",
-    "SMS: Venmo link removed from reminder (now only sent on YES confirmation)",
-    "SMS: Unknown reply message updated to list all available keywords",
-    "SMS: NO cancellation message updated to include contact email"
+    "Admin packages editor at /admin/packages",
+    "Edit name, slug, description, price, duration, features, active status",
+    "Add new packages, hide/show existing packages",
+    "Features editor: add/remove bullet points dynamically",
+    "Packages link added to admin sidebar Content section"
   ]
 }
