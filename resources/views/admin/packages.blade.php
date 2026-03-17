@@ -55,6 +55,13 @@
     </div>
     <div style="display:flex;align-items:center;gap:.75rem;">
       <span class="pkg-price">${{ number_format($service->price, 0) }}</span>
+      @if($service->hasActiveDiscount())
+        <span style="background:#fee2e2;color:#991b1b;font-size:.72rem;font-weight:800;padding:2px 8px;border-radius:6px;text-decoration:line-through;">${{ number_format($service->price, 0) }}</span>
+        <span style="background:#d1fae5;color:#065f46;font-size:.9rem;font-weight:800;">${{ number_format($service->discountedPrice(), 0) }}</span>
+        <span style="background:#fef3c7;color:#92400e;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:6px;">⚡ {{ $service->discountLabel() }}
+          @if($service->discount_ends_at) · ends {{ $service->discount_ends_at->format('M j') }}@endif
+        </span>
+      @endif
       <button class="btn-sm" style="background:#dbeafe;color:#1e40af;"
         onclick="openEdit({{ $service->id }})">Edit</button>
       <form method="POST" action="{{ route('admin.packages.toggle', $service) }}" style="display:inline;">
@@ -123,6 +130,35 @@
         <label for="edit_is_active" style="font-size:.85rem;color:#374151;">Show on booking page</label>
       </div>
 
+      {{-- Discount --}}
+      <div style="background:#f8fafc;border-radius:8px;padding:1rem;border:1.5px solid #e5eaf2;margin-bottom:1rem;">
+        <div style="font-size:.75rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;">⚡ Time-Limited Discount (optional)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+          <div>
+            <label class="form-label">Discount Amount</label>
+            <input type="number" name="discount_amount" id="edit_discount_amount" class="form-input" step="0.01" min="0" placeholder="e.g. 10">
+          </div>
+          <div>
+            <label class="form-label">Type</label>
+            <select name="discount_type" id="edit_discount_type" class="form-input">
+              <option value="percent">% Percent</option>
+              <option value="dollar">$ Dollar</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+          <div>
+            <label class="form-label">Start Date (optional)</label>
+            <input type="date" name="discount_starts_at" id="edit_discount_starts_at" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">End Date (optional)</label>
+            <input type="date" name="discount_ends_at" id="edit_discount_ends_at" class="form-input">
+          </div>
+        </div>
+        <p style="font-size:.72rem;color:#9ca3af;margin-top:.5rem;">Leave amount blank to remove discount. Leave dates blank for an open-ended discount.</p>
+      </div>
+
       <div style="display:flex;gap:.5rem;justify-content:flex-end;">
         <button type="button" onclick="closeModals()" style="background:#f3f4f6;color:#374151;border:none;border-radius:7px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer;">Cancel</button>
         <button type="submit" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:.55rem 1.4rem;font-weight:700;cursor:pointer;">Save Changes</button>
@@ -181,6 +217,35 @@
         <label style="font-size:.85rem;color:#374151;">Show on booking page</label>
       </div>
 
+      {{-- Discount --}}
+      <div style="background:#f8fafc;border-radius:8px;padding:1rem;border:1.5px solid #e5eaf2;margin-bottom:1rem;">
+        <div style="font-size:.75rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;">⚡ Time-Limited Discount (optional)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+          <div>
+            <label class="form-label">Discount Amount</label>
+            <input type="number" name="discount_amount" class="form-input" step="0.01" min="0" placeholder="e.g. 10">
+          </div>
+          <div>
+            <label class="form-label">Type</label>
+            <select name="discount_type" class="form-input">
+              <option value="percent">% Percent</option>
+              <option value="dollar">$ Dollar</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+          <div>
+            <label class="form-label">Start Date (optional)</label>
+            <input type="date" name="discount_starts_at" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">End Date (optional)</label>
+            <input type="date" name="discount_ends_at" class="form-input">
+          </div>
+        </div>
+        <p style="font-size:.72rem;color:#9ca3af;margin-top:.5rem;">Leave amount blank for no discount. Leave dates blank for open-ended.</p>
+      </div>
+
       <div style="display:flex;gap:.5rem;justify-content:flex-end;">
         <button type="button" onclick="closeModals()" style="background:#f3f4f6;color:#374151;border:none;border-radius:7px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer;">Cancel</button>
         <button type="submit" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:.55rem 1.4rem;font-weight:700;cursor:pointer;">Create Package</button>
@@ -202,6 +267,10 @@ function openEdit(id) {
   document.getElementById('edit_price').value = s.price;
   document.getElementById('edit_duration').value = s.duration_minutes;
   document.getElementById('edit_is_active').checked = !!s.is_active;
+  document.getElementById('edit_discount_amount').value = s.discount_amount || '';
+  document.getElementById('edit_discount_type').value = s.discount_type || 'percent';
+  document.getElementById('edit_discount_starts_at').value = s.discount_starts_at || '';
+  document.getElementById('edit_discount_ends_at').value = s.discount_ends_at || '';
 
   // Populate features
   const list = document.getElementById('edit_features_list');

@@ -1,11 +1,11 @@
 {
-  "version": "2.10.12",
+  "version": "2.10.13",
   "date": "2026-03-13",
   "changes": [
-    "Admin packages editor at /admin/packages",
-    "Edit name, slug, description, price, duration, features, active status",
-    "Add new packages, hide/show existing packages",
-    "Features editor: add/remove bullet points dynamically",
-    "Packages link added to admin sidebar Content section"
+    "Packages: time-limited discount support — percent or dollar off",
+    "Packages: discount start/end dates (optional — leave blank for open-ended)",
+    "Packages: active discount shown on admin card with sale price + label",
+    "Service model: hasActiveDiscount(), discountedPrice(), discountLabel(), effectivePrice() helpers",
+    "Migration: discount_amount, discount_type, discount_starts_at, discount_ends_at on services"
   ]
 }
