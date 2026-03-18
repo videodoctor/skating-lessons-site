@@ -1,11 +1,10 @@
 {
-  "version": "2.10.13",
+  "version": "2.10.15",
   "date": "2026-03-13",
   "changes": [
-    "Packages: time-limited discount support — percent or dollar off",
-    "Packages: discount start/end dates (optional — leave blank for open-ended)",
-    "Packages: active discount shown on admin card with sale price + label",
-    "Service model: hasActiveDiscount(), discountedPrice(), discountLabel(), effectivePrice() helpers",
-    "Migration: discount_amount, discount_type, discount_starts_at, discount_ends_at on services"
+    "Public SMS opt-in verification page at /sms-opt-in for Twilio A2P reviewers",
+    "Page shows: live rendered opt-in checkboxes from both booking and registration forms",
+    "Page shows: required disclosures table, sample messages, program description",
+    "Package discount pricing on booking page (v2.10.14)"
   ]
 }

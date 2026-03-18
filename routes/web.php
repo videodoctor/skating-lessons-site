@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Route;
 | Public Routes
 |--------------------------------------------------------------------------
 */
+Route::get('/sms-opt-in', function () {
+    return view('sms-opt-in');
+})->name('sms.optin');
+
 Route::get('/player/grant-schaible', function () {
     return view('player-highlight');
 })->name('player.grant');

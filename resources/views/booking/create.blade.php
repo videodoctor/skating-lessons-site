@@ -19,7 +19,15 @@
                            @if($selectedService && $selectedService->id === $service->id) checked @endif>
                     <div class="border-2 rounded-lg p-4 peer-checked:border-blue-600 peer-checked:bg-blue-50 hover:border-blue-300">
                         <div class="font-bold text-lg">{{ $service->name }}</div>
-                        <div class="text-2xl font-bold text-blue-600 my-2">${{ number_format($service->price, 0) }}</div>
+                        @if($service->hasActiveDiscount())
+                          <div class="my-2">
+                            <span class="text-gray-400 line-through text-lg">${{ number_format($service->price, 0) }}</span>
+                            <span class="text-2xl font-bold text-green-600 ml-1">${{ number_format($service->discountedPrice(), 0) }}</span>
+                            <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-0.5 rounded ml-1">⚡ {{ $service->discountLabel() }}</span>
+                          </div>
+                        @else
+                          <div class="text-2xl font-bold text-blue-600 my-2">${{ number_format($service->price, 0) }}</div>
+                        @endif
                         <div class="text-sm text-gray-600">{{ $service->duration_minutes }} minutes</div>
                     </div>
                 </label>

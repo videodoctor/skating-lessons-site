@@ -116,7 +116,7 @@ class BookingController extends Controller
             'client_phone'       => $normalizedPhone,
             'notes'              => $validated['notes'],
             'status'             => 'pending',
-            'price_paid'         => Service::find($validated['service_id'])->price,
+            'price_paid'         => Service::find($validated['service_id'])->effectivePrice(),
             'date'               => $timeSlot->date,
             'email_consent_at'   => now(),
             'start_time'         => $timeSlot->start_time,
