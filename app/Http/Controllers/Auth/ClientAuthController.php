@@ -56,8 +56,9 @@ class ClientAuthController extends Controller
         // Send email verification
         $verification->sendEmailVerification($client);
 
-        // Send phone verification SMS if opted in
+        // Send phone verification SMS if opted in, then opt-in confirmation
         if ($smsConsent && $client->sms_phone) {
+            $sms->sendOptInConfirmation($client->sms_phone);
             $verification->sendPhoneVerification($client, $sms);
         }
 

@@ -209,8 +209,33 @@ class SmsService
             Log::info("Booking #{$booking->id} cancelled via SMS by {$fromNumber}");
             return "Your lesson has been cancelled. If this was a mistake, please contact Coach Kristine directly at kristine@kristineskates.com. Thank you! — Kristine Skates";
 
+        } elseif ($reply === 'STOP') {
+            // Unsubscribe client from SMS
+            $client = Client::where('sms_phone', $normalized)->orWhere('phone', $normalized)->first();
+            if ($client) {
+                $client->update(['sms_consent' => false, 'sms_phone' => null]);
+            }
+            // Twilio handles STOP automatically, but we return the CTIA-required response
+            return "You have been unsubscribed from Kristine Skates SMS messages. No further messages will be sent. Reply START to resubscribe or HELP for assistance.";
+
         } else {
             return "Sorry, we didn't understand that. Reply YES to confirm, NO to cancel, LESSONS for your schedule, SKATE for today's public skate, or HELP for assistance. — Kristine Skates";
+        }
+    }
+
+    // ── Send opt-in confirmation (required by CTIA/A2P) ───────────────────────
+
+    public function sendOptInConfirmation(string $phone): void
+    {
+        $normalized = $this->normalizePhone($phone);
+        try {
+            $this->twilio->messages->create($normalized, [
+                'from' => $this->from,
+                'body' => 'You are now opted in to SMS lesson reminders from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates',
+            ]);
+            Log::info("Opt-in confirmation sent to {$normalized}");
+        } catch (\Exception $e) {
+            Log::error("Opt-in confirmation failed for {$normalized}: " . $e->getMessage());
         }
     }
 

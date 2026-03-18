@@ -1,10 +1,11 @@
 {
-  "version": "2.10.15",
+  "version": "2.10.16",
   "date": "2026-03-13",
   "changes": [
-    "Public SMS opt-in verification page at /sms-opt-in for Twilio A2P reviewers",
-    "Page shows: live rendered opt-in checkboxes from both booking and registration forms",
-    "Page shows: required disclosures table, sample messages, program description",
-    "Package discount pricing on booking page (v2.10.14)"
+    "CRITICAL A2P: Send opt-in confirmation SMS when user opts in (required by CTIA)",
+    "Opt-in confirmation fires on: guest booking form + account registration",
+    "STOP handler: now unsubscribes client in DB, returns CTIA-compliant response with brand name",
+    "Both forms: updated SMS consent text to mention confirmation text",
+    "sms-opt-in page: updated opt-in text to include confirmation text mention"
   ]
 }

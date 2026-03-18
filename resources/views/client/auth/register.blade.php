@@ -70,7 +70,7 @@
         <label class="flex items-start">
           <input type="checkbox" name="sms_consent" class="mt-1 mr-3">
           <span class="text-gray-700 text-sm">
-            I agree to receive SMS text message lesson reminders from Kristine Skates. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help. View our <a href="{{ route('privacy') }}" target="_blank" class="underline">Privacy Policy</a>.
+            I agree to receive SMS text message lesson reminders from Kristine Skates. You will receive a confirmation text upon opting in. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help. View our <a href="{{ route('privacy') }}" target="_blank" class="underline">Privacy Policy</a>.
           </span>
         </label>
       </div>

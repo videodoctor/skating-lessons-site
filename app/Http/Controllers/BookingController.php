@@ -128,6 +128,11 @@ class BookingController extends Controller
         // Mark slot unavailable
         $timeSlot->update(['booking_id' => $booking->id, 'is_available' => false]);
 
+        // Send opt-in confirmation SMS if guest opted in
+        if ($guestSmsConsent && $normalizedPhone) {
+            $sms->sendOptInConfirmation($normalizedPhone);
+        }
+
         // Send confirmation email
         if ($booking->client_id && $booking->client?->email) {
             $booking->client->notify(new BookingRequestedNotification($booking));
