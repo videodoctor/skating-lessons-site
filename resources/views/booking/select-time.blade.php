@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Select Time — ' . $service->name)
 @section('content')
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap');
   :root{--navy:#001F5B;--red:#C8102E;}
@@ -133,7 +134,7 @@
             <div>
               <label class="form-label">Phone *</label>
               <input type="tel" name="client_phone" required class="form-input"
-                value="{{ $client ? $client->phone : old('client_phone') }}" placeholder="(314) 555-0000">
+                value="{{ $client ? $client->phone : old('client_phone') }}" placeholder="(314) 555-0000" oninput="formatPhone(this)">
             </div>
             <div>
               <label class="form-label">Notes <span class="font-normal text-gray-400">(optional)</span></label>
@@ -142,6 +143,19 @@
           </div>
 
           <div class="space-y-3 mb-5">
+            @guest('client')
+            <div style="background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:8px;padding:1rem 1.25rem;">
+              <div class="policy-check">
+                <input type="checkbox" name="guest_sms_consent" id="guest_sms_consent" value="1">
+                <label for="guest_sms_consent" class="text-sm text-gray-700" style="line-height:1.6;">
+                  <strong>Optional:</strong> I agree to receive SMS text message lesson reminders from Kristine Skates.
+                  You will receive a confirmation text upon opting in. Message frequency varies.
+                  Message and data rates may apply. Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
+                  View our <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
+                </label>
+              </div>
+            </div>
+            @endguest
             <div class="policy-check">
               <input type="checkbox" name="email_consent" id="email_consent" required>
               <label for="email_consent" class="text-sm text-gray-600">I agree to receive booking confirmation and update emails. *</label>
@@ -151,6 +165,12 @@
               <label for="cancel_policy" class="text-sm text-gray-600">I understand that cancellations within 24 hours of the lesson will be charged the full lesson price. *</label>
             </div>
           </div>
+
+          @guest('client')
+          <div style="display:flex;justify-content:center;margin-bottom:1rem;">
+            <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.key') }}"></div>
+          </div>
+          @endguest
 
           <button type="submit" class="submit-btn" id="submit-btn" disabled style="opacity:.4;cursor:not-allowed">
             Request This Slot →
@@ -172,6 +192,14 @@
 </div>
 
 <script>
+function formatPhone(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 10);
+  if (v.length >= 6) v = '(' + v.substring(0,3) + ') ' + v.substring(3,6) + '-' + v.substring(6);
+  else if (v.length >= 3) v = '(' + v.substring(0,3) + ') ' + v.substring(3);
+  else if (v.length > 0) v = '(' + v;
+  input.value = v;
+}
+
 function selectSlot(slotId, timeDisplay, rinkName) {
   document.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('slot-' + slotId).classList.add('selected');
