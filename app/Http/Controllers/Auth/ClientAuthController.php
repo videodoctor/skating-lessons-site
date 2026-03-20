@@ -33,7 +33,7 @@ class ClientAuthController extends Controller
             'first_name'    => 'required|string|max:100',
             'last_name'     => 'nullable|string|max:100',
             'email'         => 'required|email|unique:clients,email',
-            'phone'         => 'required|string',
+            'phone'         => 'nullable|string',
             'password'      => 'required|string|min:8|confirmed',
             'email_consent' => 'required|accepted',
         ]);

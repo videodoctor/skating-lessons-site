@@ -36,9 +36,9 @@
       </div>
 
       <div class="mb-4">
-        <label class="block text-gray-700 font-bold mb-2">Phone *</label>
-        <input type="tel" name="phone" value="{{ old('phone') }}" required
-          placeholder="(314) 555-0000"
+        <label class="block text-gray-700 font-bold mb-2">Phone <span class="font-normal text-gray-400 text-sm">(optional — needed for SMS reminders)</span></label>
+        <input type="tel" name="phone" value="{{ old('phone') }}"
+          placeholder="(314) 555-0000" oninput="formatPhone(this)"
           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 @error('phone') border-red-500 @enderror">
         @error('phone')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
       </div>

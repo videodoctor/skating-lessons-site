@@ -1,10 +1,11 @@
 {
-  "version": "2.10.18",
+  "version": "2.10.19",
   "date": "2026-03-20",
   "changes": [
-    "Privacy policy: explicit no mobile data sharing statement (required for A2P approval)",
-    "Privacy policy: Twilio clarified as service provider, not marketing data share",
-    "Booking forms: phone number now optional (required by A2P carriers)",
-    "BookingController: client_phone nullable validation"
+    "Registration form: phone now optional (A2P carrier requirement)",
+    "Registration form: phone formatter added",
+    "ClientAuthController: phone validation nullable",
+    "Privacy policy: no mobile data sharing statement",
+    "Booking form: phone already optional from v2.10.18"
   ]
 }
