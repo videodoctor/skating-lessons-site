@@ -1,11 +1,15 @@
 {
-  "version": "2.10.19",
+  "version": "2.10.20",
   "date": "2026-03-20",
   "changes": [
-    "Registration form: phone now optional (A2P carrier requirement)",
-    "Registration form: phone formatter added",
-    "ClientAuthController: phone validation nullable",
-    "Privacy policy: no mobile data sharing statement",
-    "Booking form: phone already optional from v2.10.18"
+    "sms-opt-in page: complete rewrite for A2P compliance verification",
+    "sms-opt-in: shows phone field as optional on BOTH methods",
+    "sms-opt-in: registration checkbox now shows Optional: label",
+    "sms-opt-in: all 8 sample messages including opt-in confirmation, STOP, HELP",
+    "sms-opt-in: explicit no-third-party-sharing statement in bold",
+    "sms-opt-in: opt-in confirmation SMS listed in disclosures table",
+    "sms-opt-in: STOP response documented showing unsubscribe confirmation",
+    "Registration form: phone optional, phone formatter added",
+    "ClientAuthController: phone validation nullable"
   ]
 }
