@@ -132,8 +132,8 @@
                 value="{{ $client ? $client->email : old('client_email') }}" placeholder="you@email.com">
             </div>
             <div>
-              <label class="form-label">Phone *</label>
-              <input type="tel" name="client_phone" required class="form-input"
+              <label class="form-label">Phone <span class="font-normal text-gray-400">(optional — needed for SMS reminders)</span></label>
+              <input type="tel" name="client_phone" class="form-input"
                 value="{{ $client ? $client->phone : old('client_phone') }}" placeholder="(314) 555-0000" oninput="formatPhone(this)">
             </div>
             <div>

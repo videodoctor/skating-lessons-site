@@ -91,7 +91,7 @@ class BookingController extends Controller
             'time_slot_id'        => 'required|exists:time_slots,id',
             'client_name'         => 'required|string|max:255',
             'client_email'        => 'required|email',
-            'client_phone'        => 'required|string',
+            'client_phone'        => 'nullable|string',
             'notes'               => 'nullable|string',
             'email_consent'       => 'required|accepted',
             'cancellation_policy' => 'required|accepted',
@@ -104,7 +104,7 @@ class BookingController extends Controller
         }
 
         $guestSmsConsent = $request->boolean('guest_sms_consent');
-        $normalizedPhone = $sms->normalizePhone($validated['client_phone']);
+        $normalizedPhone = $validated['client_phone'] ? $sms->normalizePhone($validated['client_phone']) : null;
 
         // Create booking
         $booking = Booking::create([
