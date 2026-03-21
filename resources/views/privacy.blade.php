@@ -108,6 +108,7 @@
       <li>SMS reminders are sent from a dedicated Kristine Skates phone number via Twilio</li>
     </ul>
     <p>We will never sell your phone number or use it for marketing unrelated to your skating lessons. <strong>No mobile information (including phone numbers collected via SMS opt-in) will be shared with third parties or affiliates for marketing or promotional purposes at any time.</strong></p>
+    <p>For full details on our SMS opt-in process, consent language, and sample messages, see our <a href="/sms-opt-in" style="color:#001F5B;text-decoration:underline;">SMS Opt-In Disclosure page</a>.</p>
   </div>
 
   <div class="policy-section">
