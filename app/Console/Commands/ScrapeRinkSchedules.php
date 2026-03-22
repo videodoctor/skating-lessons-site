@@ -126,8 +126,19 @@ class ScrapeRinkSchedules extends Command
 
     private function scrapeCreveCoeur(Rink $rink)
     {
-        $response = Http::get($rink->schedule_url);
-        if (!$response->successful()) throw new \Exception("Failed to fetch page");
+        $response = Http::timeout(15)->get($rink->schedule_url);
+
+        // If the stored URL 404s, try to auto-discover the new one via search
+        if (!$response->successful()) {
+            $this->warn("  Stored URL returned {$response->status()}, attempting auto-discovery...");
+            $newUrl = $this->discoverCreveCoeurUrl();
+            if ($newUrl) {
+                $this->log("  Discovered new URL: {$newUrl}");
+                $rink->update(['schedule_url' => $newUrl]);
+                $response = Http::timeout(15)->get($newUrl);
+            }
+            if (!$response->successful()) throw new \Exception("Failed to fetch page (tried auto-discovery)");
+        }
 
         $dom = new DOMDocument();
         @$dom->loadHTML($response->body());
@@ -136,6 +147,7 @@ class ScrapeRinkSchedules extends Command
 
         if ($images->length === 0) { $this->warn("No schedule images found"); return; }
 
+        // Only clear AFTER we have confirmed data to replace with
         $this->clearFutureUnbookedSlots($rink);
         $this->clearFutureSessions($rink);
 
@@ -176,6 +188,37 @@ class ScrapeRinkSchedules extends Command
                 $this->recordScrapeRun($rink, $month, $year, '', 'image', $imageUrl, 0, 0, 0, true);
             }
         }
+    }
+
+    private function discoverCreveCoeurUrl(): ?string
+    {
+        // Strategy 1: Search the city website
+        $searchUrl = 'https://www.crevecoeurmo.gov/Search?searchPhrase=public%20ice%20sessions&pageNumber=1&perPage=10&departmentId=-1';
+        try {
+            $response = Http::timeout(10)->get($searchUrl);
+            if ($response->successful()) {
+                $dom = new DOMDocument();
+                @$dom->loadHTML($response->body());
+                $xpath = new DOMXPath($dom);
+                // Find links matching /NNN/Public-Ice or /NNN/Ice
+                $links = $xpath->query('//a[contains(@href, "/") and (contains(translate(@href,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"ice") or contains(translate(@href,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"skating"))]');
+                foreach ($links as $link) {
+                    $href = $link->getAttribute('href');
+                    if (preg_match('#^/\d+/#', $href)) {
+                        $url = str_starts_with($href, 'http') ? $href : 'https://www.crevecoeurmo.gov' . $href;
+                        $this->log("  Search found candidate: {$url}");
+                        return $url;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            $this->warn("  Search discovery failed: {$e->getMessage()}");
+        }
+
+        // Strategy 2: Known fallback URL (update this if search fails)
+        $fallback = 'https://www.crevecoeurmo.gov/1257/Public-Ice-Sessions';
+        $this->log("  Trying known fallback URL: {$fallback}");
+        return $fallback;
     }
 
     private function processCreveCoeurSchedule(Rink $rink, string $imageUrl, string $monthName, int $year): int

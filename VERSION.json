@@ -1,7 +1,10 @@
 {
-  "version": "2.10.21",
-  "date": "2026-03-20",
+  "version": "2.10.22",
+  "date": "2026-03-22",
   "changes": [
-    "Privacy policy: added link to /sms-opt-in disclosure page from SMS section"
+    "Creve Coeur scraper: auto-discovery when URL 404s — searches city website then falls back to known URL",
+    "Creve Coeur scraper: auto-updates schedule_url in DB when new URL discovered",
+    "Creve Coeur: updated fallback URL to /1257/Public-Ice-Sessions",
+    "Fix: clear sessions only runs AFTER successful page fetch (was already correct, confirmed)"
   ]
 }
