@@ -58,4 +58,16 @@ class ScraperController extends Controller
                 ->with('error', 'Scraper failed: ' . $e->getMessage());
         }
     }
+
+    public function saveSettings(Request $request, string $rinkSlug)
+    {
+        $rink = Rink::where('slug', $rinkSlug)->firstOrFail();
+        $rink->update([
+            'schedule_url' => $request->input('schedule_url'),
+            'ocr_provider' => $request->input('ocr_provider', 'claude'),
+        ]);
+        return redirect()->route('admin.scraper.index')
+            ->with('settings_saved_' . $rink->id, true)
+            ->with('success', "{$rink->name} settings saved.");
+    }
 }

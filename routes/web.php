@@ -172,6 +172,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/scraper', [App\Http\Controllers\Admin\ScraperController::class, 'index'])->name('admin.scraper.index');
     Route::post('/scraper/run-all', [App\Http\Controllers\Admin\ScraperController::class, 'runAll'])->name('admin.scraper.run-all');
     Route::post('/scraper/run/{rinkSlug}', [App\Http\Controllers\Admin\ScraperController::class, 'runOne'])->name('admin.scraper.run-one');
+    Route::patch('/scraper/settings/{rinkSlug}', [App\Http\Controllers\Admin\ScraperController::class, 'saveSettings'])->name('admin.scraper.save-settings');
 
     Route::get('/students', [App\Http\Controllers\Admin\StudentController::class, 'index'])->name('admin.students.index');
     Route::post('/students', [App\Http\Controllers\Admin\StudentController::class, 'store'])->name('admin.students.store');

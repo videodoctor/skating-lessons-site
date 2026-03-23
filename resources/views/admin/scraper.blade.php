@@ -128,6 +128,34 @@
     </table>
     @endif
 
+    {{-- Settings: URL + OCR Provider --}}
+    @if($rink->slug === 'creve-coeur')
+    <form method="POST" action="{{ route('admin.scraper.save-settings', $rink->slug) }}" style="margin-bottom:1rem;">
+      @csrf @method('PATCH')
+      <div style="background:#f8fafc;border:1.5px solid #e5eaf2;border-radius:8px;padding:1rem;">
+        <div style="font-size:.75rem;font-weight:700;color:#374151;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.07em;">⚙️ Scraper Settings</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end;">
+          <div>
+            <label style="font-size:.75rem;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Schedule URL</label>
+            <input type="text" name="schedule_url" value="{{ $rink->schedule_url }}"
+                   style="width:100%;border:1.5px solid #e5eaf2;border-radius:6px;padding:.45rem .7rem;font-size:.82rem;">
+          </div>
+          <div>
+            <label style="font-size:.75rem;font-weight:600;color:#374151;display:block;margin-bottom:3px;">OCR Provider</label>
+            <select name="ocr_provider" style="border:1.5px solid #e5eaf2;border-radius:6px;padding:.45rem .7rem;font-size:.82rem;background:#fff;">
+              <option value="claude" {{ ($rink->ocr_provider ?? 'claude') === 'claude' ? 'selected' : '' }}>🤖 Claude Vision</option>
+              <option value="paddleocr" {{ ($rink->ocr_provider ?? '') === 'paddleocr' ? 'selected' : '' }}>🏓 PaddleOCR</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" style="margin-top:.75rem;background:var(--navy);color:#fff;border:none;border-radius:6px;padding:.4rem 1rem;font-size:.78rem;font-weight:700;cursor:pointer;">Save Settings</button>
+        @if(session('settings_saved_' . $rink->id))
+        <span style="color:#065f46;font-size:.78rem;margin-left:.5rem;">✓ Saved</span>
+        @endif
+      </div>
+    </form>
+    @endif
+
     {{-- Run history --}}
     <div style="font-size:.75rem;font-weight:700;color:#374151;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.07em;">Run History</div>
     <table class="run-table w-full">

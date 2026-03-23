@@ -15,10 +15,12 @@ class Rink extends Model
         'address',
         'website_url',
         'schedule_url',
+        'schedule_pdf_url',
         'schedule_format',
         'scraper_notes',
         'is_active',
         'last_scraped_at',
+        'ocr_provider',
     ];
 
     protected $casts = [

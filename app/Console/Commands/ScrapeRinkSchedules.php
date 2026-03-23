@@ -223,29 +223,124 @@ class ScrapeRinkSchedules extends Command
 
     private function processCreveCoeurSchedule(Rink $rink, string $imageUrl, string $monthName, int $year): int
     {
-        $cacheKey    = 'paddle_html_' . md5($imageUrl);
-        $htmlContent = cache($cacheKey);
+        $provider = $rink->ocr_provider ?? 'claude';
+        $this->log("    OCR provider: {$provider}");
 
-        if (!$htmlContent) {
-            $this->log("    Running PaddleOCR...");
-            $tempImage = tempnam(sys_get_temp_dir(), 'schedule_') . '.jpg';
-            file_put_contents($tempImage, file_get_contents($imageUrl));
-            $outputDir = sys_get_temp_dir() . '/paddle_' . uniqid();
-            mkdir($outputDir);
-            exec("/home/ubuntu/paddle-env/bin/paddleocr table_recognition_v2 --input {$tempImage} --save_path {$outputDir} 2>&1", $output, $rc);
-            if ($rc !== 0) throw new \Exception("PaddleOCR failed: " . implode("\n", $output));
-            $htmlFiles = glob($outputDir . '/*_table_*.html');
-            if (empty($htmlFiles)) throw new \Exception("No HTML table output found");
-            $htmlContent = file_get_contents($htmlFiles[0]);
-            cache([$cacheKey => $htmlContent], now()->addDays(30));
-            unlink($tempImage);
-            array_map('unlink', glob($outputDir . '/*') ?: []);
-            rmdir($outputDir);
+        $cacheKey   = "{$provider}_ocr_" . md5($imageUrl);
+        $parsedData = cache($cacheKey);
+
+        if (!$parsedData) {
+            if ($provider === 'claude') {
+                $parsedData = $this->ocrWithClaude($imageUrl, $monthName, $year);
+            } else {
+                $parsedData = $this->ocrWithPaddle($imageUrl);
+            }
+            cache([$cacheKey => $parsedData], now()->addDays(30));
         } else {
-            $this->log("    Using cached PaddleOCR output");
+            $this->log("    Using cached OCR output");
         }
 
-        return $this->parseTableHtml($rink, $htmlContent, $monthName, $year);
+        if ($provider === 'claude') {
+            return $this->parseClaudeOcrData($rink, $parsedData, $monthName, $year);
+        } else {
+            return $this->parseTableHtml($rink, $parsedData, $monthName, $year);
+        }
+    }
+
+    private function ocrWithClaude(string $imageUrl, string $monthName, int $year): array
+    {
+        $this->log("    Fetching image for Claude Vision...");
+        $imageContent = file_get_contents($imageUrl);
+        $base64       = base64_encode($imageContent);
+
+        $prompt = "This is a public ice skating schedule for {$monthName} {$year}. " .
+            "Extract all PUBLIC SKATE sessions from this calendar image. " .
+            "For each session return the day of month (number), start time, and end time. " .
+            "Return ONLY a JSON array like: [{"day":5,"start":"9:15 AM","end":"11:45 AM"}] " .
+            "Only include Public Skate sessions. Return only valid JSON, no other text.";
+
+        $response = \Illuminate\Support\Facades\Http::withHeaders([
+            'x-api-key'         => config('services.anthropic.key'),
+            'anthropic-version' => '2023-06-01',
+            'content-type'      => 'application/json',
+        ])->timeout(60)->post('https://api.anthropic.com/v1/messages', [
+            'model'      => 'claude-opus-4-5',
+            'max_tokens' => 2000,
+            'messages'   => [[
+                'role'    => 'user',
+                'content' => [
+                    [
+                        'type'   => 'image',
+                        'source' => [
+                            'type'       => 'base64',
+                            'media_type' => 'image/jpeg',
+                            'data'       => $base64,
+                        ],
+                    ],
+                    ['type' => 'text', 'text' => $prompt],
+                ],
+            ]],
+        ]);
+
+        if (!$response->successful()) {
+            throw new \Exception("Claude Vision API error: " . $response->body());
+        }
+
+        $text = $response->json('content.0.text', '');
+        $text = preg_replace('/^```json\s*|\s*```$/m', '', trim($text));
+
+        $sessions = json_decode($text, true);
+        if (!is_array($sessions)) {
+            throw new \Exception("Claude Vision returned invalid JSON: {$text}");
+        }
+
+        $this->log("    Claude Vision found " . count($sessions) . " sessions");
+        return $sessions;
+    }
+
+    private function ocrWithPaddle(string $imageUrl): string
+    {
+        $this->log("    Running PaddleOCR...");
+        $tempImage = tempnam(sys_get_temp_dir(), 'schedule_') . '.jpg';
+        file_put_contents($tempImage, file_get_contents($imageUrl));
+        $outputDir = sys_get_temp_dir() . '/paddle_' . uniqid();
+        mkdir($outputDir);
+        exec("/home/ubuntu/paddle-env/bin/paddleocr table_recognition_v2 --input {$tempImage} --save_path {$outputDir} 2>&1", $output, $rc);
+        if ($rc !== 0) throw new \Exception("PaddleOCR failed: " . implode("\n", $output));
+        $htmlFiles = glob($outputDir . '/*_table_*.html');
+        if (empty($htmlFiles)) throw new \Exception("No HTML table output found");
+        $htmlContent = file_get_contents($htmlFiles[0]);
+        unlink($tempImage);
+        array_map('unlink', glob($outputDir . '/*') ?: []);
+        rmdir($outputDir);
+        return $htmlContent;
+    }
+
+    private function parseClaudeOcrData(Rink $rink, array $sessions, string $monthName, int $year): int
+    {
+        $monthNumber = (int)date('n', strtotime($monthName . ' 1'));
+        $count = 0;
+
+        foreach ($sessions as $s) {
+            $day = (int)($s['day'] ?? 0);
+            if (!$day) continue;
+            try {
+                $date  = \Carbon\Carbon::create($year, $monthNumber, $day);
+                $start = \Carbon\Carbon::parse($date->format('Y-m-d') . ' ' . $s['start']);
+                $end   = \Carbon\Carbon::parse($date->format('Y-m-d') . ' ' . $s['end']);
+                $this->createSession($rink, $date, $start, $end);
+                $this->log("    Added: {$date->format('M d')} {$start->format('g:i A')} - {$end->format('g:i A')}");
+                $count++;
+            } catch (\Exception $e) {
+                $this->warn("    Skipped day {$day}: {$e->getMessage()}");
+            }
+        }
+
+        $count === 0
+            ? $this->warn("    No Public sessions parsed from Claude output")
+            : $this->log("    Created {$count} sessions for {$monthName} {$year}");
+
+        return $count;
     }
 
     private function parseTableHtml(Rink $rink, string $htmlContent, string $monthName, int $year): int

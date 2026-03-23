@@ -1,11 +1,13 @@
 {
-  "version": "2.10.24",
+  "version": "2.10.25",
   "date": "2026-03-23",
   "changes": [
-    "Admin calendar: iCal feed at /admin/calendar/bookings.ics (token protected)",
-    "Admin calendar: Subscribe button links to iCal feed",
-    "iCal events include: client name, student, service, rink, price, status emoji, notes",
-    "Feed covers 30 days back + 6 months ahead, refreshes every 30 min",
-    "config/services.php: calendar.admin_token from CALENDAR_ADMIN_TOKEN env var"
+    "Creve Coeur scraper: Claude Vision OCR option (default) vs PaddleOCR toggle",
+    "Admin scraper: settings panel for Creve Coeur — URL + OCR provider dropdown",
+    "Claude Vision: sends image to Anthropic API, returns structured JSON sessions",
+    "PaddleOCR: preserved as fallback option",
+    "Migration: ocr_provider column on rinks table (default: claude)",
+    "Rink model: ocr_provider + schedule_pdf_url added to fillable",
+    "Admin calendar iCal feed (v2.10.24)"
   ]
 }
