@@ -67,6 +67,11 @@
       <a href="{{ route('admin.calendar', ['month' => $nextMonth->format('Y-m')]) }}">Next →</a>
     </div>
     <a href="{{ route('admin.calendar') }}" style="font-size:.8rem;color:#6b7280;">Today</a>
+    <a href="{{ route('admin.calendar.ical', ['token' => config('services.calendar.admin_token')]) }}"
+       style="background:#f0f4ff;color:#1e40af;border-radius:7px;padding:.4rem .9rem;font-size:.82rem;font-weight:600;text-decoration:none;"
+       title="Subscribe in Apple Calendar / Google Calendar">
+      📅 Subscribe
+    </a>
   </div>
 </div>
 

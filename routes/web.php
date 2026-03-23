@@ -209,6 +209,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 // Public calendar feeds
 Route::get('/calendar/public-skating.ics', [\App\Http\Controllers\CalendarController::class, 'publicSessions']);
 Route::get('/calendar/{rink}.ics', [\App\Http\Controllers\CalendarController::class, 'publicSessions']);
+Route::get('/admin/calendar/bookings.ics', [\App\Http\Controllers\Admin\CalendarController::class, 'icalFeed'])->name('admin.calendar.ical');
 
 require __DIR__.'/auth.php';
 

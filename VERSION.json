@@ -1,13 +1,11 @@
 {
-  "version": "2.10.23",
-  "date": "2026-03-22",
+  "version": "2.10.24",
+  "date": "2026-03-23",
   "changes": [
-    "Admin booking calendar at /admin/calendar",
-    "Month view: grid with color-coded booking pills by status",
-    "List view: chronological list with client, service, rink, student",
-    "Slide-out detail panel: shows full booking info, phone link, link to booking detail",
-    "Prev/Next month navigation, Today button",
-    "Calendar link added to admin sidebar",
-    "Creve Coeur scraper auto-discovery (v2.10.22)"
+    "Admin calendar: iCal feed at /admin/calendar/bookings.ics (token protected)",
+    "Admin calendar: Subscribe button links to iCal feed",
+    "iCal events include: client name, student, service, rink, price, status emoji, notes",
+    "Feed covers 30 days back + 6 months ahead, refreshes every 30 min",
+    "config/services.php: calendar.admin_token from CALENDAR_ADMIN_TOKEN env var"
   ]
 }
