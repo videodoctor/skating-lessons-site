@@ -1,13 +1,8 @@
 {
-  "version": "2.10.25",
+  "version": "2.10.26",
   "date": "2026-03-23",
   "changes": [
-    "Creve Coeur scraper: Claude Vision OCR option (default) vs PaddleOCR toggle",
-    "Admin scraper: settings panel for Creve Coeur — URL + OCR provider dropdown",
-    "Claude Vision: sends image to Anthropic API, returns structured JSON sessions",
-    "PaddleOCR: preserved as fallback option",
-    "Migration: ocr_provider column on rinks table (default: claude)",
-    "Rink model: ocr_provider + schedule_pdf_url added to fillable",
-    "Admin calendar iCal feed (v2.10.24)"
+    "Fix: ScrapeRinkSchedules.php syntax error - escaped JSON quotes in Claude Vision prompt",
+    "Fix: Restore Coach Kristine bio section on home page (was accidentally removed)"
   ]
 }

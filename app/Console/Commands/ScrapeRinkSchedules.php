@@ -256,7 +256,7 @@ class ScrapeRinkSchedules extends Command
         $prompt = "This is a public ice skating schedule for {$monthName} {$year}. " .
             "Extract all PUBLIC SKATE sessions from this calendar image. " .
             "For each session return the day of month (number), start time, and end time. " .
-            "Return ONLY a JSON array like: [{"day":5,"start":"9:15 AM","end":"11:45 AM"}] " .
+            "Return ONLY a JSON array like: [{\"day\":5,\"start\":\"9:15 AM\",\"end\":\"11:45 AM\"}] " .
             "Only include Public Skate sessions. Return only valid JSON, no other text.";
 
         $response = \Illuminate\Support\Facades\Http::withHeaders([
