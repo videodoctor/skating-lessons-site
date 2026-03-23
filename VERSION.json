@@ -1,8 +1,8 @@
 {
-  "version": "2.10.28",
+  "version": "2.10.29",
   "date": "2026-03-23",
   "changes": [
-    "Home page: Steps section background changed to bg-gray-50 (was bg-white, blended with services)",
-    "Home page: Steps section padding increased py-24 pb-32 for breathing room above bio"
+    "Home page: fix How It Works section not closed before bio — was nested inside causing bg-gray-50 to wrap both",
+    "Home page: added missing </section> and CTA button after steps grid"
   ]
 }

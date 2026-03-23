@@ -170,7 +170,9 @@
       </div>
       @endforeach
     </div>
+    <div class="text-center mt-12"><a href="/book" class="hero-cta">Request a Time Slot →</a></div>
   </div>
+</section>
 
 <!-- BIO -->
 <section class="bio-section py-20 pb-32">
