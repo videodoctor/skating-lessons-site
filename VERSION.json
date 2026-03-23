@@ -1,9 +1,8 @@
 {
-  "version": "2.10.27",
+  "version": "2.10.28",
   "date": "2026-03-23",
   "changes": [
-    "Home page: fix bio section overflow:hidden to contain navy photo shadow",
-    "Home page: reduce box-shadow offset 24px -> 16px to prevent bleed",
-    "Home page: bio section padding-bottom enforced"
+    "Home page: Steps section background changed to bg-gray-50 (was bg-white, blended with services)",
+    "Home page: Steps section padding increased py-24 pb-32 for breathing room above bio"
   ]
 }

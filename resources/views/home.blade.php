@@ -155,7 +155,7 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="py-20 pb-28 bg-white">
+<section class="py-24 pb-32 bg-gray-50">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="text-center mb-14">
       <p class="section-label mb-2">Simple Process</p>
