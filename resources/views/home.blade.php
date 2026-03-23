@@ -172,6 +172,32 @@
     </div>
   </div>
 
+<!-- BIO -->
+<section class="bio-section py-20">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <div class="grid md:grid-cols-2 gap-16 items-center">
+      <div>
+        @php $bioPhotos = ['images/kristine_and_mick_004.png','images/kristine_and_mick_005.png']; $bioPhoto = $bioPhotos[array_rand($bioPhotos)]; @endphp
+        <img src="{{ asset($bioPhoto) }}" alt="Coach Kristine" class="bio-photo"
+             onerror="this.style.cssText='display:flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:8px;width:100%;aspect-ratio:4/5;font-size:5rem;'">
+      </div>
+      <div>
+        <p class="section-label mb-3">Meet Your Coach</p>
+        <h2 class="section-title mb-6">Coach Kristine Humphrey</h2>
+        <blockquote class="bio-quote mb-8">"Every skater has untapped speed and power waiting to be unlocked. I'm here to help them find it."</blockquote>
+        <p class="text-gray-600 leading-relaxed mb-6">Kristine Humphrey brings years of competitive hockey experience and a genuine passion for teaching to every session. Whether you're stepping on the ice for the first time or refining your edge work for competitive play, her structured, one-on-one approach cuts through the guesswork and gets you results fast.</p>
+        <div class="flex flex-wrap gap-3 mb-8">
+          <span class="credential-chip">🏒 Hockey Skating Specialist</span>
+          <span class="credential-chip">⛸️ Power Skating Focus</span>
+          <span class="credential-chip">👶 Youth &amp; Adult</span>
+          <span class="credential-chip">📍 St. Louis Area</span>
+        </div>
+        <a href="/book" class="hero-cta">Book With Kristine →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- TESTIMONIALS -->
 </div>
 </section>
