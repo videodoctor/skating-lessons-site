@@ -50,8 +50,8 @@
   .service-book-btn:hover { background:var(--red); }
   .service-book-btn.featured-btn { background:var(--red); }
   .service-book-btn.featured-btn:hover { background:#a50d24; }
-  .bio-section { background:var(--ice); }
-  .bio-photo { width:100%;aspect-ratio:4/5;object-fit:cover;object-position:top;border-radius:8px;box-shadow:24px 24px 0 var(--navy); }
+  .bio-section { background:var(--ice); overflow:hidden; padding-bottom:5rem; }
+  .bio-photo { width:100%;aspect-ratio:4/5;object-fit:cover;object-position:top;border-radius:8px;box-shadow:16px 16px 0 var(--navy); }
   .bio-quote { font-family:'DM Serif Display',serif;font-style:italic;font-size:1.5rem;color:var(--navy);
     line-height:1.5;border-left:4px solid var(--red);padding-left:1.5rem; }
   .credential-chip { display:inline-flex;align-items:center;gap:6px;background:#fff;
@@ -155,7 +155,7 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="py-20 bg-gray-50">
+<section class="py-20 pb-28 bg-white">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="text-center mb-14">
       <p class="section-label mb-2">Simple Process</p>
@@ -173,10 +173,10 @@
   </div>
 
 <!-- BIO -->
-<section class="bio-section py-20">
+<section class="bio-section py-20 pb-32">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="grid md:grid-cols-2 gap-16 items-center">
-      <div>
+      <div style="padding-bottom:2rem;padding-right:2rem;">
         @php $bioPhotos = ['images/kristine_and_mick_004.png','images/kristine_and_mick_005.png']; $bioPhoto = $bioPhotos[array_rand($bioPhotos)]; @endphp
         <img src="{{ asset($bioPhoto) }}" alt="Coach Kristine" class="bio-photo"
              onerror="this.style.cssText='display:flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:8px;width:100%;aspect-ratio:4/5;font-size:5rem;'">

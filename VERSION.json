@@ -1,8 +1,9 @@
 {
-  "version": "2.10.26",
+  "version": "2.10.27",
   "date": "2026-03-23",
   "changes": [
-    "Fix: ScrapeRinkSchedules.php syntax error - escaped JSON quotes in Claude Vision prompt",
-    "Fix: Restore Coach Kristine bio section on home page (was accidentally removed)"
+    "Home page: fix bio section overflow:hidden to contain navy photo shadow",
+    "Home page: reduce box-shadow offset 24px -> 16px to prevent bleed",
+    "Home page: bio section padding-bottom enforced"
   ]
 }
