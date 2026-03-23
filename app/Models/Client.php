@@ -16,6 +16,7 @@ class Client extends Authenticatable
         'sms_consent', 'sms_phone',
         'email_verify_token', 'email_verified_at',
         'phone_verify_code', 'phone_verify_sent_at', 'phone_verified_at',
+        'calendar_token',
         'waiver_signed_at', 'waiver_version', 'waiver_ip',
         'access_token',
     ];
@@ -90,6 +91,12 @@ class Client extends Authenticatable
     public static function boot()
     {
         parent::boot();
+
+        static::creating(function ($client) {
+            if (!$client->calendar_token) {
+                $client->calendar_token = bin2hex(random_bytes(24));
+            }
+        });
 
         static::saving(function ($client) {
             // Keep legacy name field in sync

@@ -24,9 +24,17 @@
     <div class="grid md:grid-cols-2 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow-lg p-6">
             <h3 class="text-xl font-bold text-blue-900 mb-4">Quick Actions</h3>
-            <a href="/book" class="block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded text-center transition">
+            <a href="/book" class="block bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded text-center transition mb-3">
                 Request a New Lesson
             </a>
+            @php $calToken = Auth::guard('client')->user()->calendar_token; @endphp
+            @if($calToken)
+            <a href="webcal://kristineskates.com/my/lessons.ics?token={{ $calToken }}"
+               class="block bg-blue-50 hover:bg-blue-100 text-blue-900 font-bold py-3 px-4 rounded text-center transition border border-blue-200">
+                📅 Subscribe to My Lesson Calendar
+            </a>
+            <p class="text-xs text-gray-400 text-center mt-1">Opens in Apple Calendar, Google Calendar, or Outlook</p>
+            @endif
         </div>
 
         <div class="bg-white rounded-lg shadow-lg p-6">

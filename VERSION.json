@@ -1,8 +1,8 @@
 {
-  "version": "2.10.30",
+  "version": "2.10.32",
   "date": "2026-03-23",
   "changes": [
-    "Rinks page: filter by is_active=true (Maryville now hidden)",
-    "Home page: How It Works section tag properly closed before bio section"
+    "Home page hero: max-height:700px so it doesn't fill entire 4K screen",
+    "Hero still uses height:92vh on smaller screens, min 600px on tiny screens"
   ]
 }

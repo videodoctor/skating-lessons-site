@@ -8,7 +8,7 @@
   :root { --navy:#001F5B; --red:#C8102E; --ice:#E8F5FB; --gold:#C9A84C; }
   body { font-family:'DM Sans',sans-serif; }
 
-  .hero { background:var(--navy); position:relative; overflow:hidden; min-height:92vh; display:flex; align-items:stretch; }
+  .hero { background:var(--navy); position:relative; overflow:hidden; min-height:600px; max-height:700px; height:92vh; display:flex; align-items:stretch; }
   .hero-lines { position:absolute;inset:0;pointer-events:none;opacity:.06;
     background-image:repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 120px),repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 80px); }
   .hero-accent { position:absolute;right:-60px;top:0;bottom:0;width:55%;

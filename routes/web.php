@@ -212,6 +212,9 @@ Route::get('/calendar/public-skating.ics', [\App\Http\Controllers\CalendarContro
 Route::get('/calendar/{rink}.ics', [\App\Http\Controllers\CalendarController::class, 'publicSessions']);
 Route::get('/admin/calendar/bookings.ics', [\App\Http\Controllers\Admin\CalendarController::class, 'icalFeed'])->name('admin.calendar.ical');
 
+// Client lesson feed (token-protected, unique per client)
+Route::get('/my/lessons.ics', [\App\Http\Controllers\ClientCalendarController::class, 'lessonFeed'])->name('client.calendar.ical');
+
 require __DIR__.'/auth.php';
 
 // Twilio inbound SMS webhook (exempt from CSRF)
