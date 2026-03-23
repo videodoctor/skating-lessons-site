@@ -1,10 +1,13 @@
 {
-  "version": "2.10.22",
+  "version": "2.10.23",
   "date": "2026-03-22",
   "changes": [
-    "Creve Coeur scraper: auto-discovery when URL 404s — searches city website then falls back to known URL",
-    "Creve Coeur scraper: auto-updates schedule_url in DB when new URL discovered",
-    "Creve Coeur: updated fallback URL to /1257/Public-Ice-Sessions",
-    "Fix: clear sessions only runs AFTER successful page fetch (was already correct, confirmed)"
+    "Admin booking calendar at /admin/calendar",
+    "Month view: grid with color-coded booking pills by status",
+    "List view: chronological list with client, service, rink, student",
+    "Slide-out detail panel: shows full booking info, phone link, link to booking detail",
+    "Prev/Next month navigation, Today button",
+    "Calendar link added to admin sidebar",
+    "Creve Coeur scraper auto-discovery (v2.10.22)"
   ]
 }

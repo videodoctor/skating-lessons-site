@@ -142,6 +142,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::delete('/clients/{client}/students/{student}', [ClientController::class, 'unlinkStudent'])->name('admin.clients.unlink-student');
 
     // Students
+    // Calendar
+    Route::get('/calendar', [App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('admin.calendar');
+
     // Packages
     Route::get('/packages', [App\Http\Controllers\Admin\PackageController::class, 'index'])->name('admin.packages.index');
     Route::post('/packages', [App\Http\Controllers\Admin\PackageController::class, 'store'])->name('admin.packages.store');

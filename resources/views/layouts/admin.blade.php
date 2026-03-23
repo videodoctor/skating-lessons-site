@@ -71,6 +71,7 @@
     <div class="sidebar-label">Main</div>
     <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" onclick="closeDrawer()">📊 Dashboard</a>
     <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}" onclick="closeDrawer()">📋 Bookings</a>
+    <a href="{{ route('admin.calendar') }}" class="nav-link {{ request()->routeIs('admin.calendar*') ? 'active' : '' }}" onclick="closeDrawer()">📅 Calendar</a>
     <a href="{{ route('admin.schedule') }}" class="nav-link {{ request()->routeIs('admin.schedule') ? 'active' : '' }}" onclick="closeDrawer()">📅 Schedule</a>
     <a href="{{ route('admin.schedule.verify') }}" class="nav-link {{ request()->routeIs('admin.schedule.verify') ? 'active' : '' }}" onclick="closeDrawer()">🔍 Verify Schedule</a>
     <div class="sidebar-label">People</div>
@@ -107,6 +108,7 @@
   <div class="sidebar-label">Main</div>
   <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">📊 Dashboard</a>
   <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}">📋 Bookings</a>
+  <a href="{{ route('admin.calendar') }}" class="nav-link {{ request()->routeIs('admin.calendar*') ? 'active' : '' }}">📅 Calendar</a>
   <a href="{{ route('admin.schedule') }}" class="nav-link {{ request()->routeIs('admin.schedule') ? 'active' : '' }}">📅 Schedule</a>
   <a href="{{ route('admin.schedule.verify') }}" class="nav-link {{ request()->routeIs('admin.schedule.verify') ? 'active' : '' }}">🔍 Verify Schedule</a>
   <div class="sidebar-label">People</div>
