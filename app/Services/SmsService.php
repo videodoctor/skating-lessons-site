@@ -223,6 +223,21 @@ class SmsService
         }
     }
 
+    // ── Send a raw SMS to any number ──────────────────────────────────────────
+
+    public function sendRaw(string $phone, string $message): void
+    {
+        $normalized = $this->normalizePhone($phone);
+        try {
+            $this->twilio->messages->create($normalized, [
+                'from' => $this->from,
+                'body' => $message,
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("SmsService sendRaw failed for {$normalized}: " . $e->getMessage());
+        }
+    }
+
     // ── Send opt-in confirmation (required by CTIA/A2P) ───────────────────────
 
     public function sendOptInConfirmation(string $phone): void

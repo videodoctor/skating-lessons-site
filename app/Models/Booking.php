@@ -18,7 +18,11 @@ class Booking extends Model
         'client_email',
         'client_phone',
         'service_id',
-        'time_slot_id',
+        'suggested_time_slot_id',
+        'suggestion_message',
+        'suggestion_token',
+        'suggestion_sent_at',
+        'suggestion_responded_at',
         'student_age',
         'date',
         'start_time',
@@ -80,6 +84,11 @@ class Booking extends Model
     public function timeSlot(): BelongsTo
     {
         return $this->belongsTo(TimeSlot::class);
+    }
+
+    public function suggestedTimeSlot(): BelongsTo
+    {
+        return $this->belongsTo(TimeSlot::class, 'suggested_time_slot_id');
     }
 
     public function assessment(): HasOne

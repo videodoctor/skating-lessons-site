@@ -199,6 +199,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::delete('/planner/scan/{scan}', [App\Http\Controllers\Admin\PlannerController::class, 'destroy'])->name('admin.planner.destroy');
     Route::post('/planner/scan/{scan}/dismiss-missing/{booking}', [App\Http\Controllers\Admin\PlannerController::class, 'dismissMissing'])->name('admin.planner.dismiss-missing');
     Route::patch('/bookings/{booking}/cancel', [App\Http\Controllers\Admin\BookingController::class, 'cancel'])->name('admin.bookings.cancel');
+    Route::post('/bookings/{booking}/suggest-time', [App\Http\Controllers\Admin\BookingController::class, 'suggestTime'])->name('admin.bookings.suggest-time');
+    Route::get('/bookings/slots-for-date', [App\Http\Controllers\Admin\BookingController::class, 'slotsForDate'])->name('admin.bookings.slots-for-date');
     Route::post('/planner/create-booking', [App\Http\Controllers\Admin\PlannerController::class, 'createBooking'])->name('admin.planner.create-booking');
 
     // Export / Reports
@@ -211,6 +213,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 Route::get('/calendar/public-skating.ics', [\App\Http\Controllers\CalendarController::class, 'publicSessions']);
 Route::get('/calendar/{rink}.ics', [\App\Http\Controllers\CalendarController::class, 'publicSessions']);
 Route::get('/admin/calendar/bookings.ics', [\App\Http\Controllers\Admin\CalendarController::class, 'icalFeed'])->name('admin.calendar.ical');
+
+// Booking suggestion accept/decline (public, token-protected)
+Route::get('/booking/suggestion/{token}/accept', [App\Http\Controllers\Admin\BookingController::class, 'acceptSuggestion'])->name('booking.suggestion.accept');
+Route::get('/booking/suggestion/{token}/decline', [App\Http\Controllers\Admin\BookingController::class, 'declineSuggestion'])->name('booking.suggestion.decline');
 
 // Client lesson feed (token-protected, unique per client)
 Route::get('/my/lessons.ics', [\App\Http\Controllers\ClientCalendarController::class, 'lessonFeed'])->name('client.calendar.ical');

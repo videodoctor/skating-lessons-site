@@ -1,8 +1,8 @@
 {
-  "version": "2.10.32",
+  "version": "2.10.34",
   "date": "2026-03-23",
   "changes": [
-    "Home page hero: max-height:700px so it doesn't fill entire 4K screen",
-    "Hero still uses height:92vh on smaller screens, min 600px on tiny screens"
+    "Home page bio: updated with Kristine's real background — Nerinx Hall, Creve Coeur 8 years, CHA Learn to Play lead instructor, Lady Cyclones, Lady Liberty 14U/19U",
+    "Credentials updated: CHA Learn to Play Lead Instructor, St. Louis Native"
   ]
 }

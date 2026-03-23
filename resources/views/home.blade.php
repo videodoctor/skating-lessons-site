@@ -186,13 +186,14 @@
       <div>
         <p class="section-label mb-3">Meet Your Coach</p>
         <h2 class="section-title mb-6">Coach Kristine Humphrey</h2>
-        <blockquote class="bio-quote mb-8">"Every skater has untapped speed and power waiting to be unlocked. I'm here to help them find it."</blockquote>
-        <p class="text-gray-600 leading-relaxed mb-6">Kristine Humphrey brings years of competitive hockey experience and a genuine passion for teaching to every session. Whether you're stepping on the ice for the first time or refining your edge work for competitive play, her structured, one-on-one approach cuts through the guesswork and gets you results fast.</p>
+        <blockquote class="bio-quote mb-6">"Every skater has untapped speed and power waiting to be unlocked. I'm here to help them find it."</blockquote>
+        <p class="text-gray-600 leading-relaxed mb-4">A St. Louis native and Nerinx Hall graduate, Kristine began her skating career at Creve Coeur Ice Arena — where she spent eight years and discovered her passion for the game. That passion turned into a calling: teaching others to skate, compete, and love hockey the way she does.</p>
+        <p class="text-gray-600 leading-relaxed mb-6">Kristine has taught Learn to Skate and Learn to Play at Hardee's Ice Plex, Pacific Ice Rink, Kirkwood Ice Arena, and Creve Coeur Ice Arena. She is the <strong>lead instructor for CHA Learn to Play</strong> and has coached with the Lady Cyclones and served as assistant coach for Lady Liberty's 14U and 19U programs. Whether it's a toddler's first steps on ice or a teenager chasing a roster spot, Kristine meets every skater exactly where they are.</p>
         <div class="flex flex-wrap gap-3 mb-8">
-          <span class="credential-chip">🏒 Hockey Skating Specialist</span>
-          <span class="credential-chip">⛸️ Power Skating Focus</span>
-          <span class="credential-chip">👶 Youth &amp; Adult</span>
-          <span class="credential-chip">📍 St. Louis Area</span>
+          <span class="credential-chip">🏒 CHA Learn to Play Lead Instructor</span>
+          <span class="credential-chip">⛸️ Power Skating Specialist</span>
+          <span class="credential-chip">👶 Ages 4+ &amp; All Levels</span>
+          <span class="credential-chip">📍 St. Louis Native</span>
         </div>
         <a href="/book" class="hero-cta">Book With Kristine →</a>
       </div>

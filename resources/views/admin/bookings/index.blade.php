@@ -150,6 +150,13 @@
             @csrf
             <button type="submit" class="btn-xs btn-reject">✕ Reject</button>
           </form>
+          <button type="button" class="btn-xs" style="background:#fef3c7;color:#92400e;margin-left:3px;"
+            onclick="openSuggestModal({{ $booking->id }}, '{{ addslashes($booking->client_name) }}', '{{ \Carbon\Carbon::parse($booking->date)->format('Y-m-d') }}')">
+            🔄 Suggest Time
+          </button>
+        @endif
+        @if($booking->status === 'suggestion_pending')
+          <span style="background:#fef3c7;color:#92400e;font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:6px;">⏳ Awaiting Client Response</span>
         @endif
         @if(!$booking->client_id)
           <button class="btn-xs btn-link" style="margin-top:3px;" onclick="openLinkModal({{ $booking->id }})">👤 Link Client</button>
@@ -215,7 +222,68 @@ function openVenmoModal(bookingId) {
   document.getElementById('venmoForm').action = `/admin/bookings/${bookingId}/venmo-paid`;
   document.getElementById('venmoModal').classList.add('open');
 }
-function closeModals() {
+{{-- Suggest Time Modal --}}
+<div class="modal-overlay" id="suggestModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#001F5B;margin-bottom:1rem;">🔄 Suggest a Different Time</div>
+    <p style="font-size:.85rem;color:#6b7280;margin-bottom:1rem;">Suggesting a new time for: <strong id="suggest-client-name"></strong></p>
+    <form method="POST" id="suggestForm" action="">
+      @csrf
+      <div style="margin-bottom:.75rem;">
+        <label style="font-size:.75rem;font-weight:700;color:#374151;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;">Date</label>
+        <input type="date" id="suggest-date" class="form-input"
+               style="width:100%;border:1.5px solid #e5eaf2;border-radius:7px;padding:.55rem .85rem;font-size:.88rem;"
+               onchange="loadSlots(this.value)">
+      </div>
+      <div style="margin-bottom:.75rem;">
+        <label style="font-size:.75rem;font-weight:700;color:#374151;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;">Available Time Slot</label>
+        <select name="suggested_time_slot_id" id="suggest-slot"
+                style="width:100%;border:1.5px solid #e5eaf2;border-radius:7px;padding:.55rem .85rem;font-size:.88rem;background:#fff;" required>
+          <option value="">— Pick a date first —</option>
+        </select>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="font-size:.75rem;font-weight:700;color:#374151;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;">Message to Client (optional)</label>
+        <textarea name="suggestion_message" rows="3"
+          style="width:100%;border:1.5px solid #e5eaf2;border-radius:7px;padding:.55rem .85rem;font-size:.85rem;resize:vertical;"
+          placeholder="e.g. This slot works better with the ice schedule this week!"></textarea>
+      </div>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+        <button type="button" onclick="closeModals()" style="background:#f3f4f6;color:#374151;border:none;border-radius:7px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer;">Cancel</button>
+        <button type="submit" style="background:#001F5B;color:#fff;border:none;border-radius:7px;padding:.55rem 1.4rem;font-weight:700;cursor:pointer;">Send Suggestion</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openSuggestModal(bookingId, clientName, currentDate) {
+  document.getElementById('suggestForm').action = `/admin/bookings/${bookingId}/suggest-time`;
+  document.getElementById('suggest-client-name').textContent = clientName;
+  document.getElementById('suggest-date').value = currentDate;
+  document.getElementById('suggest-slot').innerHTML = '<option value="">Loading...</option>';
+  loadSlots(currentDate);
+  document.getElementById('suggestModal').style.display = 'flex';
+}
+
+function loadSlots(date) {
+  if (!date) return;
+  const select = document.getElementById('suggest-slot');
+  select.innerHTML = '<option value="">Loading...</option>';
+  fetch(`/admin/bookings/slots-for-date?date=${date}`)
+    .then(r => r.json())
+    .then(slots => {
+      if (slots.length === 0) {
+        select.innerHTML = '<option value="">No available slots on this date</option>';
+      } else {
+        select.innerHTML = slots.map(s =>
+          `<option value="${s.id}">${s.label}</option>`
+        ).join('');
+      }
+    });
+}
+</script>
+@endsection
   document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
 }
 document.querySelectorAll('.modal-overlay').forEach(m => {
