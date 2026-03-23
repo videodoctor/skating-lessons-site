@@ -24,7 +24,7 @@ Route::get('/player/grant-schaible', function () {
 })->name('player.grant');
 
 Route::get('/rinks', function () {
-    $rinks = \App\Models\Rink::orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
+    $rinks = \App\Models\Rink::where('is_active', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
     $todaySessions = \App\Models\RinkSession::with('rink')
         ->where('date', today())
         ->where('is_cancelled', false)

@@ -1,8 +1,8 @@
 {
-  "version": "2.10.29",
+  "version": "2.10.30",
   "date": "2026-03-23",
   "changes": [
-    "Home page: fix How It Works section not closed before bio — was nested inside causing bg-gray-50 to wrap both",
-    "Home page: added missing </section> and CTA button after steps grid"
+    "Rinks page: filter by is_active=true (Maryville now hidden)",
+    "Home page: How It Works section tag properly closed before bio section"
   ]
 }
