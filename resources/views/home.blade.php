@@ -1,6 +1,53 @@
 @extends('layouts.app')
 
-@section('title', 'Kristine Skates — Elite Hockey Skating Instruction, St. Louis')
+@section('title', 'Kristine Humphrey — Private Hockey Skating Lessons, St. Louis | Kristine Skates')
+
+@push('head')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "LocalBusiness",
+      "name": "Kristine Skates",
+      "description": "Private 1-on-1 hockey skating lessons with Coach Kristine Humphrey in St. Louis, Missouri. All ages and skill levels welcome.",
+      "url": "https://kristineskates.com",
+      "logo": "https://kristineskates.com/images/HOCKEY_SKATER.png",
+      "image": "https://kristineskates.com/images/kristine_and_mick_005.png",
+      "telephone": "",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "St. Louis",
+        "addressRegion": "MO",
+        "addressCountry": "US"
+      },
+      "areaServed": {
+        "@type": "City",
+        "name": "St. Louis"
+      },
+      "founder": {
+        "@type": "Person",
+        "name": "Kristine Humphrey",
+        "jobTitle": "Skating Coach",
+        "description": "Private hockey skating instructor in St. Louis. Lead instructor for CHA Learn to Play. Coached with the Lady Cyclones and Lady Liberty programs.",
+        "url": "https://kristineskates.com",
+        "sameAs": [
+          "https://kristineskates.com"
+        ]
+      },
+      "priceRange": "$$",
+      "knowsAbout": ["ice skating", "hockey skating", "skating lessons", "learn to skate", "learn to play hockey"]
+    },
+    {
+      "@type": "SportsActivityLocation",
+      "name": "Kristine Skates — Hockey Skating Lessons",
+      "url": "https://kristineskates.com",
+      "sport": "Ice Hockey"
+    }
+  ]
+}
+</script>
+@endpush
 
 @section('content')
 <style>
@@ -53,6 +100,9 @@
   .service-book-btn.featured-btn:hover { background:#a50d24; }
   .bio-section { background:var(--ice); overflow:hidden; padding-bottom:5rem; }
   .bio-photo { width:100%;aspect-ratio:4/5;object-fit:cover;object-position:top;border-radius:8px;box-shadow:16px 16px 0 var(--navy); }
+  .bio-fade-a { position:relative; animation:bioDissolve 16s ease-in-out infinite; }
+  .bio-fade-b { position:absolute;top:0;left:0; animation:bioDissolve 16s ease-in-out infinite; animation-delay:-8s; }
+  @keyframes bioDissolve { 0%,40%{opacity:1} 50%,90%{opacity:0} 100%{opacity:1} }
   .bio-quote { font-family:'DM Serif Display',serif;font-style:italic;font-size:1.5rem;color:var(--navy);
     line-height:1.5;border-left:4px solid var(--red);padding-left:1.5rem; }
   .credential-chip { display:inline-flex;align-items:center;gap:6px;background:#fff;
@@ -233,10 +283,9 @@
 <section class="bio-section py-20 pb-32">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="grid md:grid-cols-2 gap-16 items-center">
-      <div style="padding-bottom:2rem;padding-right:2rem;">
-        @php $bioPhotos = ['images/kristine_and_mick_004.webp','images/kristine_and_mick_005.webp']; $bioPhoto = $bioPhotos[array_rand($bioPhotos)]; @endphp
-        <img src="{{ asset($bioPhoto) }}" alt="Coach Kristine" class="bio-photo" loading="lazy"
-             onerror="this.style.cssText='display:flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:8px;width:100%;aspect-ratio:4/5;font-size:5rem;'">
+      <div style="padding-bottom:2rem;padding-right:2rem;position:relative;">
+        <img src="{{ asset('images/kristine_and_mick_004.webp') }}" alt="Coach Kristine" class="bio-photo bio-fade bio-fade-a" loading="lazy">
+        <img src="{{ asset('images/kristine_and_mick_005.webp') }}" alt="Coach Kristine" class="bio-photo bio-fade bio-fade-b" loading="lazy">
       </div>
       <div>
         <p class="section-label mb-3">Meet Your Coach</p>

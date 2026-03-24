@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', 'Kristine Skates — Hockey Skating Lessons')</title>
   <meta property="og:title" content="@yield('title', 'Kristine Skates — Private Skating Lessons in St. Louis')">
-  <meta name="description" content="Private 1-on-1 skating lessons with Coach Kristine Humphrey in St. Louis. All ages, all skill levels. Book online at kristineskates.com.">
-  <meta property="og:description" content="Private 1-on-1 skating lessons with Coach Kristine Humphrey in St. Louis. All ages, all skill levels. Book online.">
+  <meta name="description" content="Kristine Humphrey — private hockey skating lessons in St. Louis, MO. 1-on-1 instruction for all ages and skill levels. Book online at kristineskates.com.">
+  <meta property="og:description" content="Kristine Humphrey — private hockey skating lessons in St. Louis. 1-on-1 instruction for all ages. Book online.">
   <meta property="og:image" content="@hasSection('og_image')@yield('og_image')@else{{ asset('images/og-preview.png') }}@endif">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
