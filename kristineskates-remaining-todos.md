@@ -41,7 +41,21 @@ Implemented on `/rinks` page with: "On the Ice Today" live session display group
 
 ---
 
-### 3. Finalize Scraper Deployment
+### 3. Admin: Scraper Progress Bar / Visualizer
+**Goal:** Show real-time scrape progress on the admin dashboard — so Kristine can see which rinks have been scraped, what's in progress, and any errors, without checking logs.
+
+**Features:**
+- Progress bar or status cards for each rink during a scrape run
+- Show: rink name, status (pending/scraping/done/error), sessions found, time elapsed
+- Real-time updates (polling or SSE) while scrape is running
+- History of recent scrape runs with success/fail counts
+- "Run Now" button per rink or "Scrape All" with live progress feedback
+
+**Location:** Widget on `/admin/dashboard` or tab within `/admin/scraper`
+
+---
+
+### 4. Finalize Scraper Deployment
 - ✅ Set up cron job for automated daily scraping (all active rinks) — runs at 3am via `sudo crontab -u www-data`
 - Test error handling for missing/malformed PDFs
 - Add scraper status dashboard in admin (last run, sessions found, errors)
