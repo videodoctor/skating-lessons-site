@@ -61,6 +61,7 @@ Route::get('/book/ajax/dates/{service}', [BookingController::class, 'ajaxDates']
 Route::get('/book/ajax/slots/{service}/{date}', [BookingController::class, 'ajaxSlots'])->name('booking.ajax.slots');
 Route::post('/book/submit', [BookingController::class, 'submit'])->name('booking.submit');
 Route::get('/book/confirmation/{booking}', [BookingController::class, 'confirmation'])->name('booking.confirmation');
+Route::get('/pay/{code}', [BookingController::class, 'pay'])->name('booking.pay');
 
 /*
 |--------------------------------------------------------------------------

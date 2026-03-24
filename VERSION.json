@@ -1,15 +1,9 @@
 {
-  "version": "2.10.48",
+  "version": "2.10.49",
   "date": "2026-03-24",
   "changes": [
-    "Tests: switch from RefreshDatabase to DatabaseTransactions — tests no longer wipe production data",
-    "Tests: use unique slugs/dates to avoid collisions with existing data",
-    "Fix: BookingController notes field undefined when not submitted",
-    "Fix: ClientAuthController normalizePhone crash when phone not provided",
-    "Fix: Booking model missing time_slot_id in $fillable",
-    "Fix: Admin reject() now sets status to 'rejected' instead of 'cancelled'",
-    "Fix: Admin bookings Blade orphaned JS / closeModals() restored",
-    "Migration: add 'rejected' and 'suggestion_pending' to bookings status ENUM",
-    "Backup: production data copied to kristineskates_test DB"
+    "New: /pay/{code} payment page — replaces Venmo URLs in SMS for A2P compliance",
+    "SMS: confirmation message now links to kristineskates.com/pay/{code} instead of venmo.com",
+    "Fix: Admin CalendarController duplicate index method outside class"
   ]
 }

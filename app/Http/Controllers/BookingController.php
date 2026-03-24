@@ -197,6 +197,16 @@ class BookingController extends Controller
         return view('booking.confirmation', compact('booking', 'canConvert'));
     }
 
+    // Public payment page (linked from SMS)
+    public function pay(string $code)
+    {
+        $booking = Booking::with(['service', 'timeSlot.rink'])
+            ->where('confirmation_code', $code)
+            ->firstOrFail();
+
+        return view('booking.pay', compact('booking'));
+    }
+
     // Step 6: Guest → Account conversion
     public function convertGuest(Request $request, VerificationService $verification)
     {

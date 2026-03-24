@@ -185,15 +185,12 @@ class SmsService
             $date        = Carbon::parse($booking->date ?? $booking->timeSlot?->date)->format('M j');
             $who         = $studentName ? " for {$studentName}" : '';
 
-            // Include Venmo link on confirmation
-            $venmoHandle = ltrim(config('services.venmo.handle', 'Kristine-Humphrey'), '@');
-            $amount      = $booking->price_paid ? number_format($booking->price_paid, 2) : '';
-            $note        = 'Lesson ' . ($booking->confirmation_code ?? '');
-            $venmoLink   = $amount
-                ? " Pay via Venmo: venmo.com/{$venmoHandle}?txn=pay&amount={$amount}&note=" . urlencode($note)
+            // Include payment link on confirmation
+            $payLink = $booking->price_paid && $booking->confirmation_code
+                ? " Pay here: " . url('/pay/' . $booking->confirmation_code)
                 : '';
 
-            return "Confirmed! We'll see you{$who} on {$date} at {$time}.{$venmoLink} — Coach Kristine";
+            return "Confirmed! We'll see you{$who} on {$date} at {$time}.{$payLink} — Coach Kristine";
 
         } elseif ($reply === 'NO') {
             $booking->update([
