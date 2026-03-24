@@ -1,14 +1,11 @@
 {
-  "version": "2.10.39",
+  "version": "2.10.40",
   "date": "2026-03-24",
   "changes": [
-    "Booking page: full multi-step wizard (Service → Date → Calendar → Time → Info → Review)",
-    "Left sidebar shows step progress, checkmarks on completed steps, live summary",
-    "Calendar highlights available dates, AJAX loads slots for selected date",
-    "Review step shows full summary before submitting",
-    "Pre-fills name/email/phone for logged-in clients",
-    "SMS opt-in only shown when phone number is entered",
-    "AJAX routes: /book/ajax/dates/{service} and /book/ajax/slots/{service}/{date}",
-    "Deploy script fix: cd APP_DIR before artisan migrate"
+    "Booking wizard: auto-advance after picking service, date, and time (no Continue button)",
+    "Booking wizard: SMS opt-in restored — 'Optional: I agree...' shown when phone entered",
+    "Booking wizard: rink shows in sidebar summary immediately when slot picked",
+    "Booking wizard: mobile sticky bottom bar shows current selection + price anchored to screen",
+    "Booking wizard: tighter layout, cleaner cards, live selection summary in sidebar"
   ]
 }
