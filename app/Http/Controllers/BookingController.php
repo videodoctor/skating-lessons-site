@@ -28,6 +28,44 @@ class BookingController extends Controller
         return view('booking.index', compact('services', 'comingSoonServices'));
     }
 
+    public function ajaxDates(Service $service)
+    {
+        $now   = Carbon::now();
+        $dates = TimeSlot::where('is_available', true)
+            ->whereNull('booking_id')
+            ->whereBetween('date', [Carbon::today(), Carbon::today()->addDays(60)])
+            ->whereHas('rink', fn($q) => $q->where('is_active', true))
+            ->where(function ($q) use ($now) {
+                $q->where('date', '>', $now->toDateString())
+                  ->orWhere(fn($q2) => $q2->where('date', $now->toDateString())
+                      ->where('start_time', '>', $now->format('H:i:s')));
+            })
+            ->select('date')->distinct()->pluck('date')
+            ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'));
+
+        return response()->json($dates);
+    }
+
+    public function ajaxSlots(Service $service, $date)
+    {
+        $slots = TimeSlot::with('rink')
+            ->where('is_available', true)
+            ->whereNull('booking_id')
+            ->whereDate('date', $date)
+            ->whereHas('rink', fn($q) => $q->where('is_active', true))
+            ->orderBy('start_time')
+            ->get()
+            ->map(fn($s) => [
+                'id'        => $s->id,
+                'time'      => Carbon::parse($s->start_time)->format('g:i A'),
+                'end_time'  => Carbon::parse($s->end_time)->format('g:i A'),
+                'rink'      => $s->rink?->name ?? '',
+                'rink_id'   => $s->rink_id,
+            ]);
+
+        return response()->json($slots);
+    }
+
     // Step 2: Select Date
     public function selectDate(Service $service)
     {

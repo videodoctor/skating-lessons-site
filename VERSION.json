@@ -1,7 +1,14 @@
 {
-  "version": "2.10.38",
+  "version": "2.10.39",
   "date": "2026-03-24",
   "changes": [
-    "Fix deploy script: cd to APP_DIR before running php artisan migrate --force"
+    "Booking page: full multi-step wizard (Service → Date → Calendar → Time → Info → Review)",
+    "Left sidebar shows step progress, checkmarks on completed steps, live summary",
+    "Calendar highlights available dates, AJAX loads slots for selected date",
+    "Review step shows full summary before submitting",
+    "Pre-fills name/email/phone for logged-in clients",
+    "SMS opt-in only shown when phone number is entered",
+    "AJAX routes: /book/ajax/dates/{service} and /book/ajax/slots/{service}/{date}",
+    "Deploy script fix: cd APP_DIR before artisan migrate"
   ]
 }

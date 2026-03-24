@@ -57,6 +57,8 @@ Route::get('/', function () {
 Route::get('/book', [BookingController::class, 'index'])->name('booking.index');
 Route::get('/book/service/{service}', [BookingController::class, 'selectDate'])->name('booking.select-date');
 Route::get('/book/service/{service}/date/{date}', [BookingController::class, 'selectTime'])->name('booking.select-time');
+Route::get('/book/ajax/dates/{service}', [BookingController::class, 'ajaxDates'])->name('booking.ajax.dates');
+Route::get('/book/ajax/slots/{service}/{date}', [BookingController::class, 'ajaxSlots'])->name('booking.ajax.slots');
 Route::post('/book/submit', [BookingController::class, 'submit'])->name('booking.submit');
 Route::get('/book/confirmation/{booking}', [BookingController::class, 'confirmation'])->name('booking.confirmation');
 
