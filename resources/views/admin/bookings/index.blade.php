@@ -282,9 +282,10 @@ function loadSlots(date) {
       }
     });
 }
-</script>
-@endsection
+
+function closeModals() {
   document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+  document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
 }
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) closeModals(); });

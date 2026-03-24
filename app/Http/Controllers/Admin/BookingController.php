@@ -49,7 +49,7 @@ class BookingController extends Controller
             $booking->timeSlot->update(['booking_id' => null, 'is_available' => true]);
         }
 
-        $booking->update(['status' => 'cancelled']);
+        $booking->update(['status' => 'rejected']);
 
         if ($booking->client_id && $booking->client->email) {
             $booking->client->notify(new BookingRejectedNotification($booking));

@@ -9,16 +9,22 @@ use App\Models\Rink;
 use App\Models\Booking;
 use App\Models\Client;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 class AdminBookingTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        Http::fake([
+            'api.twilio.com/*' => Http::response(['sid' => 'SMtest'], 201),
+        ]);
+
         // Simulate admin session (custom session-based auth)
         session(['admin_authenticated' => true]);
     }
@@ -35,19 +41,26 @@ class AdminBookingTest extends TestCase
 
     private function makeBooking(array $overrides = []): Booking
     {
+        $uid = uniqid();
         $service = Service::create([
-            'name' => 'Private Lesson', 'slug' => 'private-lesson-' . uniqid(),
+            'name' => 'Private Lesson', 'slug' => 'private-lesson-' . $uid,
             'description' => 'Lesson', 'price' => 55, 'duration_minutes' => 30,
             'is_active' => true, 'coming_soon' => false,
         ]);
 
         $rink = $this->makeRink();
 
+        // Use a far-future date + unique time to avoid collisions with production data
+        $testDate = Carbon::today()->addMonths(6)->addDays(random_int(1, 28))->toDateString();
+        $hour = random_int(6, 20);
+        $startTime = sprintf('%02d:%02d:00', $hour, 0);
+        $endTime   = sprintf('%02d:%02d:00', $hour, 30);
+
         $slot = TimeSlot::create([
             'rink_id'      => $rink->id,
-            'date'         => Carbon::tomorrow()->toDateString(),
-            'start_time'   => '14:00:00',
-            'end_time'     => '14:30:00',
+            'date'         => $testDate,
+            'start_time'   => $startTime,
+            'end_time'     => $endTime,
             'is_available' => false,
         ]);
 
@@ -56,12 +69,14 @@ class AdminBookingTest extends TestCase
             'time_slot_id'        => $slot->id,
             'client_name'         => 'Jane Smith',
             'client_email'        => 'jane@example.com',
+            'client_phone'        => '',
             'status'              => 'pending',
             'price_paid'          => 55.00,
-            'date'                => Carbon::tomorrow()->toDateString(),
-            'start_time'          => '14:00:00',
+            'date'                => $testDate,
+            'start_time'          => $startTime,
+            'end_time'            => $endTime,
             'email_consent_at'    => now(),
-            'guest_convert_token' => 'test-token-' . uniqid(),
+            'guest_convert_token' => 'test-token-' . $uid,
         ], $overrides));
     }
 
@@ -79,7 +94,7 @@ class AdminBookingTest extends TestCase
     public function test_admin_bookings_page_loads_with_session(): void
     {
         $user = User::create([
-            'name' => 'Admin', 'email' => 'admin@test.com',
+            'name' => 'Admin', 'email' => 'admin-' . uniqid() . '@test.com',
             'password' => bcrypt('password'),
         ]);
         $response = $this->actingAs($user)->get('/admin/bookings');
@@ -142,9 +157,9 @@ class AdminBookingTest extends TestCase
 
         $newSlot = TimeSlot::create([
             'rink_id'      => $booking->timeSlot->rink_id,
-            'date'         => Carbon::tomorrow()->toDateString(),
-            'start_time'   => '16:00:00',
-            'end_time'     => '16:30:00',
+            'date'         => $booking->date,
+            'start_time'   => '22:00:00',
+            'end_time'     => '22:30:00',
             'is_available' => true,
         ]);
 
@@ -165,9 +180,9 @@ class AdminBookingTest extends TestCase
         $booking = $this->makeBooking();
         $newSlot = TimeSlot::create([
             'rink_id'      => $booking->timeSlot->rink_id,
-            'date'         => Carbon::tomorrow()->toDateString(),
-            'start_time'   => '16:00:00',
-            'end_time'     => '16:30:00',
+            'date'         => $booking->date,
+            'start_time'   => '22:00:00',
+            'end_time'     => '22:30:00',
             'is_available' => true,
         ]);
 
@@ -189,9 +204,9 @@ class AdminBookingTest extends TestCase
         $booking = $this->makeBooking();
         $newSlot = TimeSlot::create([
             'rink_id'      => $booking->timeSlot->rink_id,
-            'date'         => Carbon::tomorrow()->toDateString(),
-            'start_time'   => '16:00:00',
-            'end_time'     => '16:30:00',
+            'date'         => $booking->date,
+            'start_time'   => '22:00:00',
+            'end_time'     => '22:30:00',
             'is_available' => true,
         ]);
 

@@ -6,11 +6,11 @@ use Tests\TestCase;
 use App\Models\Rink;
 use App\Models\Service;
 use App\Models\ServiceWaitlist;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class PublicPagesTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private function makeRink(array $attrs = []): Rink
     {

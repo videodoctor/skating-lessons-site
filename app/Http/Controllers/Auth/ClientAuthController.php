@@ -38,7 +38,7 @@ class ClientAuthController extends Controller
             'email_consent' => 'required|accepted',
         ]);
 
-        $normalizedPhone = $sms->normalizePhone($validated['phone']);
+        $normalizedPhone = !empty($validated['phone']) ? $sms->normalizePhone($validated['phone']) : '';
         $smsConsent      = $request->boolean('sms_consent');
 
         $client = Client::create([

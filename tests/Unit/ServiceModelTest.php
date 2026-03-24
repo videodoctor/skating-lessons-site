@@ -5,12 +5,12 @@ namespace Tests\Unit;
 use Tests\TestCase;
 use App\Models\Service;
 use App\Models\ServiceWaitlist;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Carbon\Carbon;
 
 class ServiceModelTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private function makeService(array $attrs = []): Service
     {

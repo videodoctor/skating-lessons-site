@@ -8,17 +8,18 @@ use App\Models\TimeSlot;
 use App\Models\Rink;
 use App\Models\Booking;
 use App\Models\Client;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 class BookingTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private Service $service;
     private Rink $rink;
     private TimeSlot $slot;
+    private string $testDate;
 
     protected function setUp(): void
     {
@@ -29,9 +30,10 @@ class BookingTest extends TestCase
             'api.twilio.com/*'             => Http::response(['sid' => 'SMtest'], 201),
         ]);
 
+        $uid = uniqid();
         $this->service = Service::create([
-            'name'             => 'Private Lesson',
-            'slug'             => 'private-lesson',
+            'name'             => 'Test Private Lesson',
+            'slug'             => 'test-private-lesson-' . $uid,
             'description'      => 'One-on-one skating lesson',
             'price'            => 55.00,
             'duration_minutes' => 30,
@@ -45,15 +47,16 @@ class BookingTest extends TestCase
         ]);
 
         $this->rink = Rink::create([
-            'name'         => 'Creve Coeur Ice Arena',
-            'slug'         => 'creve-coeur',
+            'name'         => 'Test Rink',
+            'slug'         => 'test-rink-' . $uid,
             'is_active'    => true,
             'schedule_url' => 'https://example.com/schedule',
         ]);
 
+        $this->testDate = Carbon::today()->addDays(45)->toDateString();
         $this->slot = TimeSlot::create([
             'rink_id'      => $this->rink->id,
-            'date'         => Carbon::tomorrow()->toDateString(),
+            'date'         => $this->testDate,
             'start_time'   => '14:00:00',
             'end_time'     => '14:30:00',
             'is_available' => true,
@@ -64,7 +67,7 @@ class BookingTest extends TestCase
     {
         $response = $this->get('/book');
         $response->assertStatus(200);
-        $response->assertSee('Private Lesson');
+        $response->assertSee('Test Private Lesson');
     }
 
     public function test_booking_page_shows_active_services_only(): void
@@ -75,7 +78,7 @@ class BookingTest extends TestCase
             'is_active' => false, 'coming_soon' => false,
         ]);
         $response = $this->get('/book');
-        $response->assertSee('Private Lesson');
+        $response->assertSee('Test Private Lesson');
         $response->assertDontSee('Hidden Service');
     }
 
@@ -95,43 +98,40 @@ class BookingTest extends TestCase
     {
         $response = $this->getJson("/book/ajax/dates/{$this->service->id}");
         $response->assertStatus(200);
-        $response->assertJsonFragment([Carbon::tomorrow()->toDateString()]);
+        $response->assertJsonFragment([Carbon::today()->addDays(45)->toDateString()]);
     }
 
     public function test_ajax_dates_excludes_past_dates(): void
     {
         TimeSlot::create([
             'rink_id'      => $this->rink->id,
-            'date'         => Carbon::yesterday()->toDateString(),
+            'date'         => Carbon::today()->subMonths(6)->toDateString(),
             'start_time'   => '10:00:00',
             'end_time'     => '10:30:00',
             'is_available' => true,
         ]);
         $response = $this->getJson("/book/ajax/dates/{$this->service->id}");
-        $this->assertNotContains(Carbon::yesterday()->toDateString(), $response->json());
+        $this->assertNotContains(Carbon::today()->subMonths(6)->toDateString(), $response->json());
     }
 
     public function test_ajax_slots_returns_slots_for_date(): void
     {
-        $date = Carbon::tomorrow()->toDateString();
-        $response = $this->getJson("/book/ajax/slots/{$this->service->id}/{$date}");
+        $response = $this->getJson("/book/ajax/slots/{$this->service->id}/{$this->testDate}");
         $response->assertStatus(200);
-        $response->assertJsonFragment(['rink' => 'Creve Coeur Ice Arena']);
+        $response->assertJsonFragment(['rink' => 'Test Rink']);
     }
 
     public function test_ajax_slots_excludes_unavailable_slots(): void
     {
         $this->slot->update(['is_available' => false]);
-        $date = Carbon::tomorrow()->toDateString();
-        $response = $this->getJson("/book/ajax/slots/{$this->service->id}/{$date}");
+        $response = $this->getJson("/book/ajax/slots/{$this->service->id}/{$this->testDate}");
         $this->assertEmpty($response->json());
     }
 
     public function test_ajax_slots_excludes_inactive_rinks(): void
     {
         $this->rink->update(['is_active' => false]);
-        $date = Carbon::tomorrow()->toDateString();
-        $response = $this->getJson("/book/ajax/slots/{$this->service->id}/{$date}");
+        $response = $this->getJson("/book/ajax/slots/{$this->service->id}/{$this->testDate}");
         $this->assertEmpty($response->json());
     }
 
@@ -187,11 +187,14 @@ class BookingTest extends TestCase
             'time_slot_id'          => $this->slot->id,
             'client_name'           => 'Jane Smith',
             'client_email'          => 'jane@example.com',
+            'client_phone'          => '3145550100',
             'email_consent'         => '1',
             'cancellation_policy'   => '1',
+            'guest_sms_consent'     => '0',
             'cf-turnstile-response' => 'test',
         ];
-        $this->post('/book/submit', $payload);
+        $first = $this->post('/book/submit', $payload);
+        $this->assertDatabaseHas('bookings', ['client_email' => 'jane@example.com']);
         $response = $this->post('/book/submit', array_merge($payload, ['client_email' => 'bob@example.com']));
         $response->assertSessionHas('error');
         $this->assertDatabaseMissing('bookings', ['client_email' => 'bob@example.com']);

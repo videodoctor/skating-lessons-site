@@ -4,19 +4,20 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Client;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Http;
 
 class ClientAuthTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected function setUp(): void
     {
         parent::setUp();
         // Fake Twilio so registration never hits real SMS API
         Http::fake([
-            'api.twilio.com/*' => Http::response(['sid' => 'SMtest'], 201),
+            'challenges.cloudflare.com/*' => Http::response(['success' => true], 200),
+            'api.twilio.com/*'             => Http::response(['sid' => 'SMtest'], 201),
         ]);
     }
 
@@ -26,7 +27,7 @@ class ClientAuthTest extends TestCase
             'first_name' => 'Jane',
             'last_name'  => 'Smith',
             'email'      => 'jane@example.com',
-            'phone'      => null,
+            'phone'      => '',
             'password'   => bcrypt('password123'),
         ], $attrs));
     }
@@ -48,6 +49,8 @@ class ClientAuthTest extends TestCase
             'email'                 => 'jane@example.com',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
+            'email_consent'         => '1',
+            'cf-turnstile-response' => 'test',
         ]);
 
         $this->assertDatabaseHas('clients', ['email' => 'jane@example.com']);
@@ -61,6 +64,8 @@ class ClientAuthTest extends TestCase
             'email'                 => 'jane@example.com',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
+            'email_consent'         => '1',
+            'cf-turnstile-response' => 'test',
         ]);
 
         $response->assertSessionHasErrors('first_name');
@@ -74,6 +79,8 @@ class ClientAuthTest extends TestCase
             'first_name'            => 'Jane',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
+            'email_consent'         => '1',
+            'cf-turnstile-response' => 'test',
         ]);
 
         $response->assertSessionHasErrors('email');
@@ -88,6 +95,8 @@ class ClientAuthTest extends TestCase
             'email'                 => 'jane@example.com',
             'password'              => 'password123',
             'password_confirmation' => 'wrong',
+            'email_consent'         => '1',
+            'cf-turnstile-response' => 'test',
         ]);
 
         $response->assertSessionHasErrors('password');
@@ -104,6 +113,8 @@ class ClientAuthTest extends TestCase
             'email'                 => 'jane@example.com',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
+            'email_consent'         => '1',
+            'cf-turnstile-response' => 'test',
         ]);
 
         $response->assertSessionHasErrors('email');
@@ -119,6 +130,8 @@ class ClientAuthTest extends TestCase
             'email'                 => 'jane@example.com',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
+            'email_consent'         => '1',
+            'cf-turnstile-response' => 'test',
         ]);
 
         $client = Client::where('email', 'jane@example.com')->first();
