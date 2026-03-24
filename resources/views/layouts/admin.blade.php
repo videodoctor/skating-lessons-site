@@ -50,7 +50,7 @@
 {{-- Mobile topbar --}}
 <div class="mobile-topbar">
   <div class="mobile-logo">
-    <img src="/images/HOCKEY_SKATER.png" style="width:24px;height:24px;object-fit:contain;filter:brightness(0) invert(1);">
+    <img src="/images/HOCKEY_SKATER.webp" style="width:24px;height:24px;object-fit:contain;filter:brightness(0) invert(1);">
     KRISTINE SKATES
     <span style="font-size:.65rem;opacity:.5;font-family:sans-serif;font-weight:400;margin-left:.25rem;">Admin</span>
   </div>
@@ -65,7 +65,7 @@
   <div class="drawer-panel">
     <button class="drawer-close" onclick="closeDrawer()">✕</button>
     <div class="sidebar-logo" style="padding-top:.5rem;">
-      <img src="/images/HOCKEY_SKATER.png" style="width:24px;height:24px;display:inline-block;vertical-align:middle;margin-right:6px;object-fit:contain;filter:brightness(0) invert(1);">
+      <img src="/images/HOCKEY_SKATER.webp" style="width:24px;height:24px;display:inline-block;vertical-align:middle;margin-right:6px;object-fit:contain;filter:brightness(0) invert(1);">
       KRISTINE SKATES
     </div>
     <div class="sidebar-label">Main</div>
@@ -101,7 +101,7 @@
 {{-- Desktop sidebar --}}
 <div class="sidebar">
   <div class="sidebar-logo">
-    <img src="/images/HOCKEY_SKATER.png" style="width:28px;height:28px;display:inline-block;vertical-align:middle;margin-right:8px;object-fit:contain;filter:brightness(0) invert(1);">
+    <img src="/images/HOCKEY_SKATER.webp" style="width:28px;height:28px;display:inline-block;vertical-align:middle;margin-right:8px;object-fit:contain;filter:brightness(0) invert(1);">
     KRISTINE SKATES<br>
     <span style="font-size:.7rem;opacity:.5;font-family:sans-serif;font-weight:400;">Admin Panel</span>
   </div>

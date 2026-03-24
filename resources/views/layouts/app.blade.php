@@ -29,7 +29,7 @@
       <!-- Desktop: single row -->
       <div class="hidden sm:flex justify-between h-16 items-center">
         <a href="/" style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--navy);letter-spacing:.05em;display:flex;align-items:center;gap:8px;">
-          <img src="/images/HOCKEY_SKATER.png" style="width:30px;height:30px;display:inline-block;vertical-align:middle;margin-right:6px;object-fit:contain;">Kristine Skates
+          <img src="/images/HOCKEY_SKATER.webp" style="width:30px;height:30px;display:inline-block;vertical-align:middle;margin-right:6px;object-fit:contain;">Kristine Skates
         </a>
         <div class="flex items-center gap-1">
           <a href="/" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">Home</a>
@@ -57,7 +57,7 @@
       <!-- Mobile: hamburger -->
       <div class="sm:hidden flex justify-between items-center h-14">
         <a href="/" style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--navy);letter-spacing:.05em;display:flex;align-items:center;gap:8px;white-space:nowrap;">
-          <img src="/images/HOCKEY_SKATER.png" style="width:26px;height:26px;object-fit:contain;">Kristine Skates
+          <img src="/images/HOCKEY_SKATER.webp" style="width:26px;height:26px;object-fit:contain;">Kristine Skates
         </a>
         <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
                 style="padding:6px;border:none;background:none;cursor:pointer;">
@@ -106,7 +106,7 @@
   <footer id="main-footer" style="background:#0f172a;color:#94a3b8;margin-top:4rem;">
     <div class="max-w-7xl mx-auto px-4 py-8">
       <div class="flex flex-wrap justify-between items-center gap-4">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;"><img src="/images/HOCKEY_SKATER.png" style="width:30px;height:30px;display:inline-block;vertical-align:middle;margin-right:6px;object-fit:contain;filter:brightness(0) invert(1);">Kristine Skates</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;"><img src="/images/HOCKEY_SKATER.webp" style="width:30px;height:30px;display:inline-block;vertical-align:middle;margin-right:6px;object-fit:contain;filter:brightness(0) invert(1);">Kristine Skates</div>
         <div class="text-sm">Elite hockey skating instruction · St. Louis, MO</div>
         <div class="text-sm">&copy; {{ date('Y') }} Kristine Skates. All rights reserved.</div>
         <div class="text-sm" style="display:flex;gap:1.25rem;">
@@ -117,7 +117,5 @@
     </div>
   </footer>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 </body>
 </html>

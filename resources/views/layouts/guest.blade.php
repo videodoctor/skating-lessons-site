@@ -34,7 +34,7 @@
         <div class="login-bg min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
             <div class="mb-6 text-center relative z-10">
                 <a href="/" style="display:flex;flex-direction:column;align-items:center;text-decoration:none;">
-                    <img src="/images/HOCKEY_SKATER.png" alt="Kristine Skates" style="width:64px;height:64px;object-fit:contain;margin-bottom:.75rem;">
+                    <img src="/images/HOCKEY_SKATER.webp" alt="Kristine Skates" style="width:64px;height:64px;object-fit:contain;margin-bottom:.75rem;">
                     <span style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#fff;letter-spacing:.08em;line-height:1;">Kristine Skates</span>
                     <span style="font-size:.8rem;color:rgba(255,255,255,.5);margin-top:.35rem;letter-spacing:.15em;text-transform:uppercase;">Admin</span>
                 </a>

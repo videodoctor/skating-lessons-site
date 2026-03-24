@@ -76,15 +76,15 @@
   <div class="hero-accent"></div>
   <div class="hero-photo-wrap">
     <video id="hero-video" autoplay muted playsinline preload="auto"
-      poster="{{ asset('images/kristine_and_mick_001.jpg') }}">
-      <source id="hero-video-src" src="{{ asset('videos/mick_reel_001_optimized.mp4') }}" type="video/mp4">
-      <img src="{{ asset('images/kristine_and_mick_001.jpg') }}" alt="Coach Kristine on ice">
+      poster="{{ asset('images/kristine_and_mick_001.webp') }}">
+      <source id="hero-video-src" src="{{ asset('videos/mick_reel_001_web.mp4') }}" type="video/mp4">
+      <img src="{{ asset('images/kristine_and_mick_001.webp') }}" alt="Coach Kristine on ice">
     </video>
-    <video id="hero-video-2" class="hero-video-secondary" autoplay muted playsinline preload="auto">
-      <source id="hero-video-src-2" src="{{ asset('videos/mick_reel_002_optimized.mp4') }}" type="video/mp4">
+    <video id="hero-video-2" class="hero-video-secondary" autoplay muted playsinline preload="none">
+      <source id="hero-video-src-2" src="{{ asset('videos/mick_reel_002_web.mp4') }}" type="video/mp4">
     </video>
-    <video id="hero-video-3" class="hero-video-secondary" autoplay muted playsinline preload="auto">
-      <source id="hero-video-src-3" src="{{ asset('videos/mick_reel_003_optimized.mp4') }}" type="video/mp4">
+    <video id="hero-video-3" class="hero-video-secondary" autoplay muted playsinline preload="none">
+      <source id="hero-video-src-3" src="{{ asset('videos/mick_reel_003_web.mp4') }}" type="video/mp4">
     </video>
   </div>
   <div class="hero-content max-w-7xl mx-auto px-6 lg:px-8 w-full pt-10 pb-10">
@@ -234,8 +234,8 @@
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="grid md:grid-cols-2 gap-16 items-center">
       <div style="padding-bottom:2rem;padding-right:2rem;">
-        @php $bioPhotos = ['images/kristine_and_mick_004.png','images/kristine_and_mick_005.png']; $bioPhoto = $bioPhotos[array_rand($bioPhotos)]; @endphp
-        <img src="{{ asset($bioPhoto) }}" alt="Coach Kristine" class="bio-photo"
+        @php $bioPhotos = ['images/kristine_and_mick_004.webp','images/kristine_and_mick_005.webp']; $bioPhoto = $bioPhotos[array_rand($bioPhotos)]; @endphp
+        <img src="{{ asset($bioPhoto) }}" alt="Coach Kristine" class="bio-photo" loading="lazy"
              onerror="this.style.cssText='display:flex;align-items:center;justify-content:center;background:#dbeafe;border-radius:8px;width:100%;aspect-ratio:4/5;font-size:5rem;'">
       </div>
       <div>
@@ -337,9 +337,9 @@
 <script>
 (function() {
   const clips = [
-    '{{ asset("videos/mick_reel_001_optimized.mp4") }}',
-    '{{ asset("videos/mick_reel_002_optimized.mp4") }}',
-    '{{ asset("videos/mick_reel_003_optimized.mp4") }}',
+    '{{ asset("videos/mick_reel_001_web.mp4") }}',
+    '{{ asset("videos/mick_reel_002_web.mp4") }}',
+    '{{ asset("videos/mick_reel_003_web.mp4") }}',
   ];
   const isMobile = window.innerWidth <= 768;
 
@@ -370,18 +370,27 @@
   }
 
   if (isMobile) {
-    // Mobile: single video cycling through all clips
+    // Mobile: defer video load — show poster first, load on user interaction
     const p = players[0];
     let idx = 0;
-    p.s.src = clips[idx];
-    p.v.load();
-    p.v.play().catch(() => {});
-    p.v.addEventListener('ended', function() {
-      idx = (idx + 1) % clips.length;
+    p.v.preload = 'none';
+    function startMobileVideo() {
       p.s.src = clips[idx];
       p.v.load();
       p.v.play().catch(() => {});
+      p.v.addEventListener('ended', function() {
+        idx = (idx + 1) % clips.length;
+        p.s.src = clips[idx];
+        p.v.load();
+        p.v.play().catch(() => {});
+      });
+    }
+    // Start loading after first user interaction or after 3s idle
+    document.addEventListener('touchstart', function once() {
+      startMobileVideo();
+      document.removeEventListener('touchstart', once);
     });
+    setTimeout(startMobileVideo, 3000);
   } else {
     // Desktop: all 3 slots, each rotates independently
     players.forEach((p, i) => {
