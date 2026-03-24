@@ -253,18 +253,25 @@ class ScrapeRinkSchedules extends Command
         $imageContent = file_get_contents($imageUrl);
         $base64       = base64_encode($imageContent);
 
-        $prompt = "This is a public ice skating schedule for {$monthName} {$year}. " .
-            "Extract all PUBLIC SKATE sessions from this calendar image. " .
-            "For each session return the day of month (number), start time, and end time. " .
-            "Return ONLY a JSON array like: [{\"day\":5,\"start\":\"9:15 AM\",\"end\":\"11:45 AM\"}] " .
-            "Only include Public Skate sessions. Return only valid JSON, no other text.";
+        $prompt = "This is a monthly calendar image showing the ice rink schedule for {$monthName} {$year}. " .
+            "Extract ONLY the PUBLIC SKATE sessions (sometimes labeled 'Public Skating' or 'Public Skate'). " .
+            "Do NOT include Learn to Skate, Hockey, Stick & Puck, Figure Skating, Private Ice, or any other session types.\n" .
+            "IMPORTANT time-reading rules:\n" .
+            "- All sessions occur during daytime/evening hours, typically between 6:00 AM and 11:00 PM.\n" .
+            "- Always include AM or PM on every time. Read the AM/PM from the image carefully.\n" .
+            "- If a time looks like '1:00' next to a morning session, it is almost certainly '1:00 PM' not '1:00 AM'.\n" .
+            "- Common public skate times are 9:00 AM-12:00 PM, 11:00 AM-1:00 PM, 12:00 PM-2:00 PM, etc.\n" .
+            "- The end time must always be AFTER the start time and the session should be 1-4 hours long.\n" .
+            "For each session return the day of month (integer), start time (12-hour with AM/PM), and end time (12-hour with AM/PM). " .
+            "Return ONLY a JSON array. Example: [{\"day\":5,\"start\":\"9:15 AM\",\"end\":\"11:45 AM\"},{\"day\":12,\"start\":\"12:00 PM\",\"end\":\"2:00 PM\"}]\n" .
+            "Return only valid JSON, no markdown fences, no other text.";
 
         $response = \Illuminate\Support\Facades\Http::withHeaders([
             'x-api-key'         => config('services.anthropic.key'),
             'anthropic-version' => '2023-06-01',
             'content-type'      => 'application/json',
         ])->timeout(60)->post('https://api.anthropic.com/v1/messages', [
-            'model'      => 'claude-opus-4-5',
+            'model'      => 'claude-sonnet-4-6',
             'max_tokens' => 2000,
             'messages'   => [[
                 'role'    => 'user',
@@ -328,6 +335,32 @@ class ScrapeRinkSchedules extends Command
                 $date  = \Carbon\Carbon::create($year, $monthNumber, $day);
                 $start = \Carbon\Carbon::parse($date->format('Y-m-d') . ' ' . $s['start']);
                 $end   = \Carbon\Carbon::parse($date->format('Y-m-d') . ' ' . $s['end']);
+
+                // Validate: times must be between 6 AM and 11 PM
+                $startHour = (int)$start->format('G');
+                $endHour   = (int)$end->format('G');
+                if ($startHour < 6 || $startHour > 22) {
+                    $this->warn("    Skipped day {$day}: start time {$start->format('g:i A')} outside 6AM-11PM range");
+                    continue;
+                }
+                if ($endHour < 6 || ($endHour >= 23 && (int)$end->format('i') > 0)) {
+                    $this->warn("    Skipped day {$day}: end time {$end->format('g:i A')} outside 6AM-11PM range");
+                    continue;
+                }
+
+                // Validate: end must be after start
+                if ($end->lte($start)) {
+                    $this->warn("    Skipped day {$day}: end time {$end->format('g:i A')} is not after start {$start->format('g:i A')}");
+                    continue;
+                }
+
+                // Validate: session should be 30 min to 4 hours
+                $durationMinutes = $start->diffInMinutes($end);
+                if ($durationMinutes < 30 || $durationMinutes > 240) {
+                    $this->warn("    Skipped day {$day}: session duration {$durationMinutes}min outside 30min-4hr range ({$start->format('g:i A')}-{$end->format('g:i A')})");
+                    continue;
+                }
+
                 $this->createSession($rink, $date, $start, $end);
                 $this->log("    Added: {$date->format('M d')} {$start->format('g:i A')} - {$end->format('g:i A')}");
                 $count++;
@@ -712,8 +745,8 @@ class ScrapeRinkSchedules extends Command
 
                 if (!$booked) {
                     TimeSlot::updateOrCreate(
-                        ['rink_id' => $session->rink_id, 'date' => $session->date, 'start_time' => $slotStart->toTimeString()],
-                        ['rink_session_id' => $session->id, 'end_time' => $slotEnd->toTimeString(), 'duration_minutes' => 30, 'is_available' => true, 'booking_id' => null]
+                        ['date' => $session->date, 'start_time' => $slotStart->toTimeString()],
+                        ['rink_id' => $session->rink_id, 'rink_session_id' => $session->id, 'end_time' => $slotEnd->toTimeString(), 'duration_minutes' => 30, 'is_available' => true, 'booking_id' => null]
                     );
                     $created++;
                 } else {
