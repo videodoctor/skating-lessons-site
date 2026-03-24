@@ -372,7 +372,7 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-lbl">Phone (optional)</label>
-          <input class="form-inp" type="tel" id="f-phone" placeholder="(314) 555-0100" oninput="toggleSms()">
+          <input class="form-inp" type="tel" id="f-phone" placeholder="(314) 555-0100" oninput="formatPhone(this);toggleSms()">
         </div>
         <div class="form-group">
           <label class="form-lbl">Skater's First Name</label>
@@ -667,6 +667,15 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 // Init mobile bar
 syncMobileBar();
+
+// ── Phone formatter ───────────────────────────────────────────────────────
+function formatPhone(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 10);
+  if (v.length >= 6)      v = '(' + v.substring(0,3) + ') ' + v.substring(3,6) + '-' + v.substring(6);
+  else if (v.length >= 3) v = '(' + v.substring(0,3) + ') ' + v.substring(3);
+  else if (v.length > 0)  v = '(' + v;
+  input.value = v;
+}
 </script>
 
 @endsection

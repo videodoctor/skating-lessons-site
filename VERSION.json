@@ -1,10 +1,15 @@
 {
-  "version": "2.10.41",
+  "version": "2.10.42",
   "date": "2026-03-24",
   "changes": [
-    "Booking: SMS opt-in always visible, dimmed/disabled until valid phone (10+ digits) entered",
-    "Booking: removed redundant summary card below steps on desktop sidebar",
-    "Booking: step 3 renamed 'Time & Rink', sublabel shows time · rink after selection",
-    "Booking: step sublabels in sidebar are the only place selections are shown on desktop"
+    "Phone formatter: (314) 555-0100 format working on booking wizard and client registration",
+    "Booking wizard: formatPhone() wired to f-phone input",
+    "Client register: formatPhone() function added",
+    "Tests: Feature/BookingTest — booking flow, AJAX dates/slots, double-booking, validation",
+    "Tests: Feature/AdminBookingTest — approve, reject, cancel, suggest time, accept/decline",
+    "Tests: Feature/ClientAuthTest — registration, login, calendar token, iCal feed",
+    "Tests: Feature/PublicPagesTest — home, rinks, sms-opt-in, waitlist, admin redirect",
+    "Tests: Unit/ServiceModelTest — discounts (dollar/percent/expired/future), coming soon, waitlist",
+    "Tests: phpunit.xml uses SQLite in-memory for fast isolated test runs"
   ]
 }

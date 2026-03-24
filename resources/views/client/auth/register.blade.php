@@ -99,6 +99,13 @@
     </p>
   </div>
 </div>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer>function formatPhone(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 10);
+  if (v.length >= 6)      v = '(' + v.substring(0,3) + ') ' + v.substring(3,6) + '-' + v.substring(6);
+  else if (v.length >= 3) v = '(' + v.substring(0,3) + ') ' + v.substring(3);
+  else if (v.length > 0)  v = '(' + v;
+  input.value = v;
+}
+</script>
 @endsection
 {{-- NOTE: privacy policy link added to email consent checkbox above --}}
