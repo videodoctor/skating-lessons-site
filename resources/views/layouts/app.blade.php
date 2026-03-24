@@ -47,11 +47,11 @@
           @else
             <a href="{{ route('client.login') }}" class="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm">Client Login</a>
           @endauth
-          @auth('web')
+          @if(session()->has('admin_authenticated'))
             <a href="/admin/dashboard" style="background:#f0f4ff;color:var(--navy);padding:.45rem 1rem;border-radius:6px;font-weight:600;font-size:.85rem;border:1px solid #dbe4ff;">
               Admin ⚡
             </a>
-          @endauth
+          @endif
         </div>
       </div>
       <!-- Mobile: hamburger -->
@@ -82,7 +82,9 @@
             <a href="{{ route('client.login') }}" style="color:#374151;font-size:.95rem;padding:8px 4px;font-weight:500;">Client Login</a>
           @endauth
           @auth('web')
+            @if(session()->has('admin_authenticated'))
             <a href="/admin/dashboard" style="color:var(--navy);font-size:.95rem;padding:8px 4px;font-weight:600;">Admin ⚡</a>
+            @endif
           @endauth
         </div>
       </div>

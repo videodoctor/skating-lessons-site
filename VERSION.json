@@ -1,16 +1,8 @@
 {
-  "version": "2.10.35",
+  "version": "2.10.36",
   "date": "2026-03-23",
   "changes": [
-    "Admin packages: Coming Soon status (Active / Coming Soon / Hidden)",
-    "Admin packages: visibility toggles — show/hide price, duration, features, description",
-    "Admin packages: optional teaser text for Coming Soon packages",
-    "Admin packages: waitlist count badge with link to waitlist view",
-    "Admin waitlist page: view all signups, export CSV",
-    "Public home + booking pages: Coming Soon cards with waitlist email form",
-    "Coming Soon respects all admin visibility toggles",
-    "Migration: coming_soon, show_price/duration/features/description, coming_soon_teaser on services",
-    "Migration: service_waitlist table",
-    "Bio updated with Kristine's real background"
+    "Nav: Admin link only visible when admin session is active",
+    "Coming Soon packages with visibility toggles + waitlist (v2.10.35)"
   ]
 }
