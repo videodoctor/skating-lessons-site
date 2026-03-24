@@ -81,11 +81,9 @@
           @else
             <a href="{{ route('client.login') }}" style="color:#374151;font-size:.95rem;padding:8px 4px;font-weight:500;">Client Login</a>
           @endauth
-          @auth('web')
-            @if(session()->has('admin_authenticated'))
+          @if(session()->has('admin_authenticated'))
             <a href="/admin/dashboard" style="color:var(--navy);font-size:.95rem;padding:8px 4px;font-weight:600;">Admin ⚡</a>
-            @endif
-          @endauth
+          @endif
         </div>
       </div>
     </div>

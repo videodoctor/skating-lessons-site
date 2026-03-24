@@ -14,9 +14,10 @@
   .hero-accent { position:absolute;right:-60px;top:0;bottom:0;width:55%;
     background:linear-gradient(135deg,#0a3580 0%,#001240 100%);
     clip-path:polygon(12% 0,100% 0,100% 100%,0% 100%); }
-  .hero-photo-wrap { position:absolute;right:0;top:0;bottom:0;width:52%;overflow:hidden; }
-  .hero-photo-wrap video { width:auto;height:100%;max-height:100%;object-fit:cover;object-position:center top;opacity:.6;mix-blend-mode:luminosity; }
+  .hero-photo-wrap { position:absolute;right:0;top:0;bottom:0;overflow:hidden;display:flex;gap:6px;justify-content:flex-end; }
+  .hero-photo-wrap video { height:100%;width:auto;object-fit:contain;object-position:center top;opacity:.6;mix-blend-mode:luminosity;flex:0 0 auto; }
   .hero-photo-wrap img { width:100%;height:100%;object-fit:cover;object-position:center top;opacity:.6;mix-blend-mode:luminosity; }
+  .hero-video-secondary { display:block; }
   .hero-photo-wrap::after { content:'';position:absolute;inset:0;
     background:linear-gradient(90deg,var(--navy) 0%,rgba(0,15,60,.6) 15%,transparent 40%); }
   .hero-content { position:relative;z-index:2;display:flex;flex-direction:column;justify-content:space-between; }
@@ -66,7 +67,7 @@
   .step-num { font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--red);line-height:1;opacity:.25; }
   .cta-banner { background:linear-gradient(135deg,var(--navy) 0%,#002b87 100%);position:relative;overflow:hidden; }
   .cta-banner::before { content:'⛸️';position:absolute;right:3rem;top:50%;transform:translateY(-50%) rotate(-15deg);font-size:10rem;opacity:.07; }
-  @media(max-width:768px) { .hero-photo-wrap{position:absolute;inset:0;width:100%;} .hero-photo-wrap video,.hero-photo-wrap img{object-position:center top;opacity:.4;} .hero-accent{width:100%;clip-path:none;opacity:.6;right:0;left:0;} .hero-photo-wrap::before{display:none;} .hero-photo-wrap::after{background:linear-gradient(to bottom,transparent 40%,var(--navy) 100%);} }
+  @media(max-width:768px) { .hero-photo-wrap{position:absolute;inset:0;width:100%;display:block;} .hero-photo-wrap video,.hero-photo-wrap img{object-position:center top;opacity:.4;width:100%;} .hero-video-secondary{display:none!important;} .hero-accent{width:100%;clip-path:none;opacity:.6;right:0;left:0;} .hero-photo-wrap::before{display:none;} .hero-photo-wrap::after{background:linear-gradient(to bottom,transparent 40%,var(--navy) 100%);} }
 </style>
 
 <!-- HERO -->
@@ -78,6 +79,12 @@
       poster="{{ asset('images/kristine_and_mick_001.jpg') }}">
       <source id="hero-video-src" src="{{ asset('videos/mick_reel_001_optimized.mp4') }}" type="video/mp4">
       <img src="{{ asset('images/kristine_and_mick_001.jpg') }}" alt="Coach Kristine on ice">
+    </video>
+    <video id="hero-video-2" class="hero-video-secondary" autoplay muted playsinline preload="auto">
+      <source id="hero-video-src-2" src="{{ asset('videos/mick_reel_002_optimized.mp4') }}" type="video/mp4">
+    </video>
+    <video id="hero-video-3" class="hero-video-secondary" autoplay muted playsinline preload="auto">
+      <source id="hero-video-src-3" src="{{ asset('videos/mick_reel_003_optimized.mp4') }}" type="video/mp4">
     </video>
   </div>
   <div class="hero-content max-w-7xl mx-auto px-6 lg:px-8 w-full pt-10 pb-10">
@@ -329,37 +336,66 @@
 
 <script>
 (function() {
-  const videos = [
+  const clips = [
     '{{ asset("videos/mick_reel_001_optimized.mp4") }}',
     '{{ asset("videos/mick_reel_002_optimized.mp4") }}',
     '{{ asset("videos/mick_reel_003_optimized.mp4") }}',
   ];
+  const isMobile = window.innerWidth <= 768;
 
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
+  const players = [
+    { v: document.getElementById('hero-video'),   s: document.getElementById('hero-video-src') },
+    { v: document.getElementById('hero-video-2'),  s: document.getElementById('hero-video-src-2') },
+    { v: document.getElementById('hero-video-3'),  s: document.getElementById('hero-video-src-3') },
+  ];
+
+  // Each slot tracks which clip index it's currently playing
+  // Start: slot 0 = clip 0, slot 1 = clip 1, slot 2 = clip 2
+  const current = [0, 1, 2];
+
+  function otherSlotClips(slotIdx) {
+    return current.filter((_, i) => i !== slotIdx);
   }
 
-  const queue = shuffle([...videos]);
-  let current = 0;
+  function pickNext(slotIdx) {
+    const inUse = otherSlotClips(slotIdx);
+    const prev = current[slotIdx];
+    // Find a clip not used by other slots AND not the same as current
+    for (let i = 1; i < clips.length; i++) {
+      const candidate = (prev + i) % clips.length;
+      if (!inUse.includes(candidate)) return candidate;
+    }
+    // Fallback: just advance
+    return (prev + 1) % clips.length;
+  }
 
-  const video = document.getElementById('hero-video');
-  const src   = document.getElementById('hero-video-src');
-
-  src.src = queue[0];
-  video.load();
-  video.play().catch(() => {});
-
-  video.addEventListener('ended', function() {
-    current = (current + 1) % queue.length;
-    if (current === 0) shuffle(queue);
-    src.src = queue[current];
-    video.load();
-    video.play().catch(() => {});
-  });
+  if (isMobile) {
+    // Mobile: single video cycling through all clips
+    const p = players[0];
+    let idx = 0;
+    p.s.src = clips[idx];
+    p.v.load();
+    p.v.play().catch(() => {});
+    p.v.addEventListener('ended', function() {
+      idx = (idx + 1) % clips.length;
+      p.s.src = clips[idx];
+      p.v.load();
+      p.v.play().catch(() => {});
+    });
+  } else {
+    // Desktop: all 3 slots, each rotates independently
+    players.forEach((p, i) => {
+      p.s.src = clips[current[i]];
+      p.v.load();
+      p.v.play().catch(() => {});
+      p.v.addEventListener('ended', function() {
+        current[i] = pickNext(i);
+        p.s.src = clips[current[i]];
+        p.v.load();
+        p.v.play().catch(() => {});
+      });
+    });
+  }
 })();
 </script>
 

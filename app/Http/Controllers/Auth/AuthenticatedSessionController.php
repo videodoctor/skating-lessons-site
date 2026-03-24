@@ -29,6 +29,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Flag session so public nav shows Admin link
+        session(['admin_authenticated' => true]);
+
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 
