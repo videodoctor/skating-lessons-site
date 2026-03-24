@@ -1,9 +1,7 @@
 {
-  "version": "2.10.37",
+  "version": "2.10.38",
   "date": "2026-03-24",
   "changes": [
-    "CRITICAL FIX: Deploy script now rsyncs database/ and config/ directories",
-    "CRITICAL FIX: Deploy script now runs php artisan migrate --force on every deploy",
-    "This means all pending migrations will now run: calendar_token, suggestion_fields, coming_soon_to_services"
+    "Fix deploy script: cd to APP_DIR before running php artisan migrate --force"
   ]
 }
