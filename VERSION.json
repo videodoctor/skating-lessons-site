@@ -1,8 +1,9 @@
 {
-  "version": "2.10.36",
-  "date": "2026-03-23",
+  "version": "2.10.37",
+  "date": "2026-03-24",
   "changes": [
-    "Nav: Admin link only visible when admin session is active",
-    "Coming Soon packages with visibility toggles + waitlist (v2.10.35)"
+    "CRITICAL FIX: Deploy script now rsyncs database/ and config/ directories",
+    "CRITICAL FIX: Deploy script now runs php artisan migrate --force on every deploy",
+    "This means all pending migrations will now run: calendar_token, suggestion_fields, coming_soon_to_services"
   ]
 }

@@ -19,6 +19,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'calendar' => [
+        'admin_token' => env('CALENDAR_ADMIN_TOKEN', ''),
+    ],
+
     'venmo' => [
         'handle'       => env('VENMO_HANDLE'),
         'display_name' => env('VENMO_DISPLAY_NAME'),
