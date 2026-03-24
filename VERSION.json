@@ -1,8 +1,16 @@
 {
-  "version": "2.10.34",
+  "version": "2.10.35",
   "date": "2026-03-23",
   "changes": [
-    "Home page bio: updated with Kristine's real background — Nerinx Hall, Creve Coeur 8 years, CHA Learn to Play lead instructor, Lady Cyclones, Lady Liberty 14U/19U",
-    "Credentials updated: CHA Learn to Play Lead Instructor, St. Louis Native"
+    "Admin packages: Coming Soon status (Active / Coming Soon / Hidden)",
+    "Admin packages: visibility toggles — show/hide price, duration, features, description",
+    "Admin packages: optional teaser text for Coming Soon packages",
+    "Admin packages: waitlist count badge with link to waitlist view",
+    "Admin waitlist page: view all signups, export CSV",
+    "Public home + booking pages: Coming Soon cards with waitlist email form",
+    "Coming Soon respects all admin visibility toggles",
+    "Migration: coming_soon, show_price/duration/features/description, coming_soon_teaser on services",
+    "Migration: service_waitlist table",
+    "Bio updated with Kristine's real background"
   ]
 }

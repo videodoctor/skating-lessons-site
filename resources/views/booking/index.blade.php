@@ -89,6 +89,56 @@
       <p class="text-sm mt-2">Please check back soon.</p>
     </div>
     @endforelse
+
+    {{-- Coming Soon services --}}
+    @foreach($comingSoonServices ?? [] as $service)
+    <div class="service-card p-7 flex flex-col" style="opacity:.75;cursor:default;background:#fafafa;">
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <h3 class="text-xl font-bold text-gray-700">{{ $service->name }}</h3>
+          <span style="display:inline-block;background:#fef3c7;color:#92400e;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-top:4px;">🔒 Coming Soon</span>
+        </div>
+        @if($service->show_duration)
+        <div class="text-sm text-gray-400">{{ $service->duration_minutes }} min</div>
+        @endif
+      </div>
+      @if($service->coming_soon_teaser)
+      <p class="text-sm mb-3" style="color:#92400e;font-style:italic;">{{ $service->coming_soon_teaser }}</p>
+      @endif
+      @if($service->show_description)
+      <p class="text-gray-400 text-sm mb-4 flex-grow">{{ $service->description }}</p>
+      @endif
+      @if($service->show_features && $service->features)
+      <ul class="space-y-1.5 mb-4">
+        @foreach($service->features as $feature)
+        <li class="flex items-start gap-2 text-sm text-gray-400">
+          <svg class="w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>{{ $feature }}
+        </li>
+        @endforeach
+      </ul>
+      @endif
+      <div class="flex justify-between items-end mt-auto">
+        @if($service->show_price)
+        <div class="service-price-big" style="color:#9ca3af;"><span style="font-size:1.4rem;vertical-align:top;margin-top:.3rem;display:inline-block">$</span>{{ number_format($service->price, 0) }}</div>
+        @else
+        <div></div>
+        @endif
+        {{-- Waitlist --}}
+        @if(session('waitlist_joined_' . $service->id))
+          <span style="background:#d1fae5;color:#065f46;border-radius:6px;padding:.4rem .85rem;font-size:.8rem;font-weight:700;">✓ On waitlist!</span>
+        @else
+          <form method="POST" action="{{ route('waitlist.join', $service) }}" style="display:flex;gap:.4rem;">
+            @csrf
+            <input type="email" name="email" required placeholder="your@email.com"
+              style="width:150px;border:1.5px solid #e5e7eb;border-radius:6px;padding:.4rem .6rem;font-size:.78rem;">
+            <button type="submit" style="background:#001F5B;color:#fff;border:none;border-radius:6px;padding:.4rem .75rem;font-size:.75rem;font-weight:700;cursor:pointer;">Join Waitlist</button>
+          </form>
+        @endif
+      </div>
+    </div>
+    @endforeach
   </div>
 
   <p class="text-center text-gray-400 text-sm mt-8">* Rink admission fee not included. Payment at end of lesson by cash, Venmo, or check.</p>

@@ -24,7 +24,8 @@ class BookingController extends Controller
     public function index()
     {
         $services = Service::where('is_active', true)->orderBy('price')->get();
-        return view('booking.index', compact('services'));
+        $comingSoonServices = Service::where('coming_soon', true)->orderBy('price')->get();
+        return view('booking.index', compact('services', 'comingSoonServices'));
     }
 
     // Step 2: Select Date

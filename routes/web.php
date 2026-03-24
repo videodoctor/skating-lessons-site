@@ -48,8 +48,9 @@ Route::get('/privacy-policy', function () {
 
 Route::get('/', function () {
     $services = \App\Models\Service::where('is_active', true)->orderBy('price')->get();
+    $comingSoonServices = \App\Models\Service::where('coming_soon', true)->orderBy('price')->get();
     $rinks = \App\Models\Rink::where('is_active', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
-    return view('home', compact('services', 'rinks'));
+    return view('home', compact('services', 'rinks', 'comingSoonServices'));
 });
 
 // Public Booking Flow
@@ -150,6 +151,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/packages', [App\Http\Controllers\Admin\PackageController::class, 'store'])->name('admin.packages.store');
     Route::patch('/packages/{package}', [App\Http\Controllers\Admin\PackageController::class, 'update'])->name('admin.packages.update');
     Route::patch('/packages/{package}/toggle', [App\Http\Controllers\Admin\PackageController::class, 'toggle'])->name('admin.packages.toggle');
+    Route::get('/packages/{package}/waitlist', [App\Http\Controllers\Admin\PackageController::class, 'waitlist'])->name('admin.packages.waitlist');
 
     // Testimonials
     Route::get('/testimonials', [App\Http\Controllers\Admin\TestimonialController::class, 'index'])->name('admin.testimonials.index');
@@ -213,6 +215,16 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 Route::get('/calendar/public-skating.ics', [\App\Http\Controllers\CalendarController::class, 'publicSessions']);
 Route::get('/calendar/{rink}.ics', [\App\Http\Controllers\CalendarController::class, 'publicSessions']);
 Route::get('/admin/calendar/bookings.ics', [\App\Http\Controllers\Admin\CalendarController::class, 'icalFeed'])->name('admin.calendar.ical');
+
+// Waitlist join (public)
+Route::post('/waitlist/{service}', function (\Illuminate\Http\Request $request, \App\Models\Service $service) {
+    $request->validate(['email' => 'required|email', 'name' => 'nullable|string|max:100']);
+    \App\Models\ServiceWaitlist::firstOrCreate(
+        ['service_id' => $service->id, 'email' => $request->email],
+        ['name' => $request->name]
+    );
+    return back()->with('waitlist_joined_' . $service->id, true);
+})->name('waitlist.join');
 
 // Booking suggestion accept/decline (public, token-protected)
 Route::get('/booking/suggestion/{token}/accept', [App\Http\Controllers\Admin\BookingController::class, 'acceptSuggestion'])->name('booking.suggestion.accept');
