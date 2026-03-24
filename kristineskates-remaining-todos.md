@@ -61,6 +61,22 @@ Implemented on `/rinks` page with: "On the Ice Today" live session display group
 - Add scraper status dashboard in admin (last run, sessions found, errors)
 - Confirm Webster Groves and Maryville scrapers are working correctly
 
+### 4b. Intelligent Scraper URL Discovery (All Rinks)
+**Goal:** Add a shared fallback so all scrapers can auto-recover when a rink moves their schedule page — modeled after Creve Coeur's search-based URL discovery.
+
+**Current state:**
+- Creve Coeur: has URL auto-discovery via site search results + Claude Vision OCR
+- Brentwood: assumes static URL, scrapes for DocumentCenter PDF links
+- Webster Groves: manual `schedule_pdf_url` (admin must update monthly)
+- Maryville: assumes static URL, regex on HTML
+- Kirkwood: stub only, not implemented
+
+**Plan:**
+- Add a Google search fallback for each rink — when stored URL 404s or returns no sessions, search `site:{rink-domain} "public skating" OR "public skate" schedule` to find the new URL
+- Each rink's scraper should try: stored URL → site-specific search → Google search → alert admin
+- Implement Kirkwood scraper once rink reopens (July 2026)
+- Consider making Webster Groves auto-discover its PDF URL instead of requiring manual admin updates each month
+
 ---
 
 ### 4. Venmo Payment Integration

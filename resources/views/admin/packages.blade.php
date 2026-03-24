@@ -292,26 +292,7 @@
 
 {{-- Service data for JS --}}
 <script>
-const services = @json($services->keyBy('id')->map(fn($s) => [
-    'id'                => $s->id,
-    'name'              => $s->name,
-    'slug'              => $s->slug,
-    'description'       => $s->description,
-    'price'             => $s->price,
-    'duration_minutes'  => $s->duration_minutes,
-    'features'          => $s->features,
-    'is_active'         => $s->is_active,
-    'coming_soon'       => $s->coming_soon,
-    'coming_soon_teaser'=> $s->coming_soon_teaser,
-    'show_price'        => $s->show_price,
-    'show_duration'     => $s->show_duration,
-    'show_features'     => $s->show_features,
-    'show_description'  => $s->show_description,
-    'discount_amount'   => $s->discount_amount,
-    'discount_type'     => $s->discount_type,
-    'discount_starts_at'=> $s->discount_starts_at,
-    'discount_ends_at'  => $s->discount_ends_at,
-]));
+const services = @json($services->keyBy('id'));
 
 function openEdit(id) {
   const s = services[id];

@@ -24,7 +24,7 @@ Route::get('/player/grant-schaible', function () {
 })->name('player.grant');
 
 Route::get('/rinks', function () {
-    $rinks = \App\Models\Rink::where('is_active', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
+    $rinks = \App\Models\Rink::where('is_displayed', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
     $todaySessions = \App\Models\RinkSession::with('rink')
         ->where('date', today())
         ->where('is_cancelled', false)
@@ -49,7 +49,7 @@ Route::get('/privacy-policy', function () {
 Route::get('/', function () {
     $services = \App\Models\Service::where('is_active', true)->orderBy('price')->get();
     $comingSoonServices = \App\Models\Service::where('coming_soon', true)->orderBy('price')->get();
-    $rinks = \App\Models\Rink::where('is_active', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
+    $rinks = \App\Models\Rink::where('is_displayed', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
     return view('home', compact('services', 'rinks', 'comingSoonServices'));
 });
 

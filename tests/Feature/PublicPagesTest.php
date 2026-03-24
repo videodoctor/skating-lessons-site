@@ -52,14 +52,17 @@ class PublicPagesTest extends TestCase
 
     // ── Rinks page ───────────────────────────────────────────────────────
 
-    public function test_inactive_rinks_not_shown(): void
+    public function test_undisplayed_rinks_hidden_and_inactive_shown_with_message(): void
     {
-        $this->makeRink(['name' => 'Active Rink',   'slug' => 'active-rink',   'is_active' => true]);
-        $this->makeRink(['name' => 'Inactive Rink', 'slug' => 'inactive-rink', 'is_active' => false]);
+        $this->makeRink(['name' => 'Active Rink',   'slug' => 'active-rink',   'is_active' => true, 'is_displayed' => true]);
+        $this->makeRink(['name' => 'Closed Rink',   'slug' => 'closed-rink',   'is_active' => false, 'is_displayed' => true, 'inactive_message' => 'Closed for renovations']);
+        $this->makeRink(['name' => 'Hidden Rink',   'slug' => 'hidden-rink',   'is_active' => false, 'is_displayed' => false]);
 
         $response = $this->get('/rinks');
         $response->assertSee('Active Rink');
-        $response->assertDontSee('Inactive Rink');
+        $response->assertSee('Closed Rink');
+        $response->assertSee('Closed for renovations');
+        $response->assertDontSee('Hidden Rink');
     }
 
     // ── Waitlist ─────────────────────────────────────────────────────────

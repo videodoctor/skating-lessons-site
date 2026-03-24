@@ -151,7 +151,7 @@
         <a href="#services" class="hero-cta-ghost">See Lessons ↓</a>
       </div>
       <div class="flex gap-10">
-        <div><div class="hero-stat-num">4</div><div class="hero-stat-label">Area Rinks</div></div>
+        <div><div class="hero-stat-num">{{ $rinks->count() }}</div><div class="hero-stat-label">Area Rinks</div></div>
         <div><div class="hero-stat-num">30<span style="font-size:1.4rem">min</span></div><div class="hero-stat-label">Sessions</div></div>
         <div><div class="hero-stat-num">4+</div>
         <div class="hero-stat-label">Ages Welcome</div></div>
@@ -361,10 +361,14 @@
     </div>
     <div class="grid md:grid-cols-3 gap-4">
       @foreach($rinks as $rink)
-      <div class="rink-card">
+      <div class="rink-card" @unless($rink->is_active) style="opacity:.55;" @endunless>
         <div class="text-xs font-bold uppercase tracking-widest text-blue-300 mb-1">{{ $rink->name }}</div>
         <div class="text-lg font-bold mb-3">{{ $rink->name }}</div>
-        <a href="{{ str_replace('https://', 'webcal://', url('/calendar/' . $rink->slug . '.ics')) }}" class="rink-subscribe-btn">+ Subscribe</a>
+        @if($rink->is_active)
+          <a href="{{ str_replace('https://', 'webcal://', url('/calendar/' . $rink->slug . '.ics')) }}" class="rink-subscribe-btn">+ Subscribe</a>
+        @else
+          <span style="font-size:.75rem;letter-spacing:.1em;color:var(--gold);font-weight:600;">{{ $rink->inactive_message ?? 'Coming Soon' }}</span>
+        @endif
       </div>
       @endforeach
     </div>

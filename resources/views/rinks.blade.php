@@ -292,7 +292,7 @@
               <h2 class="rink-name">{{ $rink->name }}</h2>
             </div>
             @if(!$rink->is_active)
-            <span class="inactive-badge mb-2 inline-block">Currently Inactive</span>
+            <span class="inactive-badge mb-2 inline-block">{{ $rink->inactive_message ?? 'Currently Inactive' }}</span>
             @endif
 
             <div class="rink-address">
