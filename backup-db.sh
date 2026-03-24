@@ -22,18 +22,6 @@ aws s3 cp "$BACKUP_FILE" "${S3_BUCKET}/daily/${TIMESTAMP}.sql.gz"
 # Clean up local file
 rm -f "$BACKUP_FILE"
 
-# Delete S3 backups older than 30 days
-aws s3 ls "${S3_BUCKET}/daily/" | while read -r line; do
-  FILE_DATE=$(echo "$line" | awk '{print $1}')
-  FILE_NAME=$(echo "$line" | awk '{print $4}')
-  if [ -n "$FILE_DATE" ] && [ -n "$FILE_NAME" ]; then
-    FILE_EPOCH=$(date -d "$FILE_DATE" +%s 2>/dev/null || echo 0)
-    CUTOFF_EPOCH=$(date -d "30 days ago" +%s)
-    if [ "$FILE_EPOCH" -gt 0 ] && [ "$FILE_EPOCH" -lt "$CUTOFF_EPOCH" ]; then
-      aws s3 rm "${S3_BUCKET}/daily/${FILE_NAME}"
-      echo "  Deleted old backup: ${FILE_NAME}"
-    fi
-  fi
-done
+# Old backups are auto-deleted by S3 lifecycle rule (30 days)
 
 echo "[$(date)] Backup complete: ${TIMESTAMP}.sql.gz"
