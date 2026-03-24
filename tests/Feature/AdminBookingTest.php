@@ -1,0 +1,201 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use App\Models\Service;
+use App\Models\TimeSlot;
+use App\Models\Rink;
+use App\Models\Booking;
+use App\Models\Client;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Carbon\Carbon;
+
+class AdminBookingTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Simulate admin session
+        session(['admin_authenticated' => true]);
+    }
+
+    private function makeBooking(array $overrides = []): Booking
+    {
+        $service = Service::create([
+            'name' => 'Private Lesson', 'slug' => 'private-lesson',
+            'description' => 'Lesson', 'price' => 55, 'duration_minutes' => 30,
+            'is_active' => true, 'coming_soon' => false,
+        ]);
+
+        $rink = Rink::create(['name' => 'Test Rink', 'slug' => 'test-rink', 'is_active' => true]);
+
+        $slot = TimeSlot::create([
+            'rink_id' => $rink->id, 'date' => Carbon::tomorrow()->toDateString(),
+            'start_time' => '14:00:00', 'end_time' => '14:30:00', 'is_available' => false,
+        ]);
+
+        return Booking::create(array_merge([
+            'service_id'         => $service->id,
+            'time_slot_id'       => $slot->id,
+            'client_name'        => 'Jane Smith',
+            'client_email'       => 'jane@example.com',
+            'status'             => 'pending',
+            'price_paid'         => 55.00,
+            'date'               => Carbon::tomorrow()->toDateString(),
+            'start_time'         => '14:00:00',
+            'email_consent_at'   => now(),
+            'guest_convert_token'=> 'test-token',
+        ], $overrides));
+    }
+
+    // ── Admin page access ────────────────────────────────────────────────
+
+    public function test_admin_bookings_page_requires_auth(): void
+    {
+        session()->forget('admin_authenticated');
+        $response = $this->get('/admin/bookings');
+        $response->assertRedirect('/admin/login');
+    }
+
+    public function test_admin_bookings_page_loads(): void
+    {
+        $this->makeBooking();
+        $response = $this->get('/admin/bookings');
+        $response->assertStatus(200);
+        $response->assertSee('Jane Smith');
+    }
+
+    // ── Approve / Reject ─────────────────────────────────────────────────
+
+    public function test_admin_can_approve_booking(): void
+    {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        $booking = $this->makeBooking();
+
+        $response = $this->post("/admin/bookings/{$booking->id}/approve");
+        $response->assertRedirect();
+        $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'confirmed']);
+    }
+
+    public function test_admin_can_reject_booking(): void
+    {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        $booking = $this->makeBooking();
+
+        $response = $this->post("/admin/bookings/{$booking->id}/reject");
+        $response->assertRedirect();
+        $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'rejected']);
+    }
+
+    public function test_admin_can_cancel_booking(): void
+    {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        $booking = $this->makeBooking(['status' => 'confirmed']);
+
+        $response = $this->patch("/admin/bookings/{$booking->id}/cancel");
+        $response->assertRedirect();
+        $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => 'cancelled']);
+    }
+
+    public function test_cancel_releases_time_slot(): void
+    {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        $booking = $this->makeBooking(['status' => 'confirmed']);
+        $slotId  = $booking->time_slot_id;
+
+        $this->patch("/admin/bookings/{$booking->id}/cancel");
+
+        $this->assertDatabaseHas('time_slots', ['id' => $slotId, 'is_available' => true]);
+    }
+
+    // ── Suggest time ─────────────────────────────────────────────────────
+
+    public function test_admin_can_suggest_new_time(): void
+    {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        $booking = $this->makeBooking();
+
+        $rink    = Rink::first();
+        $newSlot = TimeSlot::create([
+            'rink_id' => $rink->id, 'date' => Carbon::tomorrow()->toDateString(),
+            'start_time' => '16:00:00', 'end_time' => '16:30:00', 'is_available' => true,
+        ]);
+
+        $response = $this->post("/admin/bookings/{$booking->id}/suggest-time", [
+            'suggested_time_slot_id' => $newSlot->id,
+            'suggestion_message'     => 'This time works better!',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('bookings', [
+            'id'                     => $booking->id,
+            'status'                 => 'suggestion_pending',
+            'suggested_time_slot_id' => $newSlot->id,
+        ]);
+    }
+
+    public function test_client_can_accept_suggestion(): void
+    {
+        $booking = $this->makeBooking();
+        $rink    = Rink::first();
+        $oldSlot = $booking->timeSlot;
+
+        $newSlot = TimeSlot::create([
+            'rink_id' => $rink->id, 'date' => Carbon::tomorrow()->toDateString(),
+            'start_time' => '16:00:00', 'end_time' => '16:30:00', 'is_available' => true,
+        ]);
+
+        $booking->update([
+            'status'                 => 'suggestion_pending',
+            'suggested_time_slot_id' => $newSlot->id,
+            'suggestion_token'       => 'test-suggest-token',
+        ]);
+
+        $response = $this->get('/booking/suggestion/test-suggest-token/accept');
+        $response->assertStatus(200);
+        $response->assertSee('Confirmed');
+
+        $this->assertDatabaseHas('bookings', [
+            'id'           => $booking->id,
+            'time_slot_id' => $newSlot->id,
+            'status'       => 'confirmed',
+        ]);
+
+        // Old slot freed
+        $this->assertDatabaseHas('time_slots', ['id' => $oldSlot->id, 'is_available' => true]);
+        // New slot taken
+        $this->assertDatabaseHas('time_slots', ['id' => $newSlot->id, 'is_available' => false]);
+    }
+
+    public function test_client_can_decline_suggestion(): void
+    {
+        $booking = $this->makeBooking();
+        $rink    = Rink::first();
+        $newSlot = TimeSlot::create([
+            'rink_id' => $rink->id, 'date' => Carbon::tomorrow()->toDateString(),
+            'start_time' => '16:00:00', 'end_time' => '16:30:00', 'is_available' => true,
+        ]);
+
+        $booking->update([
+            'status'                 => 'suggestion_pending',
+            'suggested_time_slot_id' => $newSlot->id,
+            'suggestion_token'       => 'test-decline-token',
+        ]);
+
+        $response = $this->get('/booking/suggestion/test-decline-token/decline');
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('bookings', [
+            'id'     => $booking->id,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_suggestion_with_invalid_token_fails(): void
+    {
+        $response = $this->get('/booking/suggestion/bad-token/accept');
+        $response->assertStatus(404);
+    }
+}
