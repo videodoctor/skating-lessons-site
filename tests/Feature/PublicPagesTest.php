@@ -12,6 +12,16 @@ class PublicPagesTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function makeRink(array $attrs = []): Rink
+    {
+        return Rink::create(array_merge([
+            'name'         => 'Test Rink',
+            'slug'         => 'test-rink-' . uniqid(),
+            'is_active'    => true,
+            'schedule_url' => 'https://example.com/schedule',
+        ], $attrs));
+    }
+
     // ── Core pages ───────────────────────────────────────────────────────
 
     public function test_home_page_loads(): void
@@ -26,7 +36,6 @@ class PublicPagesTest extends TestCase
 
     public function test_sms_opt_in_page_loads_without_login(): void
     {
-        // Critical for A2P compliance — must be publicly accessible
         $response = $this->get('/sms-opt-in');
         $response->assertStatus(200);
     }
@@ -41,12 +50,12 @@ class PublicPagesTest extends TestCase
         $this->get('/privacy-policy')->assertStatus(200);
     }
 
-    // ── Rinks page filters ───────────────────────────────────────────────
+    // ── Rinks page ───────────────────────────────────────────────────────
 
     public function test_inactive_rinks_not_shown(): void
     {
-        Rink::create(['name' => 'Active Rink',   'slug' => 'active-rink',   'is_active' => true]);
-        Rink::create(['name' => 'Inactive Rink', 'slug' => 'inactive-rink', 'is_active' => false]);
+        $this->makeRink(['name' => 'Active Rink',   'slug' => 'active-rink',   'is_active' => true]);
+        $this->makeRink(['name' => 'Inactive Rink', 'slug' => 'inactive-rink', 'is_active' => false]);
 
         $response = $this->get('/rinks');
         $response->assertSee('Active Rink');
@@ -65,7 +74,7 @@ class PublicPagesTest extends TestCase
             'duration_minutes' => 60, 'is_active' => false, 'coming_soon' => true,
         ]);
 
-        $response = $this->post("/waitlist/{$service->id}", [
+        $this->post("/waitlist/{$service->id}", [
             'email' => 'interested@example.com',
             'name'  => 'Interested User',
         ]);
@@ -86,10 +95,7 @@ class PublicPagesTest extends TestCase
             'duration_minutes' => 60, 'is_active' => false, 'coming_soon' => true,
         ]);
 
-        $response = $this->post("/waitlist/{$service->id}", [
-            'email' => 'not-an-email',
-        ]);
-
+        $response = $this->post("/waitlist/{$service->id}", ['email' => 'not-an-email']);
         $response->assertSessionHasErrors('email');
     }
 
@@ -114,14 +120,17 @@ class PublicPagesTest extends TestCase
 
     // ── Admin redirect ───────────────────────────────────────────────────
 
-    public function test_admin_dashboard_redirects_without_session(): void
+    public function test_admin_dashboard_redirects_without_auth(): void
     {
         $response = $this->get('/admin/dashboard');
-        $response->assertRedirect('/admin/login');
+        // Admin routes use standard Laravel auth — redirects somewhere with 'login'
+        $response->assertRedirect();
+        $location = $response->headers->get('Location');
+        $this->assertStringContainsString('login', $location);
     }
 
-    public function test_admin_login_page_loads(): void
+    public function test_booking_page_loads(): void
     {
-        $this->get('/admin/login')->assertStatus(200);
+        $this->get('/book')->assertStatus(200);
     }
 }

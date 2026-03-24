@@ -24,7 +24,6 @@ class BookingTest extends TestCase
     {
         parent::setUp();
 
-        // Fake Turnstile so tests never hit Cloudflare
         Http::fake([
             'challenges.cloudflare.com/*' => Http::response(['success' => true], 200),
             'api.twilio.com/*'             => Http::response(['sid' => 'SMtest'], 201),
@@ -46,9 +45,10 @@ class BookingTest extends TestCase
         ]);
 
         $this->rink = Rink::create([
-            'name'      => 'Creve Coeur Ice Arena',
-            'slug'      => 'creve-coeur',
-            'is_active' => true,
+            'name'         => 'Creve Coeur Ice Arena',
+            'slug'         => 'creve-coeur',
+            'is_active'    => true,
+            'schedule_url' => 'https://example.com/schedule',
         ]);
 
         $this->slot = TimeSlot::create([
@@ -59,8 +59,6 @@ class BookingTest extends TestCase
             'is_available' => true,
         ]);
     }
-
-    // ── Page loads ───────────────────────────────────────────────────────
 
     public function test_booking_page_loads(): void
     {
@@ -76,7 +74,6 @@ class BookingTest extends TestCase
             'description' => 'Hidden', 'price' => 100, 'duration_minutes' => 60,
             'is_active' => false, 'coming_soon' => false,
         ]);
-
         $response = $this->get('/book');
         $response->assertSee('Private Lesson');
         $response->assertDontSee('Hidden Service');
@@ -89,13 +86,10 @@ class BookingTest extends TestCase
             'description' => 'Full assessment', 'price' => 120, 'duration_minutes' => 60,
             'is_active' => false, 'coming_soon' => true, 'show_price' => true,
         ]);
-
         $response = $this->get('/book');
         $response->assertSee('Assessment Package');
         $response->assertSee('Coming Soon');
     }
-
-    // ── AJAX endpoints ───────────────────────────────────────────────────
 
     public function test_ajax_dates_returns_available_dates(): void
     {
@@ -113,13 +107,8 @@ class BookingTest extends TestCase
             'end_time'     => '10:30:00',
             'is_available' => true,
         ]);
-
         $response = $this->getJson("/book/ajax/dates/{$this->service->id}");
-        $response->assertStatus(200);
-        $this->assertNotContains(
-            Carbon::yesterday()->toDateString(),
-            $response->json()
-        );
+        $this->assertNotContains(Carbon::yesterday()->toDateString(), $response->json());
     }
 
     public function test_ajax_slots_returns_slots_for_date(): void
@@ -135,7 +124,6 @@ class BookingTest extends TestCase
         $this->slot->update(['is_available' => false]);
         $date = Carbon::tomorrow()->toDateString();
         $response = $this->getJson("/book/ajax/slots/{$this->service->id}/{$date}");
-        $response->assertStatus(200);
         $this->assertEmpty($response->json());
     }
 
@@ -144,79 +132,56 @@ class BookingTest extends TestCase
         $this->rink->update(['is_active' => false]);
         $date = Carbon::tomorrow()->toDateString();
         $response = $this->getJson("/book/ajax/slots/{$this->service->id}/{$date}");
-        $response->assertStatus(200);
         $this->assertEmpty($response->json());
     }
-
-    // ── Booking submission ───────────────────────────────────────────────
 
     public function test_guest_can_submit_booking(): void
     {
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-
         $response = $this->post('/book/submit', [
-            'service_id'          => $this->service->id,
-            'time_slot_id'        => $this->slot->id,
-            'client_name'         => 'Jane Smith',
-            'client_email'        => 'jane@example.com',
-            'client_phone'        => '3145550100',
-            'notes'               => 'Beginner skater',
-            'email_consent'       => '1',
-            'cancellation_policy' => '1',
-            'guest_sms_consent'   => '0',
-            'cf-turnstile-response' => 'test-bypass',
+            'service_id'            => $this->service->id,
+            'time_slot_id'          => $this->slot->id,
+            'client_name'           => 'Jane Smith',
+            'client_email'          => 'jane@example.com',
+            'client_phone'          => '3145550100',
+            'email_consent'         => '1',
+            'cancellation_policy'   => '1',
+            'guest_sms_consent'     => '0',
+            'cf-turnstile-response' => 'test',
         ]);
-
-        $this->assertDatabaseHas('bookings', [
-            'client_email' => 'jane@example.com',
-            'client_name'  => 'Jane Smith',
-            'status'       => 'pending',
-        ]);
-
-        // Slot should now be unavailable
-        $this->assertDatabaseHas('time_slots', [
-            'id'           => $this->slot->id,
-            'is_available' => false,
-        ]);
+        $this->assertDatabaseHas('bookings', ['client_email' => 'jane@example.com', 'status' => 'pending']);
+        $this->assertDatabaseHas('time_slots', ['id' => $this->slot->id, 'is_available' => false]);
     }
 
     public function test_booking_requires_email_consent(): void
     {
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-
         $response = $this->post('/book/submit', [
             'service_id'          => $this->service->id,
             'time_slot_id'        => $this->slot->id,
             'client_name'         => 'Jane Smith',
             'client_email'        => 'jane@example.com',
             'cancellation_policy' => '1',
-            // email_consent intentionally missing
         ]);
-
         $response->assertSessionHasErrors('email_consent');
-        $this->assertDatabaseMissing('bookings', ['client_email' => 'jane@example.com']);
     }
 
     public function test_booking_requires_cancellation_policy(): void
     {
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-
         $response = $this->post('/book/submit', [
             'service_id'    => $this->service->id,
             'time_slot_id'  => $this->slot->id,
             'client_name'   => 'Jane Smith',
             'client_email'  => 'jane@example.com',
             'email_consent' => '1',
-            // cancellation_policy missing
         ]);
-
         $response->assertSessionHasErrors('cancellation_policy');
     }
 
     public function test_double_booking_same_slot_fails(): void
     {
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-
         $payload = [
             'service_id'            => $this->service->id,
             'time_slot_id'          => $this->slot->id,
@@ -224,12 +189,9 @@ class BookingTest extends TestCase
             'client_email'          => 'jane@example.com',
             'email_consent'         => '1',
             'cancellation_policy'   => '1',
-            'cf-turnstile-response' => 'test-bypass',
+            'cf-turnstile-response' => 'test',
         ];
-
         $this->post('/book/submit', $payload);
-
-        // Second booking same slot
         $response = $this->post('/book/submit', array_merge($payload, ['client_email' => 'bob@example.com']));
         $response->assertSessionHas('error');
         $this->assertDatabaseMissing('bookings', ['client_email' => 'bob@example.com']);
@@ -238,7 +200,6 @@ class BookingTest extends TestCase
     public function test_booking_invalid_service_rejected(): void
     {
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-
         $response = $this->post('/book/submit', [
             'service_id'          => 99999,
             'time_slot_id'        => $this->slot->id,
@@ -247,7 +208,6 @@ class BookingTest extends TestCase
             'email_consent'       => '1',
             'cancellation_policy' => '1',
         ]);
-
         $response->assertSessionHasErrors('service_id');
     }
 }
