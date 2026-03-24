@@ -260,7 +260,7 @@
     <div class="sidebar-logo">⛸ Book a Lesson</div>
 
     <div id="step-nav">
-      @foreach(['Service','Date','Time','Your Info','Review'] as $i => $lbl)
+      @foreach(['Service','Date','Time & Rink','Your Info','Review'] as $i => $lbl)
       <div class="step-item {{ $i===0?'active':'' }}" id="nav-{{ $i+1 }}">
         <div class="step-num" id="num-{{ $i+1 }}">{{ $i+1 }}</div>
         <div>
@@ -271,16 +271,7 @@
       @endforeach
     </div>
 
-    <div class="live-summary">
-      <div class="summary-card" id="summary-card">
-        <div class="summary-card-head">Your Selection</div>
-        <div id="sc-service" style="display:none" class="summary-row"><span class="sr-label">Service</span><span class="sr-val" id="sv-svc"></span></div>
-        <div id="sc-price"   style="display:none" class="summary-row"><span class="sr-label">Price</span><span class="sr-val sr-price" id="sv-price"></span></div>
-        <div id="sc-date"    style="display:none" class="summary-row"><span class="sr-label">Date</span><span class="sr-val" id="sv-date"></span></div>
-        <div id="sc-time"    style="display:none" class="summary-row"><span class="sr-label">Time</span><span class="sr-val" id="sv-time"></span></div>
-        <div id="sc-rink"    style="display:none" class="summary-row"><span class="sr-label">Rink</span><span class="sr-val" id="sv-rink"></span></div>
-      </div>
-    </div>
+
   </aside>
 
   {{-- MAIN --}}
@@ -393,15 +384,17 @@
         <textarea class="form-inp" id="f-notes" rows="2" placeholder="Skill level, goals, anything Kristine should know..."></textarea>
       </div>
 
-      {{-- SMS opt-in --}}
-      <div id="sms-row" style="display:none;" class="chk-row sms-opt">
-        <input type="checkbox" id="f-sms">
+      {{-- SMS opt-in — always visible, disabled until valid phone entered --}}
+      @guest('client')
+      <div class="chk-row sms-opt" id="sms-row" style="opacity:.4;pointer-events:none;">
+        <input type="checkbox" id="f-sms" disabled>
         <label for="f-sms">
           <strong>Optional:</strong> I agree to receive SMS text message lesson reminders from Kristine Skates.
           You will receive a confirmation text upon opting in. Message frequency varies.
           Message and data rates may apply. Reply STOP to opt out or HELP for help.
         </label>
       </div>
+      @endguest
 
       <div class="chk-row required-mark">
         <input type="checkbox" id="f-email-consent" onchange="chk4()">
@@ -589,7 +582,7 @@ function pickSlot(id,time,rink,el){
   S.slotId=id; S.slotTime=time; S.slotRink=rink;
   document.querySelectorAll('.slot-card').forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
-  document.getElementById('sub-3').textContent=time;
+  document.getElementById('sub-3').textContent=time+' · '+rink;
   syncSidebar(); syncMobileBar();
   // Auto-advance
   setTimeout(()=>goTo(4), 200);
@@ -598,9 +591,17 @@ function pickSlot(id,time,rink,el){
 // ── Step 4: Info ──────────────────────────────────────────────────────────
 function toggleSms(){
   const phone=document.getElementById('f-phone').value.trim();
-  @guest('client')
-  document.getElementById('sms-row').style.display=phone?'flex':'none';
-  @endguest
+  const valid=phone.replace(/\D/g,'').length>=10;
+  const row=document.getElementById('sms-row');
+  const chk=document.getElementById('f-sms');
+  if(!row) return;
+  if(valid){
+    row.style.opacity='1'; row.style.pointerEvents='auto';
+    chk.disabled=false;
+  } else {
+    row.style.opacity='.4'; row.style.pointerEvents='none';
+    chk.disabled=true; chk.checked=false;
+  }
 }
 function chk4(){
   const ok=document.getElementById('f-name').value.trim()
@@ -630,20 +631,9 @@ function fillReview(){
 }
 function set(id,val){ const el=document.getElementById(id); if(el) el.textContent=val||'—'; }
 
-// ── Sidebar sync ──────────────────────────────────────────────────────────
+// ── Sidebar sublabels only (no redundant summary card on desktop) ─────────
 function syncSidebar(){
-  const card=document.getElementById('summary-card');
-  const hasAny=S.svcId||S.date||S.slotId;
-  card.classList.toggle('visible',!!hasAny);
-  showRow('sc-service','sv-svc',S.svcName);
-  showRow('sc-price','sv-price',S.svcPrice?'$'+S.svcPrice:null);
-  showRow('sc-date','sv-date',S.dateLabel);
-  showRow('sc-time','sv-time',S.slotTime);
-  showRow('sc-rink','sv-rink',S.slotRink);
-}
-function showRow(rowId,valId,val){
-  document.getElementById(rowId).style.display=val?'flex':'none';
-  document.getElementById(valId).textContent=val||'';
+  // sublabels are already updated inline — nothing else needed
 }
 
 // ── Mobile bar sync ───────────────────────────────────────────────────────

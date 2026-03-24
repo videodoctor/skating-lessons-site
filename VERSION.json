@@ -1,11 +1,10 @@
 {
-  "version": "2.10.40",
+  "version": "2.10.41",
   "date": "2026-03-24",
   "changes": [
-    "Booking wizard: auto-advance after picking service, date, and time (no Continue button)",
-    "Booking wizard: SMS opt-in restored — 'Optional: I agree...' shown when phone entered",
-    "Booking wizard: rink shows in sidebar summary immediately when slot picked",
-    "Booking wizard: mobile sticky bottom bar shows current selection + price anchored to screen",
-    "Booking wizard: tighter layout, cleaner cards, live selection summary in sidebar"
+    "Booking: SMS opt-in always visible, dimmed/disabled until valid phone (10+ digits) entered",
+    "Booking: removed redundant summary card below steps on desktop sidebar",
+    "Booking: step 3 renamed 'Time & Rink', sublabel shows time · rink after selection",
+    "Booking: step sublabels in sidebar are the only place selections are shown on desktop"
   ]
 }
