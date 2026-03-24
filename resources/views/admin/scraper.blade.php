@@ -49,8 +49,8 @@
 
 @foreach($rinks as $rink)
 @php
-  $latestRun = $rinkRuns[$rink->id]->first();
-  $allRuns   = $rinkRuns[$rink->id];
+  $latestRun = $rinkRuns->get($rink->id, collect())->first();
+  $allRuns   = $rinkRuns->get($rink->id, collect());
   $sessions  = $rinkSessions[$rink->id] ?? collect();
 
   if (!$latestRun) {

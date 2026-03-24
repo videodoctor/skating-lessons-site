@@ -36,19 +36,8 @@
 
 ---
 
-### 2. Public: Merged Rink Session Calendar
-**Goal:** A single public-facing calendar showing all rinks' public skate sessions merged into one view — so visitors can find any open ice time at a glance.
-
-**Suggested placement:** Tab or section at the TOP of the `/rinks` page, above the individual rink cards. Could also live at `/public-skating` as its own page linked from the nav.
-
-**Features:**
-- Monthly grid calendar (like admin schedule view but public-facing)
-- Color-coded by rink (each rink gets its own color chip)
-- Click a day to expand and see all sessions that day with rink name + times
-- "Add to my calendar" link per session (individual .ics download)
-- Subscribe to all rinks webcal feed (already built)
-- Mobile-friendly: collapse to agenda/list view on small screens
-- Filter by rink (toggle rink chips on/off)
+### 2. ✅ Public: Merged Rink Session Calendar — COMPLETED
+Implemented on `/rinks` page with: "On the Ice Today" live session display grouped by rink with LIVE badges, "Subscribe to All Rinks" webcal banner (`/calendar/public-skating.ics`), per-rink calendar subscribe buttons, and Book a Lesson CTAs.
 
 ---
 

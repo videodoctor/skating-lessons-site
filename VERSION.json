@@ -1,14 +1,7 @@
 {
-  "version": "2.10.45",
+  "version": "2.10.46",
   "date": "2026-03-24",
   "changes": [
-    "Tests: fix all remaining failures",
-    "Tests: Rink::create now includes schedule_url to satisfy NOT NULL constraint",
-    "Tests: Client::create now includes phone=null",
-    "Tests: AdminBookingTest uses actingAs(User) instead of session mock",
-    "Tests: admin redirect test checks for 'login' in URL instead of exact path",
-    "Tests: ClientAuthTest adds Http::fake for Twilio in setUp",
-    "Tests: PublicPagesTest uses makeRink() helper with schedule_url",
-    "DB backup: use --no-tablespaces flag to avoid PROCESS privilege warning"
+    "TODO: Mark merged public rink session calendar as completed"
   ]
 }
