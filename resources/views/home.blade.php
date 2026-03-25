@@ -56,6 +56,8 @@
   body { font-family:'DM Sans',sans-serif; }
 
   .hero { background:var(--navy); position:relative; overflow:hidden; min-height:600px; max-height:700px; height:92vh; display:flex; align-items:stretch; }
+  .hero-inner { position:relative; width:100%; max-width:80rem; margin:0 auto; padding:0 1.5rem; display:flex; align-items:stretch; }
+  @media(min-width:1024px) { .hero-inner { padding:0 2rem; } }
   .hero-lines { position:absolute;inset:0;pointer-events:none;opacity:.06;
     background-image:repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 120px),repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 80px); }
   .hero-accent { position:absolute;right:-60px;top:0;bottom:0;width:55%;
@@ -117,27 +119,28 @@
   .step-num { font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--red);line-height:1;opacity:.25; }
   .cta-banner { background:linear-gradient(135deg,var(--navy) 0%,#002b87 100%);position:relative;overflow:hidden; }
   .cta-banner::before { content:'⛸️';position:absolute;right:3rem;top:50%;transform:translateY(-50%) rotate(-15deg);font-size:10rem;opacity:.07; }
-  @media(max-width:768px) { .hero-photo-wrap{position:absolute;inset:0;width:100%;display:block;} .hero-photo-wrap video,.hero-photo-wrap img{object-position:center top;opacity:.4;width:100%;} .hero-video-secondary{display:none!important;} .hero-accent{width:100%;clip-path:none;opacity:.6;right:0;left:0;} .hero-photo-wrap::before{display:none;} .hero-photo-wrap::after{background:linear-gradient(to bottom,transparent 40%,var(--navy) 100%);} }
+  @media(max-width:768px) { .hero-inner{padding:0;} .hero-photo-wrap{position:absolute;inset:0;width:100%;display:block;} .hero-photo-wrap video,.hero-photo-wrap img{object-position:center top;opacity:.4;width:100%;} .hero-video-secondary{display:none!important;} .hero-accent{width:100%;clip-path:none;opacity:.6;right:0;left:0;} .hero-photo-wrap::before{display:none;} .hero-photo-wrap::after{background:linear-gradient(to bottom,transparent 40%,var(--navy) 100%);} }
 </style>
 
 <!-- HERO -->
 <section class="hero">
   <div class="hero-lines"></div>
   <div class="hero-accent"></div>
-  <div class="hero-photo-wrap">
-    <video id="hero-video" autoplay muted playsinline preload="auto"
-      poster="{{ asset('images/kristine_and_mick_001.webp') }}">
-      <source id="hero-video-src" src="{{ asset('videos/mick_reel_001_web.mp4') }}" type="video/mp4">
-      <img src="{{ asset('images/kristine_and_mick_001.webp') }}" alt="Coach Kristine on ice">
-    </video>
-    <video id="hero-video-2" class="hero-video-secondary" autoplay muted playsinline preload="none">
-      <source id="hero-video-src-2" src="{{ asset('videos/mick_reel_002_web.mp4') }}" type="video/mp4">
-    </video>
-    <video id="hero-video-3" class="hero-video-secondary" autoplay muted playsinline preload="none">
-      <source id="hero-video-src-3" src="{{ asset('videos/mick_reel_003_web.mp4') }}" type="video/mp4">
-    </video>
-  </div>
-  <div class="hero-content max-w-7xl mx-auto px-6 lg:px-8 w-full pt-10 pb-10">
+  <div class="hero-inner">
+    <div class="hero-photo-wrap">
+      <video id="hero-video" autoplay muted playsinline preload="auto"
+        poster="{{ asset('images/kristine_and_mick_001.webp') }}">
+        <source id="hero-video-src" src="{{ asset('videos/mick_reel_001_web.mp4') }}" type="video/mp4">
+        <img src="{{ asset('images/kristine_and_mick_001.webp') }}" alt="Coach Kristine on ice">
+      </video>
+      <video id="hero-video-2" class="hero-video-secondary" autoplay muted playsinline preload="none">
+        <source id="hero-video-src-2" src="{{ asset('videos/mick_reel_002_web.mp4') }}" type="video/mp4">
+      </video>
+      <video id="hero-video-3" class="hero-video-secondary" autoplay muted playsinline preload="none">
+        <source id="hero-video-src-3" src="{{ asset('videos/mick_reel_003_web.mp4') }}" type="video/mp4">
+      </video>
+    </div>
+    <div class="hero-content w-full pt-10 pb-10">
     {{-- TOP: eyebrow + title --}}
     <div class="max-w-2xl">
       <p class="hero-eyebrow mb-4">St. Louis Area<span class="mobile-break"><br></span> Hockey Skating</p>
@@ -157,6 +160,7 @@
         <div class="hero-stat-label">Ages Welcome</div></div>
       </div>
     </div>
+  </div>
   </div>
 </section>
 
