@@ -11,6 +11,14 @@
 
 ---
 
+## POST-A2P APPROVAL: Re-enable Cloudflare Security
+- Re-enable **Browser Integrity Check** (Security > Settings)
+- Raise **Security Level** back to **Medium** (Security > Settings)
+- Consider adding page-level exceptions for `/client/register`, `/book`, `/sms-opt-in`, `/terms-and-conditions`, `/privacy-policy` instead of site-wide lowering — requires upgrading from free plan or using a WAF custom rule
+- These were disabled 2026-03-27 to allow Twilio/TCR A2P campaign vetters to access opt-in URLs
+
+---
+
 ## KNOWN BUGS
 
 - Planner scan page title renders raw PHP: `Planner Scan — <?php echo e($scan->month); ?>` — needs dynamic `@section('title')` fix in layout
