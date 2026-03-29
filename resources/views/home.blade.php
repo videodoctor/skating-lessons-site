@@ -119,7 +119,7 @@
   .step-num { font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--red);line-height:1;opacity:.25; }
   .cta-banner { background:linear-gradient(135deg,var(--navy) 0%,#002b87 100%);position:relative;overflow:hidden; }
   .cta-banner::before { content:'⛸️';position:absolute;right:3rem;top:50%;transform:translateY(-50%) rotate(-15deg);font-size:10rem;opacity:.07; }
-  @media(max-width:768px) { .hero-inner{padding:0;} .hero-photo-wrap{position:absolute;inset:0;width:100%;display:block;} .hero-photo-wrap video,.hero-photo-wrap img{object-position:center top;opacity:.4;width:100%;} .hero-video-secondary{display:none!important;} .hero-accent{width:100%;clip-path:none;opacity:.6;right:0;left:0;} .hero-photo-wrap::before{display:none;} .hero-photo-wrap::after{background:linear-gradient(to bottom,transparent 40%,var(--navy) 100%);} }
+  @media(max-width:768px) { .hero-inner{padding:0 1.25rem;} .hero-photo-wrap{position:absolute;inset:0;width:100%;display:block;} .hero-photo-wrap video,.hero-photo-wrap img{object-position:center top;opacity:.4;width:100%;} .hero-video-secondary{display:none!important;} .hero-accent{width:100%;clip-path:none;opacity:.6;right:0;left:0;} .hero-photo-wrap::before{display:none;} .hero-photo-wrap::after{background:linear-gradient(to bottom,transparent 40%,var(--navy) 100%);} }
 </style>
 
 <!-- HERO -->
