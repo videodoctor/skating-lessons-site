@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ScheduleVerifyController;
 use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\ExportController;
 use Illuminate\Support\Facades\Route;
 
@@ -95,7 +96,9 @@ Route::post('/booking/convert-guest', [App\Http\Controllers\BookingController::c
 
 Route::middleware('auth:client')->group(function () {
         Route::get('/dashboard', function () {
-            $bookings = auth('client')->user()->bookings()->with(['service', 'timeSlot.rink'])->latest()->get();
+            $client = auth('client')->user();
+            $bookings = $client->bookings()->with(['service', 'timeSlot.rink'])->latest()->get();
+            \App\Services\ActivityLogger::log($client->id, 'view_dashboard', 'Viewed client dashboard');
             return view('client.dashboard', compact('bookings'));
         })->name('client.dashboard');
         Route::get('/verify-phone', [App\Http\Controllers\Auth\ClientAuthController::class, 'showVerifyPhone'])->name('client.verify-phone');
@@ -207,6 +210,11 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/bookings/{booking}/suggest-time', [App\Http\Controllers\Admin\BookingController::class, 'suggestTime'])->name('admin.bookings.suggest-time');
     Route::get('/bookings/slots-for-date', [App\Http\Controllers\Admin\BookingController::class, 'slotsForDate'])->name('admin.bookings.slots-for-date');
     Route::post('/planner/create-booking', [App\Http\Controllers\Admin\PlannerController::class, 'createBooking'])->name('admin.planner.create-booking');
+
+    // Analytics
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('admin.analytics');
+    Route::get('/analytics/activity', [AnalyticsController::class, 'activity'])->name('admin.analytics.activity');
+    Route::get('/analytics/funnel', [AnalyticsController::class, 'funnel'])->name('admin.analytics.funnel');
 
     // Export / Reports
     Route::get('/export', [ExportController::class, 'index'])->name('admin.export');

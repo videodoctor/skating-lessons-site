@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use App\Services\ActivityLogger;
 
 class ClientAuthController extends Controller
 {
@@ -53,6 +54,16 @@ class ClientAuthController extends Controller
             'sms_phone'        => $smsConsent ? $normalizedPhone : null,
         ]);
 
+        // Persist UTM/referral attribution from session
+        $client->update(array_filter([
+            'referral_source' => session('analytics.ref'),
+            'utm_source'      => session('analytics.utm_source'),
+            'utm_medium'      => session('analytics.utm_medium'),
+            'utm_campaign'    => session('analytics.utm_campaign'),
+        ]));
+
+        ActivityLogger::log($client->id, 'register', 'Account created');
+
         // Send email verification
         $verification->sendEmailVerification($client);
 
@@ -83,6 +94,7 @@ class ClientAuthController extends Controller
 
         if (Auth::guard('client')->attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
+            ActivityLogger::log(Auth::guard('client')->id(), 'login', 'Client logged in');
             return redirect()->intended(route('client.dashboard'));
         }
 

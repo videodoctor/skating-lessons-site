@@ -19,6 +19,7 @@ class Client extends Authenticatable
         'calendar_token',
         'waiver_signed_at', 'waiver_version', 'waiver_ip',
         'access_token',
+        'referral_source', 'utm_source', 'utm_medium', 'utm_campaign',
     ];
 
     protected $hidden = ['password', 'remember_token', 'phone_verify_code'];

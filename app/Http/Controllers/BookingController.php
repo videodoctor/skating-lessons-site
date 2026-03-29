@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use App\Services\ActivityLogger;
 
 class BookingController extends Controller
 {
@@ -166,6 +167,14 @@ class BookingController extends Controller
 
         // Mark slot unavailable
         $timeSlot->update(['booking_id' => $booking->id, 'is_available' => false]);
+
+        // Log activity if authenticated client
+        if ($booking->client_id) {
+            ActivityLogger::log($booking->client_id, 'make_booking', "Booked {$booking->service->name}", [
+                'booking_id' => $booking->id,
+                'service_id' => $booking->service_id,
+            ]);
+        }
 
         // Send opt-in confirmation SMS if guest opted in
         if ($guestSmsConsent && $normalizedPhone) {
