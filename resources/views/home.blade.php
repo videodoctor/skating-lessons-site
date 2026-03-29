@@ -103,7 +103,7 @@
   .bio-section { background:var(--ice); overflow:hidden; padding-bottom:5rem; }
   .bio-photo { width:100%;aspect-ratio:4/5;object-fit:cover;object-position:top;border-radius:8px;box-shadow:16px 16px 0 var(--navy); }
   .bio-fade-a { position:relative; animation:bioDissolve 16s ease-in-out infinite; }
-  .bio-fade-b { position:absolute;top:0;left:0; animation:bioDissolve 16s ease-in-out infinite; animation-delay:-8s; }
+  .bio-fade-b { position:absolute;top:0;left:0;width:100%; animation:bioDissolve 16s ease-in-out infinite; animation-delay:-8s; }
   @keyframes bioDissolve { 0%,40%{opacity:1} 50%,90%{opacity:0} 100%{opacity:1} }
   .bio-quote { font-family:'DM Serif Display',serif;font-style:italic;font-size:1.5rem;color:var(--navy);
     line-height:1.5;border-left:4px solid var(--red);padding-left:1.5rem; }
