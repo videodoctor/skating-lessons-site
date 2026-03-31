@@ -42,11 +42,11 @@ class ParseVenmoEmails extends Command
 
     private function fetchUnreadVenmoEmails(string $token): array
     {
-        // Get all emails from venmo@venmo.com (not just unread — dedup by transaction_id)
+        // Get recent emails and filter to venmo@venmo.com in PHP (Graph doesn't
+        // support $filter + $orderby on this mailbox type without indexing issues)
         $response = Http::withToken($token)
             ->get("https://graph.microsoft.com/v1.0/users/{$this->mailbox}/messages", [
                 '$select'  => 'id,subject,body,receivedDateTime,isRead,from',
-                '$filter'  => "from/emailAddress/address eq 'venmo@venmo.com'",
                 '$top'     => 50,
                 '$orderby' => 'receivedDateTime desc',
             ]);
@@ -57,7 +57,12 @@ class ParseVenmoEmails extends Command
             return [];
         }
 
-        return $response->json('value', []);
+        $messages = $response->json('value', []);
+
+        // Filter to emails from venmo@venmo.com only
+        return array_filter($messages, fn($m) =>
+            strtolower($m['from']['emailAddress']['address'] ?? '') === 'venmo@venmo.com'
+        );
     }
 
     private function processMessage(array $message, string $token, bool $isDryRun): void
