@@ -168,22 +168,27 @@
     <form method="POST" id="linkForm" action="">
       @csrf @method('PATCH')
       <div style="margin-bottom:.85rem;">
-        <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">Select Booking</label>
-        <select name="confirmation_code" id="linkBookingSelect"
+        <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">Client</label>
+        <select name="client_id" id="linkClientSelect"
                 style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:6px 10px;font-size:.87rem;background:#fff;">
-          <option value="">— Choose a booking —</option>
+          <option value="">— Select client —</option>
+          @foreach($clients as $c)
+            <option value="{{ $c->id }}">{{ $c->full_name }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div style="margin-bottom:.85rem;">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">Link to bookings <span style="font-weight:400;color:#9ca3af;">(optional — select multiple with Ctrl/Cmd)</span></label>
+        <select name="booking_ids[]" id="linkBookingSelect" multiple
+                style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:6px 10px;font-size:.82rem;background:#fff;min-height:120px;">
           @foreach($bookings as $b)
-            <option value="{{ $b->confirmation_code }}">
+            <option value="{{ $b->id }}">
               {{ $b->confirmation_code }} — {{ \Carbon\Carbon::parse($b->date)->format('M j') }} · {{ $b->student?->first_name ?? $b->client_name ?? '?' }} · ${{ number_format($b->price_paid ?? 0, 0) }}
             </option>
           @endforeach
         </select>
       </div>
-      <div style="margin-bottom:.85rem;">
-        <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">Or enter code manually</label>
-        <input type="text" name="confirmation_code_manual" placeholder="e.g. AB12CD34"
-               style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:6px 10px;font-size:.87rem;text-transform:uppercase;">
-      </div>
+      <p style="font-size:.75rem;color:#9ca3af;margin-bottom:.5rem;">Select a client to link now. Add bookings to mark them as paid, or reconcile later.</p>
       <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem;">
         <button type="button" style="background:#f3f4f6;color:#374151;border:none;border-radius:7px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer;" onclick="closeModal()">Cancel</button>
         <button type="submit" style="background:var(--navy);color:#fff;border:none;border-radius:7px;padding:.55rem 1.4rem;font-weight:700;cursor:pointer;">Link Payment</button>
@@ -197,8 +202,9 @@ function openLinkModal(id, sender, amount) {
   document.getElementById('link-sender').textContent = sender;
   document.getElementById('link-amount').textContent = amount;
   document.getElementById('linkForm').action = `/admin/venmo/${id}`;
-  document.getElementById('linkBookingSelect').value = '';
-  document.querySelector('[name="confirmation_code_manual"]').value = '';
+  document.getElementById('linkClientSelect').value = '';
+  const bookingSel = document.getElementById('linkBookingSelect');
+  for (let opt of bookingSel.options) opt.selected = false;
   document.getElementById('linkModal').style.display = 'flex';
 }
 function closeModal() {
@@ -206,13 +212,6 @@ function closeModal() {
 }
 document.getElementById('linkModal').addEventListener('click', e => {
   if (e.target === document.getElementById('linkModal')) closeModal();
-});
-// Manual input overrides dropdown
-document.getElementById('linkForm').addEventListener('submit', function() {
-  const manual = this.querySelector('[name="confirmation_code_manual"]').value.trim();
-  if (manual) {
-    this.querySelector('[name="confirmation_code"]').value = manual;
-  }
 });
 </script>
 @endsection

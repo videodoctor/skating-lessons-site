@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Client;
 use App\Models\VenmoPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -32,7 +33,9 @@ class VenmoAdminController extends Controller
             ->limit(100)
             ->get();
 
-        return view('admin.venmo', compact('payments', 'stats', 'showIgnored', 'bookings'));
+        $clients = Client::orderBy('first_name')->get();
+
+        return view('admin.venmo', compact('payments', 'stats', 'showIgnored', 'bookings', 'clients'));
     }
 
     public function parseNow()
@@ -50,33 +53,46 @@ class VenmoAdminController extends Controller
 
     public function link(Request $request, VenmoPayment $payment)
     {
-        $code = $request->input('confirmation_code_manual') ?: $request->input('confirmation_code');
+        $clientId   = $request->input('client_id');
+        $bookingIds = array_filter($request->input('booking_ids', []));
 
-        if (!$code) {
-            return back()->withErrors(['confirmation_code' => 'Please select a booking or enter a confirmation code.']);
+        if (!$clientId && empty($bookingIds)) {
+            return back()->withErrors(['client_id' => 'Please select a client, bookings, or both.']);
         }
 
-        $booking = Booking::where('confirmation_code', strtoupper(trim($code)))->first();
+        // Resolve client from selection or from first booking
+        $client = $clientId ? Client::find($clientId) : null;
 
-        if (!$booking) {
-            return back()->withErrors(['confirmation_code' => 'No booking found with that confirmation code.']);
+        // Link bookings and mark as paid
+        $linkedCodes = [];
+        if (!empty($bookingIds)) {
+            $bookings = Booking::whereIn('id', $bookingIds)->get();
+            foreach ($bookings as $booking) {
+                $booking->update([
+                    'payment_type'       => 'venmo',
+                    'payment_status'     => 'paid',
+                    'venmo_confirmed_at' => now(),
+                ]);
+                $linkedCodes[] = $booking->confirmation_code;
+                // Use first booking's client if no client selected
+                if (!$client && $booking->client_id) {
+                    $client = $booking->client;
+                }
+            }
         }
 
         $payment->update([
-            'booking_id'   => $booking->id,
-            'client_id'    => $booking->client_id,
-            'match_status' => 'matched',
+            'booking_id'   => $bookingIds[0] ?? $payment->booking_id,
+            'client_id'    => $client?->id,
+            'match_status' => !empty($linkedCodes) ? 'matched' : 'client_only',
         ]);
 
-        // Mark booking as venmo paid
-        $booking->update([
-            'payment_type'       => 'venmo',
-            'payment_status'     => 'paid',
-            'venmo_confirmed_at' => now(),
-        ]);
+        $msg = "Payment from {$payment->sender_name} linked to {$client?->full_name ?? 'unknown client'}.";
+        if (!empty($linkedCodes)) {
+            $msg .= ' Bookings marked paid: ' . implode(', ', $linkedCodes) . '.';
+        }
 
-        return redirect()->route('admin.venmo.index')
-            ->with('success', "Payment from {$payment->sender_name} linked to booking #{$booking->confirmation_code} and marked as paid.");
+        return redirect()->route('admin.venmo.index')->with('success', $msg);
     }
 
     public function ignore(VenmoPayment $payment)
