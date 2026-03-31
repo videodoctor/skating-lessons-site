@@ -119,7 +119,7 @@ class ParseVenmoEmails extends Command
         if (!$isDryRun) {
             // Save VenmoPayment record
             VenmoPayment::create([
-                'transaction_id'  => $parsed['transaction_id'],
+                'transaction_id'  => $parsed['transaction_id'] ?: null,
                 'sender_name'     => $parsed['sender_name'],
                 'amount'          => $parsed['amount'],
                 'note'            => $parsed['note'],
