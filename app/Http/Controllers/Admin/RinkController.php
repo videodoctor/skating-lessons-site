@@ -21,6 +21,7 @@ class RinkController extends Controller
             'address'          => 'nullable|string|max:500',
             'website_url'      => 'nullable|url|max:500',
             'is_active'        => 'sometimes|boolean',
+            'is_bookable'      => 'sometimes|boolean',
             'is_displayed'     => 'sometimes|boolean',
             'inactive_message' => 'nullable|string|max:500',
         ]);

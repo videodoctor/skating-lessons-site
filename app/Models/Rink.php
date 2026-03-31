@@ -19,6 +19,7 @@ class Rink extends Model
         'schedule_format',
         'scraper_notes',
         'is_active',
+        'is_bookable',
         'is_displayed',
         'inactive_message',
         'last_scraped_at',
@@ -27,6 +28,7 @@ class Rink extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_bookable' => 'boolean',
         'is_displayed' => 'boolean',
         'last_scraped_at' => 'datetime',
     ];

@@ -155,7 +155,7 @@
         <a href="#services" class="hero-cta-ghost">See Lessons ↓</a>
       </div>
       <div class="flex gap-10">
-        <div><div class="hero-stat-num">{{ $rinks->count() }}</div><div class="hero-stat-label">Area Rinks</div></div>
+        <div><div class="hero-stat-num">8+</div><div class="hero-stat-label">Years Coaching</div></div>
         <div><div class="hero-stat-num">30<span style="font-size:1.4rem">min</span></div><div class="hero-stat-label">Sessions</div></div>
         <div><div class="hero-stat-num">4+</div>
         <div class="hero-stat-label">Ages Welcome</div></div>
@@ -172,7 +172,7 @@
     <span>✓ Youth &amp; Adult</span>
     <span>✓ Power Skating Focus</span>
     <span>✓ Edge Control &amp; Footwork</span>
-    <span>✓ Creve Coeur · Kirkwood · Brentwood · Webster Groves</span>
+    <span>✓ Creve Coeur Ice Arena</span>
   </div>
 </div>
 

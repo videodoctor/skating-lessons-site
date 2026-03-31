@@ -35,7 +35,7 @@ class BookingController extends Controller
         $dates = TimeSlot::where('is_available', true)
             ->whereNull('booking_id')
             ->whereBetween('date', [Carbon::today(), Carbon::today()->addDays(60)])
-            ->whereHas('rink', fn($q) => $q->where('is_active', true))
+            ->whereHas('rink', fn($q) => $q->where('is_bookable', true))
             ->where(function ($q) use ($now) {
                 $q->where('date', '>', $now->toDateString())
                   ->orWhere(fn($q2) => $q2->where('date', $now->toDateString())
@@ -53,7 +53,7 @@ class BookingController extends Controller
             ->where('is_available', true)
             ->whereNull('booking_id')
             ->whereDate('date', $date)
-            ->whereHas('rink', fn($q) => $q->where('is_active', true))
+            ->whereHas('rink', fn($q) => $q->where('is_bookable', true))
             ->orderBy('start_time')
             ->get()
             ->map(fn($s) => [
@@ -77,7 +77,7 @@ class BookingController extends Controller
         $availableDates = TimeSlot::where('is_available', true)
             ->whereNull('booking_id')
             ->whereBetween('date', [$startDate, $endDate])
-            ->whereHas('rink', fn($q) => $q->where('is_active', true))
+            ->whereHas('rink', fn($q) => $q->where('is_bookable', true))
             ->where(function ($query) use ($now) {
                 $query->where('date', '>', $now->toDateString())
                       ->orWhere(function ($q) use ($now) {
@@ -101,7 +101,7 @@ class BookingController extends Controller
             ->where('date', $date)
             ->where('is_available', true)
             ->whereNull('booking_id')
-            ->whereHas('rink', fn($q) => $q->where('is_active', true))
+            ->whereHas('rink', fn($q) => $q->where('is_bookable', true))
             ->when($date->isToday(), fn($query) => $query->where('start_time', '>', $now->format('H:i:s')))
             ->orderBy('start_time')
             ->get()

@@ -122,7 +122,7 @@ class BookingController extends Controller
 
         $services = Service::where('is_active', true)->orderBy('name')->get();
         $clients  = Client::orderBy('first_name')->get();
-        $rinks    = Rink::where('is_active', true)->orderBy('name')->get();
+        $rinks    = Rink::where('is_active', true)->orderBy('name')->get(); // Show all active rinks in admin (not just bookable)
         $students = Student::orderBy('first_name')->get();
 
         // Get current rink's available slots for the booking date (+ include current slot)

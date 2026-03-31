@@ -49,6 +49,9 @@
         @else
           <span class="pill pill-red">Inactive</span>
         @endif
+        @if($rink->is_bookable)
+          <span class="pill pill-blue">Bookable</span>
+        @endif
         @if($rink->is_displayed)
           <span class="pill pill-green">Displayed</span>
         @else
@@ -61,7 +64,12 @@
       <label class="toggle">
         <input type="hidden" name="is_active" value="0">
         <input type="checkbox" name="is_active" value="1" {{ $rink->is_active ? 'checked' : '' }}>
-        Active (scraping & bookings)
+        Active (scraping & calendars)
+      </label>
+      <label class="toggle">
+        <input type="hidden" name="is_bookable" value="0">
+        <input type="checkbox" name="is_bookable" value="1" {{ $rink->is_bookable ? 'checked' : '' }}>
+        Bookable (lessons available)
       </label>
       <label class="toggle">
         <input type="hidden" name="is_displayed" value="0">

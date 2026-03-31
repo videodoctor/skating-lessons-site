@@ -130,7 +130,7 @@ class BookingTest extends TestCase
 
     public function test_ajax_slots_excludes_inactive_rinks(): void
     {
-        $this->rink->update(['is_active' => false]);
+        $this->rink->update(['is_bookable' => false]);
         $response = $this->getJson("/book/ajax/slots/{$this->service->id}/{$this->testDate}");
         $this->assertEmpty($response->json());
     }
