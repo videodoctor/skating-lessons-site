@@ -161,6 +161,7 @@
         @if(!$booking->client_id)
           <button class="btn-xs btn-link" style="margin-top:3px;" onclick="openLinkModal({{ $booking->id }})">👤 Link Client</button>
         @endif
+        <a href="{{ route('admin.bookings.edit', $booking) }}" class="btn-xs" style="display:inline-block;margin-top:3px;background:#dbeafe;color:#1e40af;text-decoration:none;">✎ Edit</a>
       </td>
     </tr>
     @empty

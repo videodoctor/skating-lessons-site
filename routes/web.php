@@ -124,6 +124,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/bookings/{booking}/link-client', [AdminBookingController::class, 'linkClient'])->name('admin.bookings.link-client');
     Route::post('/bookings/{booking}/cash-paid', [AdminBookingController::class, 'markCashPaid'])->name('admin.bookings.cash-paid');
     Route::post('/bookings/{booking}/venmo-paid', [AdminBookingController::class, 'markVenmoPaid'])->name('admin.bookings.venmo-paid');
+    Route::get('/bookings/{booking}/edit', [AdminBookingController::class, 'edit'])->name('admin.bookings.edit');
+    Route::patch('/bookings/{booking}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
+    Route::get('/bookings/slots-for-rink-date', [AdminBookingController::class, 'slotsForRinkDate'])->name('admin.bookings.slots-for-rink-date');
 
     // Schedule & Slots
     Route::get('/schedule', [ScheduleController::class, 'index'])->name('admin.schedule');

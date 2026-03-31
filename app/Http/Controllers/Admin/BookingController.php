@@ -7,7 +7,10 @@ use App\Notifications\BookingRejectedNotification;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Client;
+use App\Models\Rink;
+use App\Models\Service;
 use App\Models\Student;
+use App\Models\TimeSlot;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -111,6 +114,96 @@ class BookingController extends Controller
         ]);
 
         return back()->with('success', 'Booking marked as Venmo paid.');
+    }
+
+    public function edit(Booking $booking)
+    {
+        $booking->load(['service', 'timeSlot.rink', 'client', 'student']);
+
+        $services = Service::where('is_active', true)->orderBy('name')->get();
+        $clients  = Client::orderBy('first_name')->get();
+        $rinks    = Rink::where('is_active', true)->orderBy('name')->get();
+        $students = Student::orderBy('first_name')->get();
+
+        // Get current rink's available slots for the booking date (+ include current slot)
+        $currentRinkId = $booking->timeSlot?->rink_id;
+        $availableSlots = collect();
+        if ($currentRinkId && $booking->date) {
+            $availableSlots = TimeSlot::with('rink')
+                ->where('rink_id', $currentRinkId)
+                ->whereDate('date', $booking->date)
+                ->where(fn($q) => $q->where('is_available', true)->orWhere('id', $booking->time_slot_id))
+                ->orderBy('start_time')
+                ->get();
+        }
+
+        return view('admin.bookings.edit', compact(
+            'booking', 'services', 'clients', 'rinks', 'students', 'availableSlots'
+        ));
+    }
+
+    public function update(Request $request, Booking $booking)
+    {
+        $validated = $request->validate([
+            'client_name'    => 'required|string|max:255',
+            'client_email'   => 'required|email|max:255',
+            'client_phone'   => 'nullable|string|max:30',
+            'client_id'      => 'nullable|exists:clients,id',
+            'student_id'     => 'nullable|exists:students,id',
+            'service_id'     => 'required|exists:services,id',
+            'time_slot_id'   => 'nullable|exists:time_slots,id',
+            'price_paid'     => 'nullable|numeric|min:0',
+            'status'         => 'required|in:pending,confirmed,cancelled,rejected,suggestion_pending',
+            'payment_type'   => 'nullable|in:venmo,cash',
+            'payment_status' => 'required|in:pending,paid',
+            'notes'          => 'nullable|string|max:2000',
+        ]);
+
+        // Handle time slot change
+        $newSlotId = $validated['time_slot_id'];
+        $oldSlotId = $booking->time_slot_id;
+
+        if ($newSlotId && $newSlotId != $oldSlotId) {
+            // Release old slot
+            if ($oldSlotId) {
+                TimeSlot::where('id', $oldSlotId)->update(['is_available' => true, 'booking_id' => null]);
+            }
+            // Claim new slot
+            $newSlot = TimeSlot::findOrFail($newSlotId);
+            $newSlot->update(['is_available' => false, 'booking_id' => $booking->id]);
+
+            $validated['date']       = $newSlot->date;
+            $validated['start_time'] = $newSlot->start_time;
+            $validated['end_time']   = $newSlot->end_time;
+        }
+
+        $booking->update($validated);
+
+        return redirect()->route('admin.bookings.index')
+            ->with('success', "Booking for {$booking->client_name} updated.");
+    }
+
+    public function slotsForRinkDate(Request $request)
+    {
+        $rinkId = $request->query('rink_id');
+        $date   = $request->query('date');
+        $currentSlotId = $request->query('current_slot_id');
+
+        if (!$rinkId || !$date) return response()->json([]);
+
+        $slots = TimeSlot::with('rink')
+            ->where('rink_id', $rinkId)
+            ->whereDate('date', $date)
+            ->where(fn($q) => $q->where('is_available', true)->orWhere('id', $currentSlotId))
+            ->orderBy('start_time')
+            ->get()
+            ->map(fn($s) => [
+                'id'    => $s->id,
+                'label' => \Carbon\Carbon::parse($s->start_time)->format('g:i A') . ' – ' .
+                           \Carbon\Carbon::parse($s->end_time)->format('g:i A'),
+            ]);
+
+        return response()->json($slots);
     }
 
     public function cancel(Booking $booking)
