@@ -27,11 +27,11 @@ class ParseVenmoEmails extends Command
         $messages = $this->fetchUnreadVenmoEmails($token);
 
         if (empty($messages)) {
-            $this->info('No unread Venmo payment emails found.');
+            $this->info('No Venmo payment emails found.');
             return 0;
         }
 
-        $this->info('Found ' . count($messages) . ' unread Venmo email(s).');
+        $this->info('Found ' . count($messages) . ' Venmo email(s) to process.');
 
         foreach ($messages as $message) {
             $this->processMessage($message, $token, $isDryRun);
@@ -42,10 +42,11 @@ class ParseVenmoEmails extends Command
 
     private function fetchUnreadVenmoEmails(string $token): array
     {
-        // Get unread emails from venmo@venmo.com in the venmo mailbox
+        // Get all emails from venmo@venmo.com (not just unread — dedup by transaction_id)
         $response = Http::withToken($token)
             ->get("https://graph.microsoft.com/v1.0/users/{$this->mailbox}/messages", [
                 '$select'  => 'id,subject,body,receivedDateTime,isRead,from',
+                '$filter'  => "from/emailAddress/address eq 'venmo@venmo.com'",
                 '$top'     => 50,
                 '$orderby' => 'receivedDateTime desc',
             ]);
@@ -56,13 +57,7 @@ class ParseVenmoEmails extends Command
             return [];
         }
 
-        $messages = $response->json('value', []);
-
-        // Filter to unread emails from venmo@venmo.com only
-        return array_filter($messages, fn($m) =>
-            !$m['isRead'] &&
-            strtolower($m['from']['emailAddress']['address'] ?? '') === 'venmo@venmo.com'
-        );
+        return $response->json('value', []);
     }
 
     private function processMessage(array $message, string $token, bool $isDryRun): void
