@@ -87,9 +87,19 @@ class ParseVenmoEmails extends Command
 
         $this->line("  📧 {$parsed['sender_name']} paid \${$parsed['amount']} — note: \"{$parsed['note']}\"");
 
-        // Check for duplicate by transaction ID
-        if (VenmoPayment::where('transaction_id', $parsed['transaction_id'])->exists()) {
+        // Check for duplicate by transaction ID (skip if empty — can't dedup on blank)
+        if ($parsed['transaction_id'] && VenmoPayment::where('transaction_id', $parsed['transaction_id'])->exists()) {
             $this->line("     ↷ Already recorded (transaction ID match)");
+            if (!$isDryRun) $this->markAsRead($token, $msgId);
+            return;
+        }
+
+        // Also dedup by sender + amount + date (within 1 minute) to avoid re-importing
+        if (VenmoPayment::where('sender_name', $parsed['sender_name'])
+                ->where('amount', $parsed['amount'])
+                ->whereBetween('paid_at', [$parsed['paid_at']->copy()->subMinute(), $parsed['paid_at']->copy()->addMinute()])
+                ->exists()) {
+            $this->line("     ↷ Already recorded (sender/amount/date match)");
             if (!$isDryRun) $this->markAsRead($token, $msgId);
             return;
         }
