@@ -26,7 +26,13 @@ class VenmoAdminController extends Controller
             'unmatched'    => VenmoPayment::where('match_status', 'unmatched')->count(),
         ];
 
-        return view('admin.venmo', compact('payments', 'stats', 'showIgnored'));
+        $bookings = Booking::with('student')
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->orderByDesc('date')
+            ->limit(100)
+            ->get();
+
+        return view('admin.venmo', compact('payments', 'stats', 'showIgnored', 'bookings'));
     }
 
     public function parseNow()
@@ -44,11 +50,13 @@ class VenmoAdminController extends Controller
 
     public function link(Request $request, VenmoPayment $payment)
     {
-        $validated = $request->validate([
-            'confirmation_code' => 'required|string',
-        ]);
+        $code = $request->input('confirmation_code_manual') ?: $request->input('confirmation_code');
 
-        $booking = Booking::where('confirmation_code', strtoupper(trim($validated['confirmation_code'])))->first();
+        if (!$code) {
+            return back()->withErrors(['confirmation_code' => 'Please select a booking or enter a confirmation code.']);
+        }
+
+        $booking = Booking::where('confirmation_code', strtoupper(trim($code)))->first();
 
         if (!$booking) {
             return back()->withErrors(['confirmation_code' => 'No booking found with that confirmation code.']);

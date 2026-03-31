@@ -168,8 +168,20 @@
     <form method="POST" id="linkForm" action="">
       @csrf @method('PATCH')
       <div style="margin-bottom:.85rem;">
-        <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">Booking Confirmation Code</label>
-        <input type="text" name="confirmation_code" placeholder="e.g. AB12CD34"
+        <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">Select Booking</label>
+        <select name="confirmation_code" id="linkBookingSelect"
+                style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:6px 10px;font-size:.87rem;background:#fff;">
+          <option value="">— Choose a booking —</option>
+          @foreach($bookings as $b)
+            <option value="{{ $b->confirmation_code }}">
+              {{ $b->confirmation_code }} — {{ \Carbon\Carbon::parse($b->date)->format('M j') }} · {{ $b->student?->first_name ?? $b->client_name ?? '?' }} · ${{ number_format($b->price_paid ?? 0, 0) }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+      <div style="margin-bottom:.85rem;">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">Or enter code manually</label>
+        <input type="text" name="confirmation_code_manual" placeholder="e.g. AB12CD34"
                style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:6px 10px;font-size:.87rem;text-transform:uppercase;">
       </div>
       <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem;">
@@ -185,6 +197,8 @@ function openLinkModal(id, sender, amount) {
   document.getElementById('link-sender').textContent = sender;
   document.getElementById('link-amount').textContent = amount;
   document.getElementById('linkForm').action = `/admin/venmo/${id}`;
+  document.getElementById('linkBookingSelect').value = '';
+  document.querySelector('[name="confirmation_code_manual"]').value = '';
   document.getElementById('linkModal').style.display = 'flex';
 }
 function closeModal() {
@@ -192,6 +206,13 @@ function closeModal() {
 }
 document.getElementById('linkModal').addEventListener('click', e => {
   if (e.target === document.getElementById('linkModal')) closeModal();
+});
+// Manual input overrides dropdown
+document.getElementById('linkForm').addEventListener('submit', function() {
+  const manual = this.querySelector('[name="confirmation_code_manual"]').value.trim();
+  if (manual) {
+    this.querySelector('[name="confirmation_code"]').value = manual;
+  }
 });
 </script>
 @endsection
