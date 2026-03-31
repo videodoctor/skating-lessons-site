@@ -140,6 +140,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::delete('/slots/{timeSlot}', [ScheduleController::class, 'destroySlot'])->name('admin.slots.destroy');
     Route::post('/slots/block-day', [ScheduleController::class, 'blockDay'])->name('admin.slots.block-day');
 
+    // Rinks
+    Route::get('/rinks', [App\Http\Controllers\Admin\RinkController::class, 'index'])->name('admin.rinks.index');
+    Route::patch('/rinks/{rink}', [App\Http\Controllers\Admin\RinkController::class, 'update'])->name('admin.rinks.update');
+
     // Clients
     Route::get('/clients', [ClientController::class, 'index'])->name('admin.clients.index');
     Route::post('/clients/link-student', [ClientController::class, 'linkStudent'])->name('admin.clients.link-student');

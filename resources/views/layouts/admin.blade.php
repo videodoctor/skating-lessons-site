@@ -75,6 +75,7 @@
     <a href="{{ route('admin.calendar') }}" class="nav-link {{ request()->routeIs('admin.calendar*') ? 'active' : '' }}" onclick="closeDrawer()">📅 Calendar</a>
     <a href="{{ route('admin.schedule') }}" class="nav-link {{ request()->routeIs('admin.schedule') ? 'active' : '' }}" onclick="closeDrawer()">📅 Schedule</a>
     <a href="{{ route('admin.schedule.verify') }}" class="nav-link {{ request()->routeIs('admin.schedule.verify') ? 'active' : '' }}" onclick="closeDrawer()">🔍 Verify Schedule</a>
+    <a href="{{ route('admin.rinks.index') }}" class="nav-link {{ request()->routeIs('admin.rinks.*') ? 'active' : '' }}" onclick="closeDrawer()">🏟️ Rinks</a>
     <div class="sidebar-label">People</div>
     <a href="{{ route('admin.clients.index') }}" class="nav-link {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}" onclick="closeDrawer()">👥 Clients</a>
     <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" onclick="closeDrawer()">⛸️ Students</a>
@@ -113,6 +114,7 @@
   <a href="{{ route('admin.calendar') }}" class="nav-link {{ request()->routeIs('admin.calendar*') ? 'active' : '' }}">📅 Calendar</a>
   <a href="{{ route('admin.schedule') }}" class="nav-link {{ request()->routeIs('admin.schedule') ? 'active' : '' }}">📅 Schedule</a>
   <a href="{{ route('admin.schedule.verify') }}" class="nav-link {{ request()->routeIs('admin.schedule.verify') ? 'active' : '' }}">🔍 Verify Schedule</a>
+  <a href="{{ route('admin.rinks.index') }}" class="nav-link {{ request()->routeIs('admin.rinks.*') ? 'active' : '' }}">🏟️ Rinks</a>
   <div class="sidebar-label">People</div>
   <a href="{{ route('admin.clients.index') }}" class="nav-link {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">👥 Clients</a>
   <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">⛸️ Students</a>
