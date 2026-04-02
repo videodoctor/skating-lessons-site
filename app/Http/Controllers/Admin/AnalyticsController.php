@@ -17,22 +17,22 @@ class AnalyticsController extends Controller
         $days = (int) $request->get('days', 30);
         $since = now()->subDays($days)->startOfDay();
 
-        // Headline stats
-        $totalVisits   = PageVisit::homepage()->where('created_at', '>=', $since)->count();
-        $uniqueVisitors = PageVisit::homepage()->where('created_at', '>=', $since)->distinct('ip_address')->count('ip_address');
-        $todayVisits   = PageVisit::homepage()->where('created_at', '>=', today())->count();
-        $newClients    = Client::where('created_at', '>=', $since)->count();
+        // Headline stats — exclude admin visits
+        $totalVisits    = PageVisit::public()->homepage()->where('created_at', '>=', $since)->count();
+        $uniqueVisitors = PageVisit::public()->homepage()->where('created_at', '>=', $since)->distinct('ip_address')->count('ip_address');
+        $todayVisits    = PageVisit::public()->homepage()->where('created_at', '>=', today())->count();
+        $newClients     = Client::where('created_at', '>=', $since)->count();
 
-        // Visits per day
-        $dailyVisits = PageVisit::homepage()
+        // Visits per day — exclude admin
+        $dailyVisits = PageVisit::public()->homepage()
             ->where('created_at', '>=', $since)
             ->selectRaw('DATE(created_at) as date, COUNT(*) as visits, COUNT(DISTINCT ip_address) as unique_visitors')
             ->groupByRaw('DATE(created_at)')
             ->orderBy('date')
             ->get();
 
-        // Referrer breakdown
-        $referrers = PageVisit::homepage()
+        // Referrer breakdown — exclude admin
+        $referrers = PageVisit::public()->homepage()
             ->where('created_at', '>=', $since)
             ->whereNotNull('referrer_source')
             ->where('referrer_source', '!=', 'internal')
@@ -41,8 +41,8 @@ class AnalyticsController extends Controller
             ->orderByDesc('visits')
             ->get();
 
-        // Top cities
-        $cities = PageVisit::homepage()
+        // Top cities — exclude admin
+        $cities = PageVisit::public()->homepage()
             ->where('created_at', '>=', $since)
             ->whereNotNull('city')
             ->selectRaw("CONCAT(city, ', ', region) as location, COUNT(*) as visits")
@@ -51,22 +51,23 @@ class AnalyticsController extends Controller
             ->limit(15)
             ->get();
 
-        // UTM campaigns
-        $campaigns = PageVisit::where('created_at', '>=', $since)
+        // UTM campaigns — exclude admin
+        $campaigns = PageVisit::public()->where('created_at', '>=', $since)
             ->whereNotNull('utm_source')
             ->selectRaw('utm_source, utm_medium, utm_campaign, COUNT(*) as visits')
             ->groupBy('utm_source', 'utm_medium', 'utm_campaign')
             ->orderByDesc('visits')
             ->get();
 
-        // Recent visits (last 50 — all pages, to catch vetting/reviewer traffic)
-        $recentVisits = PageVisit::where('created_at', '>=', $since)
+        // Recent visits (last 50 — ALL visits including admin, labeled)
+        $recentVisits = PageVisit::with('adminUser')
+            ->where('created_at', '>=', $since)
             ->latest('created_at')
             ->limit(50)
             ->get();
 
-        // Top pages
-        $topPages = PageVisit::where('created_at', '>=', $since)
+        // Top pages — exclude admin
+        $topPages = PageVisit::public()->where('created_at', '>=', $since)
             ->selectRaw('path, COUNT(*) as visits')
             ->groupBy('path')
             ->orderByDesc('visits')
@@ -103,8 +104,9 @@ class AnalyticsController extends Controller
         $days = (int) $request->get('days', 30);
         $since = now()->subDays($days)->startOfDay();
 
-        $homepageVisits = PageVisit::homepage()->where('created_at', '>=', $since)->distinct('ip_address')->count('ip_address');
-        $bookingPageVisits = PageVisit::where('path', 'LIKE', '/book%')->where('created_at', '>=', $since)->distinct('ip_address')->count('ip_address');
+        // Funnel — exclude admin visits
+        $homepageVisits = PageVisit::public()->homepage()->where('created_at', '>=', $since)->distinct('ip_address')->count('ip_address');
+        $bookingPageVisits = PageVisit::public()->where('path', 'LIKE', '/book%')->where('created_at', '>=', $since)->distinct('ip_address')->count('ip_address');
         $bookingsSubmitted = Booking::where('created_at', '>=', $since)->count();
         $bookingsConfirmed = Booking::where('created_at', '>=', $since)->where('status', 'approved')->count();
         $clientRegistrations = Client::where('created_at', '>=', $since)->count();

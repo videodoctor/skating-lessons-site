@@ -87,7 +87,8 @@ class VenmoAdminController extends Controller
             'match_status' => !empty($linkedCodes) ? 'matched' : 'client_only',
         ]);
 
-        $msg = "Payment from {$payment->sender_name} linked to {$client?->full_name ?? 'unknown client'}.";
+        $clientName = $client?->full_name ?? 'unknown client';
+        $msg = "Payment from {$payment->sender_name} linked to {$clientName}.";
         if (!empty($linkedCodes)) {
             $msg .= ' Bookings marked paid: ' . implode(', ', $linkedCodes) . '.';
         }

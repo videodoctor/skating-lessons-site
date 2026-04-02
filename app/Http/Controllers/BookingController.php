@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use App\Models\BookingInterest;
+use App\Models\SiteSetting;
 use App\Services\ActivityLogger;
 
 class BookingController extends Controller
@@ -24,9 +26,61 @@ class BookingController extends Controller
     // Step 1: Select Service
     public function index()
     {
+        if (SiteSetting::isBookingPaused()) {
+            $message = SiteSetting::get('booking_paused_message', 'Booking is currently closed.');
+            $opensAt = SiteSetting::get('booking_opens_at');
+            return view('booking.paused', compact('message', 'opensAt'));
+        }
+
         $services = Service::where('is_active', true)->orderBy('price')->get();
         $comingSoonServices = Service::where('coming_soon', true)->orderBy('price')->get();
         return view('booking.index', compact('services', 'comingSoonServices'));
+    }
+
+    public function submitInterest(Request $request)
+    {
+        // Turnstile verification
+        $turnstile = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+            'secret'   => config('services.turnstile.secret'),
+            'response' => $request->input('cf-turnstile-response'),
+            'remoteip' => $request->ip(),
+        ]);
+        if (!$turnstile->json('success')) {
+            return back()->withErrors(['captcha' => 'Security check failed. Please try again.'])->withInput();
+        }
+
+        $validated = $request->validate([
+            'name'             => 'required|string|max:255',
+            'email'            => 'required|email|max:255',
+            'phone'            => 'nullable|string|max:30',
+            'message'          => 'nullable|string|max:1000',
+            'student_name'     => 'required|string|max:255',
+            'student_age'      => 'required|integer|min:2|max:99',
+            'skill_level'      => 'required|in:beginner,intermediate,advanced',
+            'email_consent'    => 'required|accepted',
+            'waiver_accepted'  => 'required|accepted',
+            'terms_accepted'   => 'required|accepted',
+            'service_id'       => 'nullable|integer',
+        ]);
+
+        $serviceId = $request->input('service_id');
+
+        BookingInterest::create([
+            ...$validated,
+            'service_id'      => $serviceId ?: null,
+            'source'          => $serviceId ? 'service_waitlist' : 'booking_paused',
+            'email_consent'   => true,
+            'sms_consent'     => $request->boolean('sms_consent'),
+            'waiver_accepted' => true,
+            'terms_accepted'  => true,
+        ]);
+
+        // Set service-specific waitlist flag if we know which service (for home page cards)
+        if ($serviceId) {
+            session()->flash('waitlist_joined_' . $serviceId, true);
+        }
+
+        return back()->with('success', 'Thanks! We\'ll notify you when lesson times are available.');
     }
 
     public function ajaxDates(Service $service)
@@ -132,6 +186,9 @@ class BookingController extends Controller
             'client_name'         => 'required|string|max:255',
             'client_email'        => 'required|email',
             'client_phone'        => 'nullable|string',
+            'student_name'        => 'required|string|max:255',
+            'student_age'         => 'required|integer|min:2|max:99',
+            'skill_level'         => 'required|in:beginner,intermediate,advanced',
             'notes'               => 'nullable|string',
             'email_consent'       => 'required|accepted',
             'cancellation_policy' => 'required|accepted',
@@ -154,6 +211,9 @@ class BookingController extends Controller
             'client_name'        => $validated['client_name'],
             'client_email'       => $validated['client_email'],
             'client_phone'       => $normalizedPhone,
+            'student_name'       => $validated['student_name'],
+            'student_age'        => $validated['student_age'],
+            'skill_level'        => $validated['skill_level'],
             'notes'              => $validated['notes'] ?? null,
             'status'             => 'pending',
             'price_paid'         => Service::find($validated['service_id'])->effectivePrice(),
@@ -170,7 +230,7 @@ class BookingController extends Controller
 
         // Log activity if authenticated client
         if ($booking->client_id) {
-            ActivityLogger::log($booking->client_id, 'make_booking', "Booked {$booking->service->name}", [
+            ActivityLogger::log($booking->client_id, 'make_booking', "{$booking->client_name} booked {$booking->service->name}", [
                 'booking_id' => $booking->id,
                 'service_id' => $booking->service_id,
             ]);

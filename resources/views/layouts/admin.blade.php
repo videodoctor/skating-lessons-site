@@ -49,14 +49,15 @@
 
 {{-- Mobile topbar --}}
 <div class="mobile-topbar">
+  <button class="hamburger" id="hamburger-btn" onclick="toggleDrawer()">
+    <span></span><span></span><span></span>
+  </button>
   <div class="mobile-logo">
     <img src="/images/HOCKEY_SKATER.webp" style="width:24px;height:24px;object-fit:contain;filter:brightness(0) invert(1);">
     KRISTINE SKATES
     <span style="font-size:.65rem;opacity:.5;font-family:sans-serif;font-weight:400;margin-left:.25rem;">Admin</span>
+    <span style="font-size:.65rem;opacity:.7;font-family:sans-serif;font-weight:400;margin-left:.15rem;">— {{ Auth::user()?->name ? explode(' ', Auth::user()->name)[0] : '' }}</span>
   </div>
-  <button class="hamburger" id="hamburger-btn" onclick="toggleDrawer()">
-    <span></span><span></span><span></span>
-  </button>
 </div>
 
 {{-- Mobile drawer --}}
@@ -76,6 +77,7 @@
     <a href="{{ route('admin.schedule') }}" class="nav-link {{ request()->routeIs('admin.schedule') ? 'active' : '' }}" onclick="closeDrawer()">📅 Schedule</a>
     <a href="{{ route('admin.schedule.verify') }}" class="nav-link {{ request()->routeIs('admin.schedule.verify') ? 'active' : '' }}" onclick="closeDrawer()">🔍 Verify Schedule</a>
     <a href="{{ route('admin.rinks.index') }}" class="nav-link {{ request()->routeIs('admin.rinks.*') ? 'active' : '' }}" onclick="closeDrawer()">🏟️ Rinks</a>
+    <a href="{{ route('admin.waitlist.index') }}" class="nav-link {{ request()->routeIs('admin.waitlist.*') ? 'active' : '' }}" onclick="closeDrawer()">📋 Waitlist</a>
     <div class="sidebar-label">People</div>
     <a href="{{ route('admin.clients.index') }}" class="nav-link {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}" onclick="closeDrawer()">👥 Clients</a>
     <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}" onclick="closeDrawer()">⛸️ Students</a>
@@ -91,6 +93,8 @@
     <a href="{{ route('admin.export') }}" class="nav-link {{ request()->routeIs('admin.export') ? 'active' : '' }}" onclick="closeDrawer()">📤 Export</a>
     <div style="margin-top:auto;padding:1rem 0 0;border-top:1px solid rgba(255,255,255,.1);">
       <div class="sidebar-label">Account</div>
+
+      <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" onclick="closeDrawer()">👤 Admin Users</a>
       <a href="/" class="nav-link" onclick="closeDrawer()">🏠 View Site</a>
       <form method="POST" action="{{ route('logout') }}">
         @csrf
@@ -105,7 +109,7 @@
   <div class="sidebar-logo">
     <img src="/images/HOCKEY_SKATER.webp" style="width:28px;height:28px;display:inline-block;vertical-align:middle;margin-right:8px;object-fit:contain;filter:brightness(0) invert(1);">
     KRISTINE SKATES<br>
-    <span style="font-size:.7rem;opacity:.5;font-family:sans-serif;font-weight:400;">Admin Panel</span>
+    <span style="font-size:.7rem;opacity:.5;font-family:sans-serif;font-weight:400;">Admin — {{ Auth::user()?->name ? explode(' ', Auth::user()->name)[0] : '' }}</span>
   </div>
   <div class="sidebar-label">Main</div>
   <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">📊 Dashboard</a>
@@ -115,6 +119,7 @@
   <a href="{{ route('admin.schedule') }}" class="nav-link {{ request()->routeIs('admin.schedule') ? 'active' : '' }}">📅 Schedule</a>
   <a href="{{ route('admin.schedule.verify') }}" class="nav-link {{ request()->routeIs('admin.schedule.verify') ? 'active' : '' }}">🔍 Verify Schedule</a>
   <a href="{{ route('admin.rinks.index') }}" class="nav-link {{ request()->routeIs('admin.rinks.*') ? 'active' : '' }}">🏟️ Rinks</a>
+  <a href="{{ route('admin.waitlist.index') }}" class="nav-link {{ request()->routeIs('admin.waitlist.*') ? 'active' : '' }}">📋 Waitlist</a>
   <div class="sidebar-label">People</div>
   <a href="{{ route('admin.clients.index') }}" class="nav-link {{ request()->routeIs('admin.clients.*') ? 'active' : '' }}">👥 Clients</a>
   <a href="{{ route('admin.students.index') }}" class="nav-link {{ request()->routeIs('admin.students.*') ? 'active' : '' }}">⛸️ Students</a>
@@ -130,6 +135,8 @@
   <a href="{{ route('admin.export') }}" class="nav-link {{ request()->routeIs('admin.export') ? 'active' : '' }}">📤 Export</a>
   <div class="sidebar-footer">
     <div class="sidebar-label">Account</div>
+    <div style="padding:.4rem 1.25rem .5rem;color:rgba(255,255,255,.5);font-size:.78rem;">Hi, <span style="color:#fff;font-weight:600;">{{ Auth::user()?->name ? explode(' ', Auth::user()->name)[0] : 'Admin' }}</span></div>
+    <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">👤 Admin Users</a>
     <a href="/" class="nav-link">🏠 View Site</a>
     <form method="POST" action="{{ route('logout') }}">
       @csrf

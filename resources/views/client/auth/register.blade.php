@@ -77,13 +77,21 @@
 
       {{-- Cloudflare Turnstile --}}
       <div class="mb-6">
-        <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.key') }}" data-theme="light"></div>
+        <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.key') }}" data-theme="light" data-callback="onTurnstilePass"></div>
         @error('captcha')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
       </div>
 
-      <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition">
+      <button type="submit" id="register-submit" disabled class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition" style="opacity:.4;cursor:not-allowed;">
         Create Account
       </button>
+      <script>
+      function onTurnstilePass() {
+        var btn = document.getElementById('register-submit');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+      }
+      </script>
     </form>
 
     <p class="text-center text-gray-500 text-xs mt-4">

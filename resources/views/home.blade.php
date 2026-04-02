@@ -246,16 +246,14 @@
           @endforeach
         </ul>
         @endif
-        {{-- Waitlist form --}}
+        {{-- Waitlist --}}
         @if(session('waitlist_joined_' . $service->id))
           <div style="background:#d1fae5;color:#065f46;border-radius:7px;padding:.65rem 1rem;font-size:.83rem;font-weight:600;text-align:center;">✓ You're on the waitlist!</div>
         @else
-          <form method="POST" action="{{ route('waitlist.join', $service) }}" style="display:flex;gap:.5rem;">
-            @csrf
-            <input type="email" name="email" required placeholder="your@email.com"
-              style="flex:1;border:1.5px solid #e5e7eb;border-radius:6px;padding:.5rem .75rem;font-size:.83rem;">
-            <button type="submit" style="background:#001F5B;color:#fff;border:none;border-radius:6px;padding:.5rem .9rem;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;">Join Waitlist</button>
-          </form>
+          <button onclick="openWaitlistModal('{{ $service->id }}', '{{ addslashes($service->name) }}')"
+            style="width:100%;background:#001F5B;color:#fff;border:none;border-radius:6px;padding:.6rem .9rem;font-size:.85rem;font-weight:700;cursor:pointer;">
+            Join Waitlist
+          </button>
         @endif
       </div>
       @endforeach
@@ -469,4 +467,136 @@
 </script>
 
 <style>#main-footer{margin-top:0!important;}</style>
+
+{{-- ═══ WAITLIST MODAL ═══ --}}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad" async defer></script>
+<div id="waitlist-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeWaitlistModal()">
+  <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;position:relative;">
+    <button onclick="closeWaitlistModal()" style="position:absolute;top:.75rem;right:1rem;background:none;border:none;font-size:1.3rem;color:#9ca3af;cursor:pointer;">✕</button>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#001F5B;margin:0 0 .25rem;">Join the Waitlist</h2>
+    <p style="font-size:.82rem;color:#6b7280;margin-bottom:1rem;">For: <strong id="wl-service-name"></strong></p>
+
+    <div id="wl-errors" style="display:none;background:#fee2e2;border:1.5px solid #fca5a5;color:#991b1b;padding:.6rem .85rem;border-radius:7px;margin-bottom:.75rem;font-size:.82rem;"></div>
+
+    <form id="waitlist-form" method="POST" action="">
+      @csrf
+      <input type="hidden" name="service_id" id="wl-service-id">
+      <div style="margin-bottom:.55rem;">
+        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Your Name *</label>
+        <input type="text" name="name" required placeholder="Parent/guardian name"
+          style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+      </div>
+      <div style="margin-bottom:.55rem;">
+        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Email *</label>
+        <input type="email" name="email" required
+          style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+      </div>
+      <div style="margin-bottom:.55rem;">
+        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Phone <span style="color:#9ca3af;">(for SMS reminders)</span></label>
+        <input type="tel" name="phone" placeholder="(314) 555-0000"
+          style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;"
+          oninput="wlFormatPhone(this)">
+      </div>
+
+      <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:8px;padding:.75rem .85rem;margin-bottom:.55rem;">
+        <div style="font-weight:700;font-size:.8rem;color:#0c4a6e;margin-bottom:.4rem;">Skater Information</div>
+        <div style="margin-bottom:.4rem;">
+          <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skater Name *</label>
+          <input type="text" name="student_name" required placeholder="Name of the person skating"
+            style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+          <div>
+            <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skater Age *</label>
+            <input type="number" name="student_age" required min="2" max="99" placeholder="Age"
+              style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+          </div>
+          <div>
+            <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skill Level *</label>
+            <select name="skill_level" required style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+              <option value="">Select...</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:.55rem;">
+        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Anything else? <span style="color:#9ca3af;">(optional)</span></label>
+        <textarea name="message" rows="2" placeholder="Goals, availability preferences..."
+          style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;font-family:inherit;resize:vertical;"></textarea>
+      </div>
+
+      <div style="border-top:1px solid #f3f4f6;padding-top:.65rem;margin-bottom:.65rem;">
+        <div style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.5rem;">
+          <input type="checkbox" name="email_consent" id="wl-email" required style="margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:#001F5B;">
+          <label for="wl-email" style="font-size:.78rem;color:#374151;line-height:1.4;">I agree to receive email notifications from Kristine Skates. *</label>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.5rem;background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:7px;padding:.5rem .65rem;">
+          <input type="checkbox" name="sms_consent" id="wl-sms" value="1" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:#001F5B;">
+          <label for="wl-sms" style="font-size:.78rem;color:#374151;line-height:1.4;">
+            <strong>Optional:</strong> SMS lesson reminders. Msg & data rates apply. Reply STOP to opt out.
+          </label>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.5rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px;padding:.5rem .65rem;">
+          <input type="checkbox" name="waiver_accepted" id="wl-waiver" required style="margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:#001F5B;">
+          <label for="wl-waiver" style="font-size:.78rem;color:#374151;line-height:1.4;">
+            I agree to the <a href="{{ route('waiver.show') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Liability Waiver</a>. *
+          </label>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:.5rem;">
+          <input type="checkbox" name="terms_accepted" id="wl-terms" required style="margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:#001F5B;">
+          <label for="wl-terms" style="font-size:.78rem;color:#374151;line-height:1.4;">
+            I agree to the <a href="{{ route('terms') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Terms</a> &
+            <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>. *
+          </label>
+        </div>
+      </div>
+
+      <div id="wl-turnstile" style="display:flex;justify-content:center;margin-bottom:.65rem;"></div>
+
+      <button type="submit" id="wl-modal-submit" disabled
+        style="width:100%;background:#001F5B;color:#fff;border:none;border-radius:7px;padding:.65rem;font-size:.88rem;font-weight:700;cursor:pointer;opacity:.4;">
+        Join Waitlist
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+var wlTurnstileId = null;
+function openWaitlistModal(serviceId, serviceName) {
+  document.getElementById('wl-service-name').textContent = serviceName;
+  document.getElementById('wl-service-id').value = serviceId;
+  document.getElementById('waitlist-form').action = '/book/interest';
+  document.getElementById('wl-errors').style.display = 'none';
+  document.getElementById('waitlist-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  // Render turnstile if not already
+  if (wlTurnstileId === null && window.turnstile) {
+    wlTurnstileId = turnstile.render('#wl-turnstile', {
+      sitekey: '{{ config("services.turnstile.key") }}',
+      callback: function() {
+        document.getElementById('wl-modal-submit').disabled = false;
+        document.getElementById('wl-modal-submit').style.opacity = '1';
+      }
+    });
+  }
+}
+function closeWaitlistModal() {
+  document.getElementById('waitlist-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function onTurnstileLoad() { /* loaded, render happens in openWaitlistModal */ }
+function wlFormatPhone(input) {
+  var v = input.value.replace(/\D/g, '').substring(0, 10);
+  if (v.length >= 6) v = '(' + v.substring(0,3) + ') ' + v.substring(3,6) + '-' + v.substring(6);
+  else if (v.length >= 3) v = '(' + v.substring(0,3) + ') ' + v.substring(3);
+  else if (v.length > 0) v = '(' + v;
+  input.value = v;
+}
+</script>
+
 @endsection

@@ -19,12 +19,18 @@
   <style>
     :root { --navy:#001F5B; --red:#C8102E; }
     a { text-decoration: none; }
+    .mobile-menu-item{display:inline-block;background:rgba(0,31,91,.75);color:#fff;font-size:.82rem;padding:.3rem .55rem;font-weight:600;border-radius:5px;text-decoration:none;text-align:center;transition:background .15s;}
+    .mobile-menu-item:hover{background:rgba(0,31,91,1);}
+    .mobile-menu-item.cta{background:rgba(200,16,46,.75);}
+    .mobile-menu-item.cta:hover{background:rgba(200,16,46,1);}
   </style>
   @stack('head')
 </head>
 <body class="bg-gray-50">
   <!-- Navigation -->
-  <nav style="background:#fff;border-bottom:1px solid #e5eaf2;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,31,91,.06);">
+  <nav style="background:#fff;border-bottom:1px solid #e5eaf2;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,31,91,.06);overflow:visible;">
+    {{-- Inner wrapper to sit above the menu --}}
+    <div style="position:relative;z-index:2;background:#fff;">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Desktop: single row -->
       <div class="hidden sm:flex justify-between h-16 items-center">
@@ -55,39 +61,82 @@
         </div>
       </div>
       <!-- Mobile: hamburger -->
-      <div class="sm:hidden flex justify-between items-center h-14">
+      <div class="sm:hidden flex justify-between items-center h-14" style="position:relative;">
         <a href="/" style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--navy);letter-spacing:.05em;display:flex;align-items:center;gap:8px;white-space:nowrap;">
           <img src="/images/HOCKEY_SKATER.webp" style="width:26px;height:26px;object-fit:contain;">Kristine Skates
         </a>
-        <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
+        <button onclick="toggleMobileMenu()"
                 style="padding:6px;border:none;background:none;cursor:pointer;">
           <svg style="width:24px;height:24px;color:var(--navy)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
         </button>
-      </div>
-      <!-- Mobile menu dropdown -->
-      <div id="mobile-menu" class="hidden sm:hidden pb-3">
-        <div style="display:flex;flex-direction:column;gap:2px;border-top:1px solid #e5eaf2;padding-top:10px;">
-          <a href="/" style="color:#374151;font-size:.95rem;padding:8px 4px;font-weight:500;">Home</a>
-          <a href="/book" style="color:#374151;font-size:.95rem;padding:8px 4px;font-weight:500;">Book a Lesson</a>
-          <a href="/rinks" style="color:#374151;font-size:.95rem;padding:8px 4px;font-weight:500;">Rink Information</a>
+      <script>
+      var menuOpen = false;
+      function toggleMobileMenu() {
+        menuOpen ? closeMobileMenu() : openMobileMenu();
+      }
+      function openMobileMenu() {
+        var menu = document.getElementById('mobile-menu');
+        menu.style.transform = 'translateY(0)';
+        menu.style.pointerEvents = 'auto';
+        menuOpen = true;
+        setTimeout(function() { document.addEventListener('click', closeMobileMenuOutside); }, 0);
+      }
+      function closeMobileMenu() {
+        var menu = document.getElementById('mobile-menu');
+        menu.style.transform = 'translateY(calc(-100% - 10px))';
+        menu.style.pointerEvents = 'none';
+        menuOpen = false;
+        document.removeEventListener('click', closeMobileMenuOutside);
+      }
+      function closeMobileMenuOutside(e) {
+        var menu = document.getElementById('mobile-menu');
+        if (!menu.contains(e.target) && !e.target.closest('button[onclick*="toggleMobileMenu"]')) {
+          closeMobileMenu();
+        }
+      }
+      </script>
+      </div>{{-- /hamburger row --}}
+    </div>{{-- /max-w-7xl --}}
+    </div>{{-- /inner wrapper z-index:2 --}}
+    {{-- Mobile menu: z-index:1, slides out from behind the header --}}
+    <div id="mobile-menu" class="sm:hidden" style="position:absolute;top:100%;right:6px;z-index:1;transform:translateY(calc(-100% - 10px));transition:transform .3s ease;pointer-events:none;">
+      <div style="overflow:hidden;position:relative;width:220px;filter:drop-shadow(0 10px 20px rgba(0,31,91,.18));">
+        <img src="/images/ice-rink-menu-bg.webp" style="display:block;width:100%;height:auto;" alt="">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:8% 10% 16%;text-align:right;white-space:nowrap;">
+          <a href="/" class="mobile-menu-item">Home</a>
+          <a href="/book" class="mobile-menu-item cta">Book a Lesson</a>
+          <a href="/rinks" class="mobile-menu-item">Rink Information</a>
           @auth('client')
-            <a href="{{ route('client.dashboard') }}" style="color:#374151;font-size:.95rem;padding:8px 4px;font-weight:500;">My Bookings</a>
-            <form method="POST" action="{{ route('client.logout') }}">
+            <a href="{{ route('client.dashboard') }}" class="mobile-menu-item">My Bookings</a>
+            <form method="POST" action="{{ route('client.logout') }}" style="text-align:right;">
               @csrf
-              <button type="submit" style="color:#6b7280;font-size:.9rem;padding:8px 4px;background:none;border:none;cursor:pointer;">Sign Out</button>
+              <button type="submit" class="mobile-menu-item" style="border:none;cursor:pointer;width:auto;">Sign Out</button>
             </form>
           @else
-            <a href="{{ route('client.login') }}" style="color:#374151;font-size:.95rem;padding:8px 4px;font-weight:500;">Client Login</a>
+            <a href="{{ route('client.login') }}" class="mobile-menu-item">Client Login</a>
           @endauth
           @if(session()->has('admin_authenticated'))
-            <a href="/admin/dashboard" style="color:var(--navy);font-size:.95rem;padding:8px 4px;font-weight:600;">Admin ⚡</a>
+            <a href="/admin/dashboard" class="mobile-menu-item">Admin ⚡</a>
           @endif
         </div>
       </div>
     </div>
   </nav>
+
+  {{-- Impersonation banner --}}
+  @if(session('impersonating_admin_id'))
+  <div style="background:#1e40af;color:#fff;padding:.6rem 1.5rem;text-align:center;font-size:.88rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:.75rem;flex-wrap:wrap;">
+    <span>👤 Viewing as <strong>{{ session('impersonating_client_name', 'Client') }}</strong></span>
+    <form method="POST" action="{{ route('admin.impersonate.stop') }}" style="display:inline;">
+      @csrf
+      <button type="submit" style="background:#fff;color:#1e40af;border:none;border-radius:5px;padding:3px 12px;font-size:.8rem;font-weight:700;cursor:pointer;">
+        Stop Impersonating
+      </button>
+    </form>
+  </div>
+  @endif
 
   <!-- Flash messages -->
   @if(session('success'))

@@ -53,13 +53,30 @@
       {{ $client->email }}
       @if($client->phone) · {{ \App\Http\Controllers\Admin\ClientController::displayPhone($client->phone) }}@endif
     </div>
-    <div style="font-size:.75rem;color:#9ca3af;margin-top:2px;">Member since {{ $client->created_at->format('M j, Y') }}</div>
-    @if($client->sms_consent)<div style="font-size:.72rem;color:#065f46;margin-top:3px;">✓ SMS reminders enabled</div>@endif
+    <div style="font-size:.75rem;color:#9ca3af;margin-top:2px;">
+      Member since {{ $client->created_at->format('M j, Y') }}
+      @if($client->last_login_at)
+        · Last login {{ $client->last_login_at->diffForHumans() }}
+      @else
+        · Never logged in
+      @endif
+    </div>
+    <div style="display:flex;gap:.6rem;margin-top:4px;font-size:.72rem;">
+      @if($client->email_consent_at)<span style="color:#065f46;">✓ Email</span>@else<span style="color:#dc2626;">✕ Email</span>@endif
+      @if($client->sms_consent)<span style="color:#065f46;">✓ SMS</span>@else<span style="color:#9ca3af;">✕ SMS</span>@endif
+      @if($client->waiver_signed_at)<span style="color:#065f46;">✓ Waiver</span>@else<span style="color:#dc2626;">✕ No Waiver</span>@endif
+    </div>
   </div>
-  <button class="btn-sm btn-edit" style="padding:6px 14px;font-size:.82rem;"
-    onclick="openEditModal('{{ addslashes($client->first_name) }}','{{ addslashes($client->last_name ?? '') }}','{{ $client->email }}','{{ \App\Http\Controllers\Admin\ClientController::displayPhone($client->phone) ?? '' }}','{{ addslashes($client->notes ?? '') }}')">
-    ✏ Edit Client
-  </button>
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+    <button class="btn-sm btn-edit" style="padding:6px 14px;font-size:.82rem;"
+      onclick="openEditModal('{{ addslashes($client->first_name) }}','{{ addslashes($client->last_name ?? '') }}','{{ $client->email }}','{{ \App\Http\Controllers\Admin\ClientController::displayPhone($client->phone) ?? '' }}','{{ addslashes($client->notes ?? '') }}')">
+      ✏ Edit Client
+    </button>
+    <form method="POST" action="{{ route('admin.impersonate.start', $client) }}" style="display:inline;">
+      @csrf
+      <button type="submit" class="btn-sm" style="background:#ede9fe;color:#5b21b6;padding:6px 14px;font-size:.82rem;">👤 Impersonate</button>
+    </form>
+  </div>
 </div>
 
 {{-- Stats --}}

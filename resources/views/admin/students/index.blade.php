@@ -16,6 +16,19 @@
   .btn-sm{padding:3px 10px;border-radius:5px;font-size:.72rem;font-weight:600;cursor:pointer;border:none;}
   .btn-edit{background:#f3f4f6;color:#374151;}.btn-edit:hover{background:#e5e7eb;}
   .btn-danger{background:#fee2e2;color:#991b1b;}.btn-danger:hover{background:#fecaca;}
+
+  .student-card{display:none;}
+  @media(max-width:768px){
+    .desktop-table{display:none;}
+    .student-card{display:block;background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1rem;margin-bottom:.75rem;}
+    .student-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;}
+    .student-card-name{font-weight:700;font-size:.95rem;color:var(--navy);}
+    .student-card-meta{display:grid;grid-template-columns:1fr 1fr;gap:.3rem .75rem;margin-bottom:.6rem;font-size:.83rem;}
+    .student-card-label{font-size:.65rem;font-weight:700;text-transform:uppercase;color:#9ca3af;}
+    .student-card-actions{display:flex;flex-wrap:wrap;gap:6px;padding-top:.5rem;border-top:1px solid #f3f4f6;}
+    .student-card-actions .btn-sm{padding:5px 12px;font-size:.76rem;}
+  }
+
   .btn-create{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:.55rem 1.3rem;font-weight:700;font-size:.86rem;cursor:pointer;}
   .btn-create:hover{background:var(--red);}
   .no-client{color:#ef4444;font-size:.72rem;font-weight:600;}
@@ -56,7 +69,7 @@
   <input type="text" name="q" value="{{ $search }}" placeholder="Search by name…" class="search-input" onchange="this.form.submit()">
 </form>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+<div class="desktop-table bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
   <table class="tbl w-full">
     <thead class="bg-gray-50"><tr>
       <th>Student</th>
@@ -124,6 +137,53 @@
     </tbody>
   </table>
   <div class="p-4">{{ $students->appends(['q'=>$search])->links() }}</div>
+</div>
+
+{{-- Mobile student cards --}}
+@foreach($students as $student)
+<div class="student-card">
+  <div class="student-card-header">
+    <div>
+      <div class="student-card-name">{{ $student->full_name }}</div>
+      @if($student->client)
+        <div style="font-size:.8rem;color:#6b7280;">Parent: {{ $student->client->full_name }}</div>
+      @else
+        <div class="no-client">⚠ No client linked</div>
+      @endif
+    </div>
+    <div style="display:flex;gap:4px;align-items:center;">
+      @if($student->skill_level)
+        <span class="skill-badge skill-{{ $student->skill_level }}">{{ ucfirst($student->skill_level) }}</span>
+      @endif
+      @if($student->is_active)
+        <span style="color:#065f46;font-size:.72rem;font-weight:700;">Active</span>
+      @else
+        <span style="color:#9ca3af;font-size:.72rem;">Inactive</span>
+      @endif
+    </div>
+  </div>
+  <div class="student-card-meta">
+    <div><div class="student-card-label">Age</div>{{ $student->age ?? '—' }}</div>
+    <div><div class="student-card-label">Lessons</div>{{ $student->bookings_count }}</div>
+    <div><div class="student-card-label">Aliases</div>@forelse($student->aliases as $a)<span class="alias-chip">{{ $a->alias }}</span>@empty — @endforelse</div>
+  </div>
+  @if($student->notes)<div style="font-size:.78rem;color:#9ca3af;margin-bottom:.4rem;">{{ Str::limit($student->notes, 50) }}</div>@endif
+  <div class="student-card-actions">
+    <button class="btn-sm btn-edit"
+      onclick="openEditModal({{ $student->id }},'{{ addslashes($student->first_name) }}','{{ addslashes($student->last_name ?? '') }}','{{ $student->client_id }}','{{ $student->age }}','{{ $student->skill_level }}','{{ addslashes($student->notes ?? '') }}','{{ $student->is_active ? 1 : 0 }}')">
+      ✏ Edit
+    </button>
+    @if($student->bookings_count === 0)
+    <form method="POST" action="{{ route('admin.students.destroy', $student) }}" style="display:inline;" onsubmit="return confirm('Delete {{ addslashes($student->full_name) }}?')">
+      @csrf @method('DELETE')
+      <button type="submit" class="btn-sm btn-danger">✕ Delete</button>
+    </form>
+    @endif
+  </div>
+</div>
+@endforeach
+<div class="student-card" style="background:transparent;border:none;padding:0;">
+  {{ $students->appends(['q'=>$search])->links() }}
 </div>
 
 {{-- CREATE MODAL --}}

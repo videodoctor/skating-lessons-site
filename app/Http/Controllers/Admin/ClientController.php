@@ -90,8 +90,9 @@ class ClientController extends Controller
             'email'      => $validated['email'],
             'phone'      => $phone ?? '',
             'sms_phone'  => $phone,
-            'notes'      => $validated['notes'] ?? null,
-            'password'   => Hash::make(str()->random(16)),
+            'notes'            => $validated['notes'] ?? null,
+            'password'         => Hash::make(str()->random(16)),
+            'must_accept_terms' => true,
         ]);
 
         if (!empty($validated['link_student_id'])) {

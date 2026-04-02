@@ -42,6 +42,30 @@
   </div>
 </div>
 
+<!-- Block/Open Date Range -->
+<div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;">
+  <form method="POST" action="{{ route('admin.slots.block-range') }}" class="flex flex-wrap items-end gap-3"
+        onsubmit="return confirm(this.action_type.value === 'block' ? 'Block all open slots in this range?' : 'Re-open all unbooked slots in this range?')">
+    @csrf
+    <div>
+      <label style="display:block;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;margin-bottom:2px;">From</label>
+      <input type="date" name="start_date" required style="border:1.5px solid #dbe4ff;border-radius:6px;padding:5px 8px;font-size:.85rem;">
+    </div>
+    <div>
+      <label style="display:block;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;margin-bottom:2px;">To</label>
+      <input type="date" name="end_date" required style="border:1.5px solid #dbe4ff;border-radius:6px;padding:5px 8px;font-size:.85rem;">
+    </div>
+    <div>
+      <label style="display:block;font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;margin-bottom:2px;">Action</label>
+      <select name="action" style="border:1.5px solid #dbe4ff;border-radius:6px;padding:5px 8px;font-size:.85rem;">
+        <option value="block">Block slots</option>
+        <option value="open">Open slots</option>
+      </select>
+    </div>
+    <button type="submit" class="btn-danger" style="padding:.5rem 1rem;font-size:.82rem;">Apply to Range</button>
+  </form>
+</div>
+
 <!-- Legend -->
 <div class="flex gap-4 text-xs mb-4">
   <span class="booking-chip chip-pending px-2 py-1">Pending</span>

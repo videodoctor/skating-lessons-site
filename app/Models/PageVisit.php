@@ -11,7 +11,7 @@ class PageVisit extends Model
     protected $fillable = [
         'ip_address', 'path', 'referrer_url', 'referrer_source',
         'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'ref_tag',
-        'country', 'region', 'city', 'user_agent', 'client_id', 'created_at',
+        'country', 'region', 'city', 'user_agent', 'client_id', 'admin_user_id', 'created_at',
     ];
 
     protected $casts = [
@@ -23,9 +23,20 @@ class PageVisit extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function adminUser()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'admin_user_id');
+    }
+
     public function scopeHomepage($query)
     {
         return $query->where('path', '/');
+    }
+
+    /** Exclude admin visits from public metrics. */
+    public function scopePublic($query)
+    {
+        return $query->whereNull('admin_user_id');
     }
 
     /**

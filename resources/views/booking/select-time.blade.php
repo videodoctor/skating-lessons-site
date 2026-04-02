@@ -136,9 +136,35 @@
               <input type="tel" name="client_phone" class="form-input"
                 value="{{ $client ? $client->phone : old('client_phone') }}" placeholder="(314) 555-0000" oninput="formatPhone(this)">
             </div>
+            <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:1rem 1.25rem;">
+              <div style="font-weight:700;font-size:.88rem;color:#0c4a6e;margin-bottom:.6rem;">Skater Information</div>
+              <div class="grid grid-cols-1 gap-3">
+                <div>
+                  <label class="form-label">Skater Name *</label>
+                  <input type="text" name="student_name" required class="form-input"
+                    value="{{ old('student_name') }}" placeholder="Name of the person skating">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="form-label">Skater Age *</label>
+                    <input type="number" name="student_age" required min="2" max="99" class="form-input"
+                      value="{{ old('student_age') }}" placeholder="Age">
+                  </div>
+                  <div>
+                    <label class="form-label">Skill Level *</label>
+                    <select name="skill_level" required class="form-input">
+                      <option value="">Select...</option>
+                      <option value="beginner" {{ old('skill_level') === 'beginner' ? 'selected' : '' }}>Beginner</option>
+                      <option value="intermediate" {{ old('skill_level') === 'intermediate' ? 'selected' : '' }}>Intermediate</option>
+                      <option value="advanced" {{ old('skill_level') === 'advanced' ? 'selected' : '' }}>Advanced</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div>
               <label class="form-label">Notes <span class="font-normal text-gray-400">(optional)</span></label>
-              <textarea name="notes" rows="2" class="form-input" placeholder="Skill level, goals, anything Coach Kristine should know…">{{ old('notes') }}</textarea>
+              <textarea name="notes" rows="2" class="form-input" placeholder="Goals, anything Coach Kristine should know…">{{ old('notes') }}</textarea>
             </div>
           </div>
 
@@ -168,7 +194,7 @@
 
           @guest('client')
           <div style="display:flex;justify-content:center;margin-bottom:1rem;">
-            <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.key') }}"></div>
+            <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.key') }}" data-callback="onTurnstilePass"></div>
           </div>
           @endguest
 
@@ -192,6 +218,9 @@
 </div>
 
 <script>
+let slotSelected = false;
+let turnstilePassed = {{ auth('client')->check() ? 'true' : 'false' }};
+
 function formatPhone(input) {
   let v = input.value.replace(/\D/g, '').substring(0, 10);
   if (v.length >= 6) v = '(' + v.substring(0,3) + ') ' + v.substring(3,6) + '-' + v.substring(6);
@@ -200,21 +229,30 @@ function formatPhone(input) {
   input.value = v;
 }
 
+function updateSubmitBtn() {
+  const btn = document.getElementById('submit-btn');
+  if (slotSelected && turnstilePassed) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  }
+}
+
+function onTurnstilePass() {
+  turnstilePassed = true;
+  updateSubmitBtn();
+}
+
 function selectSlot(slotId, timeDisplay, rinkName) {
   document.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('slot-' + slotId).classList.add('selected');
   document.getElementById('selected_slot_id').value = slotId;
   document.getElementById('selected-time-display').textContent = timeDisplay;
   document.getElementById('selected-rink-display').textContent = rinkName;
-  // Show form
   document.getElementById('form-placeholder').classList.add('hidden');
   document.getElementById('booking-form').classList.remove('hidden');
-  // Enable submit
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = false;
-  btn.style.opacity = '1';
-  btn.style.cursor = 'pointer';
-  // Scroll on mobile
+  slotSelected = true;
+  updateSubmitBtn();
   if (window.innerWidth < 1024) {
     setTimeout(() => document.getElementById('booking-form').scrollIntoView({behavior:'smooth',block:'start'}), 100);
   }

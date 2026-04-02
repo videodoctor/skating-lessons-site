@@ -16,6 +16,19 @@
   .btn-link{background:#dbeafe;color:#1e40af;} .btn-link:hover{background:#bfdbfe;}
   .btn-danger{background:#fee2e2;color:#991b1b;} .btn-danger:hover{background:#fecaca;}
 
+  /* Mobile cards */
+  .client-card{display:none;}
+  @media(max-width:768px){
+    .desktop-table{display:none;}
+    .client-card{display:block;background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1rem;margin-bottom:.75rem;}
+    .client-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;}
+    .client-card-name{font-weight:700;font-size:.95rem;color:#111827;}
+    .client-card-meta{display:grid;grid-template-columns:1fr 1fr;gap:.3rem .75rem;margin-bottom:.6rem;font-size:.83rem;}
+    .client-card-label{font-size:.65rem;font-weight:700;text-transform:uppercase;color:#9ca3af;}
+    .client-card-actions{display:flex;flex-wrap:wrap;gap:6px;padding-top:.5rem;border-top:1px solid #f3f4f6;}
+    .client-card-actions .btn-sm{padding:5px 12px;font-size:.76rem;}
+  }
+
   .orphan-card{background:#fff;border:1.5px solid #fecaca;border-left:4px solid #ef4444;border-radius:8px;padding:.75rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
 
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
@@ -55,10 +68,10 @@
   <input type="text" name="q" value="{{ $search }}" placeholder="Search name or email…" class="search-input" onchange="this.form.submit()">
 </form>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+<div class="desktop-table bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
   <table class="tbl w-full">
     <thead class="bg-gray-50"><tr>
-      <th>Name</th><th>Email</th><th>Phone</th><th>Students</th><th>Bookings</th><th>Total Paid</th><th>Since</th><th></th>
+      <th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Students</th><th>Bookings</th><th>Total Paid</th><th>Since</th><th></th>
     </tr></thead>
     <tbody>
     @forelse($clients as $client)
@@ -69,6 +82,12 @@
       </td>
       <td class="text-gray-500">{{ $client->email }}</td>
       <td class="text-gray-500">{{ \App\Http\Controllers\Admin\ClientController::displayPhone($client->phone) ?? '—' }}</td>
+      <td style="font-size:.68rem;line-height:1.6;">
+        <span title="Email consent" style="color:{{ $client->email_consent_at ? '#065f46' : '#d1d5db' }};">{{ $client->email_consent_at ? '✓' : '✕' }} Email</span><br>
+        <span title="SMS consent" style="color:{{ $client->sms_consent ? '#065f46' : '#d1d5db' }};">{{ $client->sms_consent ? '✓' : '✕' }} SMS</span><br>
+        <span title="Waiver" style="color:{{ $client->waiver_signed_at ? '#065f46' : '#d1d5db' }};">{{ $client->waiver_signed_at ? '✓' : '✕' }} Waiver</span>
+        @if($client->last_login_at)<br><span style="color:#6b7280;" title="{{ $client->last_login_at->format('M j, Y g:i A') }}">Last: {{ $client->last_login_at->diffForHumans() }}</span>@endif
+      </td>
       <td>
         @forelse($client->students as $s)
           <span class="student-chip">{{ $s->first_name }}</span>
@@ -84,6 +103,10 @@
       <td style="white-space:nowrap;">
         <button class="btn-sm btn-edit" onclick="openEditModal({{ $client->id }}, '{{ addslashes($client->first_name) }}', '{{ addslashes($client->last_name ?? '') }}', '{{ $client->email }}', '{{ \App\Http\Controllers\Admin\ClientController::displayPhone($client->phone) ?? '' }}', '{{ addslashes($client->notes ?? '') }}')">✏</button>
         <a href="{{ route('admin.clients.show', $client) }}" class="btn-sm btn-link" style="text-decoration:none;margin-left:2px;">View →</a>
+        <form method="POST" action="{{ route('admin.impersonate.start', $client) }}" style="display:inline;margin-left:2px;">
+          @csrf
+          <button type="submit" class="btn-sm" style="background:#ede9fe;color:#5b21b6;" title="View site as this client">👤</button>
+        </form>
         @if($client->bookings_count === 0)
         <form method="POST" action="{{ route('admin.clients.destroy', $client) }}" style="display:inline;margin-left:2px;" onsubmit="return confirm('Delete {{ addslashes($client->full_name) }}? This cannot be undone.')">
           @csrf @method('DELETE')
@@ -93,11 +116,58 @@
       </td>
     </tr>
     @empty
-    <tr><td colspan="8" class="text-center py-10 text-gray-400">No clients found.</td></tr>
+    <tr><td colspan="9" class="text-center py-10 text-gray-400">No clients found.</td></tr>
     @endforelse
     </tbody>
   </table>
   <div class="p-4">{{ $clients->appends(['q'=>$search])->links() }}</div>
+</div>
+
+{{-- Mobile client cards --}}
+@foreach($clients as $client)
+<div class="client-card">
+  <div class="client-card-header">
+    <div>
+      <div class="client-card-name">{{ $client->full_name }}</div>
+      <div style="font-size:.8rem;color:#6b7280;">{{ $client->email }}</div>
+    </div>
+    <span style="background:#dbeafe;color:#1e40af;font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:10px;">{{ $client->bookings_count }} bookings</span>
+  </div>
+  <div class="client-card-meta">
+    <div><div class="client-card-label">Phone</div>{{ \App\Http\Controllers\Admin\ClientController::displayPhone($client->phone) ?? '—' }}</div>
+    <div><div class="client-card-label">Total Paid</div>${{ number_format($client->bookings_sum_price_paid ?? 0, 0) }}</div>
+    <div><div class="client-card-label">Students</div>@forelse($client->students as $s)<span class="student-chip">{{ $s->first_name }}</span>@empty <span style="color:#d1d5db;">none</span> @endforelse</div>
+    <div><div class="client-card-label">Since</div>{{ $client->created_at->format('M j, Y') }}</div>
+    <div>
+      <div class="client-card-label">Consent</div>
+      <span style="font-size:.72rem;color:{{ $client->email_consent_at ? '#065f46' : '#d1d5db' }};">{{ $client->email_consent_at ? '✓' : '✕' }} Email</span>
+      <span style="font-size:.72rem;color:{{ $client->sms_consent ? '#065f46' : '#d1d5db' }};margin-left:4px;">{{ $client->sms_consent ? '✓' : '✕' }} SMS</span>
+      <span style="font-size:.72rem;color:{{ $client->waiver_signed_at ? '#065f46' : '#d1d5db' }};margin-left:4px;">{{ $client->waiver_signed_at ? '✓' : '✕' }} Waiver</span>
+    </div>
+    <div>
+      <div class="client-card-label">Last Login</div>
+      {{ $client->last_login_at ? $client->last_login_at->diffForHumans() : 'Never' }}
+    </div>
+  </div>
+  @if($client->notes)<div style="font-size:.78rem;color:#9ca3af;margin-bottom:.4rem;">{{ Str::limit($client->notes, 50) }}</div>@endif
+  <div class="client-card-actions">
+    <button class="btn-sm btn-edit" onclick="openEditModal({{ $client->id }}, '{{ addslashes($client->first_name) }}', '{{ addslashes($client->last_name ?? '') }}', '{{ $client->email }}', '{{ \App\Http\Controllers\Admin\ClientController::displayPhone($client->phone) ?? '' }}', '{{ addslashes($client->notes ?? '') }}')">✏ Edit</button>
+    <a href="{{ route('admin.clients.show', $client) }}" class="btn-sm btn-link" style="text-decoration:none;">View →</a>
+    <form method="POST" action="{{ route('admin.impersonate.start', $client) }}" style="display:inline;">
+      @csrf
+      <button type="submit" class="btn-sm" style="background:#ede9fe;color:#5b21b6;">👤 Impersonate</button>
+    </form>
+    @if($client->bookings_count === 0)
+    <form method="POST" action="{{ route('admin.clients.destroy', $client) }}" style="display:inline;" onsubmit="return confirm('Delete {{ addslashes($client->full_name) }}?')">
+      @csrf @method('DELETE')
+      <button type="submit" class="btn-sm btn-danger">✕ Delete</button>
+    </form>
+    @endif
+  </div>
+</div>
+@endforeach
+<div class="client-card" style="background:transparent;border:none;padding:0;">
+  {{ $clients->appends(['q'=>$search])->links() }}
 </div>
 
 {{-- Orphaned students --}}

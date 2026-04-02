@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
 
@@ -10,8 +11,9 @@ class TestimonialController extends Controller
 {
     public function index()
     {
-        $testimonials = Testimonial::orderBy('sort_order')->orderBy('id')->get();
-        return view('admin.testimonials', compact('testimonials'));
+        $testimonials = Testimonial::with('client')->orderBy('sort_order')->orderBy('id')->get();
+        $clients = Client::orderBy('first_name')->get();
+        return view('admin.testimonials', compact('testimonials', 'clients'));
     }
 
     public function store(Request $request)
@@ -28,6 +30,7 @@ class TestimonialController extends Controller
             'author'        => $validated['author'],
             'author_detail' => $validated['author_detail'] ?? null,
             'source_type'   => $request->input('source_type') ?: null,
+            'client_id'     => $request->input('client_id') ?: null,
             'is_active'     => $request->boolean('is_active', true),
             'sort_order'    => $validated['sort_order'] ?? 0,
         ]);
@@ -50,6 +53,7 @@ class TestimonialController extends Controller
             'author'        => $validated['author'],
             'author_detail' => $validated['author_detail'] ?? null,
             'source_type'   => $request->input('source_type') ?: null,
+            'client_id'     => $request->input('client_id') ?: null,
             'is_active'     => $request->boolean('is_active'),
             'sort_order'    => $validated['sort_order'] ?? 0,
         ]);

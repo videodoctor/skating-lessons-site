@@ -158,8 +158,9 @@
 {{-- Recent visits --}}
 <div style="background:#fff;border-radius:10px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.08);">
   <h2 style="font-size:1.1rem;font-weight:600;color:var(--navy);margin:0 0 1rem;">Recent Visits</h2>
-  <div style="margin-bottom:.75rem;font-size:.8rem;color:#94a3b8;">
-    <span style="display:inline-block;width:10px;height:10px;background:#fef3c7;border:1px solid #f59e0b;border-radius:2px;vertical-align:middle;margin-right:3px;"></span> = out-of-area visitor (possible Twilio reviewer / vetting bot)
+  <div style="margin-bottom:.75rem;font-size:.8rem;color:#94a3b8;display:flex;gap:1rem;flex-wrap:wrap;">
+    <span><span style="display:inline-block;width:10px;height:10px;background:#fef3c7;border:1px solid #f59e0b;border-radius:2px;vertical-align:middle;margin-right:3px;"></span> = out-of-area visitor</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#dbeafe;border:1px solid #3b82f6;border-radius:2px;vertical-align:middle;margin-right:3px;"></span> = admin (excluded from counts)</span>
   </div>
   <div style="overflow-x:auto;">
     <table style="width:100%;font-size:.85rem;border-collapse:collapse;">
@@ -178,8 +179,14 @@
           $isLocal = $visit->city && (in_array($visit->city, $stlMetro) || str_contains($visit->city, 'St. Louis') || str_contains($visit->city, 'Saint Louis'));
           $isOutOfArea = $visit->city && !$isLocal;
         @endphp
-        <tr style="border-top:1px solid #f1f5f9;{{ $isOutOfArea ? 'background:#fffbeb;' : '' }}">
-          <td style="padding:.4rem .5rem;white-space:nowrap;color:#64748b;">{{ $visit->created_at->format('M j g:ia') }}</td>
+        @php $isAdmin = (bool) $visit->admin_user_id; @endphp
+        <tr style="border-top:1px solid #f1f5f9;{{ $isAdmin ? 'background:#eff6ff;' : ($isOutOfArea ? 'background:#fffbeb;' : '') }}">
+          <td style="padding:.4rem .5rem;white-space:nowrap;color:#64748b;">
+            {{ $visit->created_at->format('M j g:ia') }}
+            @if($isAdmin)
+              <div style="font-size:.68rem;font-weight:700;color:#2563eb;">{{ $visit->adminUser?->name ?? 'Admin' }} — Admin</div>
+            @endif
+          </td>
           <td style="padding:.4rem .5rem;font-family:monospace;font-size:.8rem;">{{ $visit->path }}</td>
           <td style="padding:.4rem .5rem;font-family:monospace;font-size:.8rem;">{{ $visit->ip_address }}</td>
           <td style="padding:.4rem .5rem;">

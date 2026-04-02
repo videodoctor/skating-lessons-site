@@ -71,7 +71,7 @@
       <td style="color:#9ca3af;font-size:.82rem;">{{ $t->sort_order }}</td>
       <td style="white-space:nowrap;">
         <button class="btn-sm" style="background:#dbeafe;color:#1e40af;margin-right:3px;"
-          onclick="openEdit({{ $t->id }}, {{ json_encode($t->quote) }}, {{ json_encode($t->author) }}, {{ json_encode($t->author_detail) }}, {{ $t->is_active ? 'true' : 'false' }}, {{ $t->sort_order }}, {{ json_encode($t->source_type) }})">
+          onclick="openEdit({{ $t->id }}, {{ json_encode($t->quote) }}, {{ json_encode($t->author) }}, {{ json_encode($t->author_detail) }}, {{ $t->is_active ? 'true' : 'false' }}, {{ $t->sort_order }}, {{ json_encode($t->source_type) }}, {{ json_encode($t->client_id) }})">
           Edit
         </button>
         <form method="POST" action="{{ route('admin.testimonials.toggle', $t) }}" style="display:inline;">
@@ -113,6 +113,13 @@
           <option value="{{ $key }}">{{ $label }}</option>
         @endforeach
       </select>
+      <label class="form-label">Link to Client (optional)</label>
+      <select name="client_id" class="form-input">
+        <option value="">— None —</option>
+        @foreach($clients as $c)
+          <option value="{{ $c->id }}">{{ $c->full_name }} ({{ $c->email }})</option>
+        @endforeach
+      </select>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
         <div>
           <label class="form-label">Sort Order</label>
@@ -150,6 +157,13 @@
           <option value="{{ $key }}">{{ $label }}</option>
         @endforeach
       </select>
+      <label class="form-label">Link to Client (optional)</label>
+      <select name="client_id" id="edit_client_id" class="form-input">
+        <option value="">— None —</option>
+        @foreach($clients as $c)
+          <option value="{{ $c->id }}">{{ $c->full_name }} ({{ $c->email }})</option>
+        @endforeach
+      </select>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
         <div>
           <label class="form-label">Sort Order</label>
@@ -172,7 +186,7 @@
 function openAdd() {
   document.getElementById('addModal').style.display = 'flex';
 }
-function openEdit(id, quote, author, detail, active, order, sourceType) {
+function openEdit(id, quote, author, detail, active, order, sourceType, clientId) {
   document.getElementById('editForm').action = `/admin/testimonials/${id}`;
   document.getElementById('edit_quote').value = quote;
   document.getElementById('edit_author').value = author;
@@ -180,6 +194,7 @@ function openEdit(id, quote, author, detail, active, order, sourceType) {
   document.getElementById('edit_active').checked = active;
   document.getElementById('edit_sort_order').value = order;
   document.getElementById('edit_source_type').value = sourceType || '';
+  document.getElementById('edit_client_id').value = clientId || '';
   document.getElementById('editModal').style.display = 'flex';
 }
 function closeModals() {

@@ -25,6 +25,8 @@ class Booking extends Model
         'suggestion_sent_at',
         'suggestion_responded_at',
         'student_age',
+        'student_name',
+        'skill_level',
         'date',
         'start_time',
         'end_time',

@@ -23,9 +23,9 @@ class TrackPageVisit
         // Only track GET requests
         if ($request->method() !== 'GET') return;
 
-        // Skip admin, webhooks, API, and asset paths
+        // Skip webhooks, debugbar, and asset paths (but allow admin paths for admin tracking)
         $path = $request->path();
-        if (preg_match('#^(admin|webhooks|_debugbar|build|images|fonts|favicon)#', $path)) return;
+        if (preg_match('#^(webhooks|_debugbar|build|images|fonts|favicon)#', $path)) return;
 
         // Skip bots
         $ua = $request->userAgent() ?? '';
@@ -44,6 +44,7 @@ class TrackPageVisit
 
         $referrer = $request->header('referer');
         $geo = app(GeoIpService::class)->lookup($request->ip());
+        $adminId = auth('web')->id();
 
         PageVisit::create([
             'ip_address'      => $request->ip(),
@@ -60,6 +61,7 @@ class TrackPageVisit
             'city'            => $geo['city'],
             'user_agent'      => mb_substr($ua, 0, 500),
             'client_id'       => auth('client')->id(),
+            'admin_user_id'   => $adminId,
             'created_at'      => now(),
         ]);
     }

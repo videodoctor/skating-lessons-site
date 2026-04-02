@@ -107,6 +107,35 @@ class ScheduleController extends Controller
         return redirect()->back()->with('success', "Blocked {$count} open slot(s) on {$request->date}.");
     }
 
+    public function blockDateRange(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date|after_or_equal:start_date',
+            'action'     => 'required|in:block,open',
+        ]);
+
+        $start = Carbon::parse($request->start_date);
+        $end   = Carbon::parse($request->end_date);
+
+        if ($request->action === 'block') {
+            $count = TimeSlot::whereBetween('date', [$start, $end])
+                ->whereNull('booking_id')
+                ->where('is_available', true)
+                ->update(['is_available' => false]);
+            $verb = 'Blocked';
+        } else {
+            $count = TimeSlot::whereBetween('date', [$start, $end])
+                ->whereNull('booking_id')
+                ->where('is_available', false)
+                ->update(['is_available' => true]);
+            $verb = 'Opened';
+        }
+
+        return redirect()->back()->with('success',
+            "{$verb} {$count} slot(s) from {$start->format('M j')} to {$end->format('M j, Y')}.");
+    }
+
     public function plannerOcr()
     {
         $recentBookings = Booking::with('service')

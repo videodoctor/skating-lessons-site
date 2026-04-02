@@ -12,8 +12,9 @@ class Client extends Authenticatable
     protected $fillable = [
         'name', 'first_name', 'last_name',
         'email', 'password', 'phone', 'notes',
-        'email_consent_at',
+        'email_consent_at', 'terms_accepted_at', 'must_accept_terms',
         'sms_consent', 'sms_phone',
+        'last_login_at',
         'email_verify_token', 'email_verified_at',
         'phone_verify_code', 'phone_verify_sent_at', 'phone_verified_at',
         'calendar_token',
@@ -27,7 +28,10 @@ class Client extends Authenticatable
     protected $casts = [
         'email_verified_at'    => 'datetime',
         'email_consent_at'     => 'datetime',
+        'terms_accepted_at'    => 'datetime',
+        'must_accept_terms'    => 'boolean',
         'waiver_signed_at'     => 'datetime',
+        'last_login_at'        => 'datetime',
         'phone_verified_at'    => 'datetime',
         'phone_verify_sent_at' => 'datetime',
         'sms_consent'          => 'boolean',

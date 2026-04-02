@@ -62,7 +62,7 @@ class ClientAuthController extends Controller
             'utm_campaign'    => session('analytics.utm_campaign'),
         ]));
 
-        ActivityLogger::log($client->id, 'register', 'Account created');
+        ActivityLogger::log($client->id, 'register', "{$client->full_name} created account");
 
         // Send email verification
         $verification->sendEmailVerification($client);
@@ -94,7 +94,9 @@ class ClientAuthController extends Controller
 
         if (Auth::guard('client')->attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
-            ActivityLogger::log(Auth::guard('client')->id(), 'login', 'Client logged in');
+            $client = Auth::guard('client')->user();
+            $client->update(['last_login_at' => now()]);
+            ActivityLogger::log($client->id, 'login', "{$client->full_name} logged in");
             return redirect()->intended(route('client.dashboard'));
         }
 
@@ -107,6 +109,85 @@ class ClientAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
+    }
+
+    // ── First-login terms acceptance (admin-created accounts) ────────────────
+
+    public function showAcceptTerms()
+    {
+        return view('client.auth.accept-terms');
+    }
+
+    public function acceptTerms(Request $request, SmsService $sms)
+    {
+        $client = auth('client')->user();
+        $needsPassword = $client->must_accept_terms && !$client->terms_accepted_at;
+
+        $rules = [];
+        if ($needsPassword) {
+            $rules['password'] = 'required|string|min:8|confirmed';
+        }
+        if (!$client->email_consent_at) {
+            $rules['email_consent'] = 'required|accepted';
+        }
+        if (!$client->terms_accepted_at) {
+            $rules['terms_accepted'] = 'required|accepted';
+        }
+        if (!$client->hasSignedCurrentWaiver()) {
+            $rules['waiver_accepted'] = 'required|accepted';
+        }
+        $request->validate($rules);
+
+        $updates = [];
+        $smsConsent = $request->boolean('sms_consent');
+        $normalizedPhone = $client->phone ? $sms->normalizePhone($client->phone) : null;
+
+        if ($needsPassword) {
+            $updates['password'] = Hash::make($request->password);
+            $updates['must_accept_terms'] = false;
+        }
+        if (!$client->email_consent_at) {
+            $updates['email_consent_at'] = now();
+        }
+        if (!$client->terms_accepted_at) {
+            $updates['terms_accepted_at'] = now();
+        }
+        if (!$client->sms_consent && $smsConsent) {
+            $updates['sms_consent'] = true;
+            $updates['sms_phone'] = $normalizedPhone;
+        }
+
+        $client->update($updates);
+
+        // Sign waiver if accepted
+        if ($request->has('waiver_accepted')) {
+            \App\Models\LiabilityWaiver::create([
+                'client_id'       => $client->id,
+                'waiver_version'  => \App\Models\LiabilityWaiver::CURRENT_VERSION,
+                'waiver_text'     => \App\Models\LiabilityWaiver::currentWaiverText(),
+                'signed_name'     => $client->full_name,
+                'ip_address'      => $request->ip(),
+                'user_agent'      => $request->userAgent(),
+                'signed_at'       => now(),
+            ]);
+            $client->update([
+                'waiver_signed_at' => now(),
+                'waiver_version'   => \App\Models\LiabilityWaiver::CURRENT_VERSION,
+                'waiver_ip'        => $request->ip(),
+            ]);
+        }
+
+        if ($smsConsent && $client->sms_phone) {
+            $sms->sendOptInConfirmation($client->sms_phone);
+        }
+
+        $desc = $needsPassword
+            ? "{$client->full_name} accepted terms and set password"
+            : "{$client->full_name} completed consent requirements";
+        ActivityLogger::log($client->id, 'accept_terms', $desc);
+
+        return redirect()->route('client.dashboard')
+            ->with('success', 'Welcome! Your account is all set up.');
     }
 
     // ── Email verification ─────────────────────────────────────────────────────

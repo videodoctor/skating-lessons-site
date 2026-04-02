@@ -8,7 +8,9 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ScheduleVerifyController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\ExportController;
+use App\Http\Controllers\Admin\WaitlistController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,6 +58,7 @@ Route::get('/', function () {
 
 // Public Booking Flow
 Route::get('/book', [BookingController::class, 'index'])->name('booking.index');
+Route::post('/book/interest', [BookingController::class, 'submitInterest'])->name('booking.interest');
 Route::get('/book/service/{service}', [BookingController::class, 'selectDate'])->name('booking.select-date');
 Route::get('/book/service/{service}/date/{date}', [BookingController::class, 'selectTime'])->name('booking.select-time');
 Route::get('/book/ajax/dates/{service}', [BookingController::class, 'ajaxDates'])->name('booking.ajax.dates');
@@ -94,11 +97,14 @@ Route::get('/verify-email/{token}', [App\Http\Controllers\Auth\ClientAuthControl
 // Guest booking conversion
 Route::post('/booking/convert-guest', [App\Http\Controllers\BookingController::class, 'convertGuest'])->name('booking.convert-guest');
 
-Route::middleware('auth:client')->group(function () {
+Route::get('/accept-terms', [\App\Http\Controllers\Auth\ClientAuthController::class, 'showAcceptTerms'])->name('client.accept-terms')->middleware('auth:client');
+    Route::post('/accept-terms', [\App\Http\Controllers\Auth\ClientAuthController::class, 'acceptTerms'])->name('client.accept-terms.submit')->middleware('auth:client');
+
+    Route::middleware('auth:client')->group(function () {
         Route::get('/dashboard', function () {
             $client = auth('client')->user();
             $bookings = $client->bookings()->with(['service', 'timeSlot.rink'])->latest()->get();
-            \App\Services\ActivityLogger::log($client->id, 'view_dashboard', 'Viewed client dashboard');
+            \App\Services\ActivityLogger::log($client->id, 'view_dashboard', "{$client->full_name} viewed dashboard");
             return view('client.dashboard', compact('bookings'));
         })->name('client.dashboard');
         Route::get('/verify-phone', [App\Http\Controllers\Auth\ClientAuthController::class, 'showVerifyPhone'])->name('client.verify-phone');
@@ -116,6 +122,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::post('/dashboard/prefs', [DashboardController::class, 'updatePrefs'])->name('admin.dashboard.prefs');
 
     // Bookings
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
@@ -139,6 +146,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/slots', [ScheduleController::class, 'storeSlot'])->name('admin.slots.store');
     Route::delete('/slots/{timeSlot}', [ScheduleController::class, 'destroySlot'])->name('admin.slots.destroy');
     Route::post('/slots/block-day', [ScheduleController::class, 'blockDay'])->name('admin.slots.block-day');
+    Route::post('/slots/block-range', [ScheduleController::class, 'blockDateRange'])->name('admin.slots.block-range');
 
     // Rinks
     Route::get('/rinks', [App\Http\Controllers\Admin\RinkController::class, 'index'])->name('admin.rinks.index');
@@ -223,11 +231,30 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/analytics/activity', [AnalyticsController::class, 'activity'])->name('admin.analytics.activity');
     Route::get('/analytics/funnel', [AnalyticsController::class, 'funnel'])->name('admin.analytics.funnel');
 
+    // Waitlist / Booking Pause
+    Route::get('/waitlist', [WaitlistController::class, 'index'])->name('admin.waitlist.index');
+    Route::post('/waitlist/toggle-pause', [WaitlistController::class, 'togglePause'])->name('admin.waitlist.toggle-pause');
+    Route::delete('/waitlist/{interest}', [WaitlistController::class, 'destroy'])->name('admin.waitlist.destroy');
+
+    // Impersonate client (start requires admin auth)
+    Route::post('/impersonate/{client}', [\App\Http\Controllers\Admin\ImpersonateController::class, 'start'])->name('admin.impersonate.start');
+
+    // Admin Users
+    Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::post('/users', [AdminUserController::class, 'store'])->name('admin.users.store');
+    Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
+    Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('admin.users.reset-password');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+
     // Export / Reports
     Route::get('/export', [ExportController::class, 'index'])->name('admin.export');
     Route::get('/export/bookings', [ExportController::class, 'bookingsCsv'])->name('admin.export.bookings');
     Route::get('/export/clients', [ExportController::class, 'clientsCsv'])->name('admin.export.clients');
 });
+
+// Stop impersonation (outside admin auth — accessible while browsing as client)
+Route::post('/admin/impersonate-stop', [\App\Http\Controllers\Admin\ImpersonateController::class, 'stop'])
+    ->name('admin.impersonate.stop');
 
 // Public calendar feeds
 Route::get('/calendar/public-skating.ics', [\App\Http\Controllers\CalendarController::class, 'publicSessions']);

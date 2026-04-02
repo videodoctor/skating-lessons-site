@@ -8,6 +8,7 @@ use App\Models\TimeSlot;
 use App\Models\Rink;
 use App\Models\Booking;
 use App\Models\Client;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -29,6 +30,9 @@ class BookingTest extends TestCase
             'challenges.cloudflare.com/*' => Http::response(['success' => true], 200),
             'api.twilio.com/*'             => Http::response(['sid' => 'SMtest'], 201),
         ]);
+
+        // Ensure booking is not paused for tests
+        SiteSetting::set('booking_paused', '0');
 
         $uid = uniqid();
         $this->service = Service::create([
@@ -144,6 +148,9 @@ class BookingTest extends TestCase
             'client_name'           => 'Jane Smith',
             'client_email'          => 'jane@example.com',
             'client_phone'          => '3145550100',
+            'student_name'          => 'Little Jane',
+            'student_age'           => 8,
+            'skill_level'           => 'beginner',
             'email_consent'         => '1',
             'cancellation_policy'   => '1',
             'guest_sms_consent'     => '0',
@@ -188,6 +195,9 @@ class BookingTest extends TestCase
             'client_name'           => 'Jane Smith',
             'client_email'          => 'jane@example.com',
             'client_phone'          => '3145550100',
+            'student_name'          => 'Little Jane',
+            'student_age'           => 8,
+            'skill_level'           => 'beginner',
             'email_consent'         => '1',
             'cancellation_policy'   => '1',
             'guest_sms_consent'     => '0',

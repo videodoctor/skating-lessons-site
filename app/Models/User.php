@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'dashboard_prefs',
     ];
 
     /**
@@ -41,5 +42,11 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'dashboard_prefs' => 'array',
     ];
+
+    public function dashboardPref(string $key, bool $default = true): bool
+    {
+        return $this->dashboard_prefs[$key] ?? $default;
+    }
 }
