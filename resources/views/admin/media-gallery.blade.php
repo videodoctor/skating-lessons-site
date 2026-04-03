@@ -70,9 +70,52 @@
       <p style="font-size:.78rem;color:#6b7280;">JPG, PNG, WebP, HEIC, MP4, MOV, or ZIP — up to 500MB, 20 files max</p>
       <p id="gallery-file-count" style="font-size:.82rem;color:var(--navy);font-weight:600;margin-top:.25rem;"></p>
     </div>
-    <div style="margin-top:.6rem;"><button type="submit" class="btn-navy">Upload</button></div>
+    <div style="display:flex;gap:.75rem;align-items:center;margin-top:.6rem;">
+      <button type="submit" class="btn-navy" id="galleryUploadBtn">Upload</button>
+      <div id="galleryProgress" style="display:none;flex:1;">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <div style="flex:1;background:#e5eaf2;border-radius:4px;height:8px;overflow:hidden;">
+            <div id="galleryBar" style="width:0%;height:100%;background:var(--navy);border-radius:4px;transition:width .3s;"></div>
+          </div>
+          <span id="galleryText" style="font-size:.78rem;color:#6b7280;white-space:nowrap;">0%</span>
+        </div>
+      </div>
+    </div>
   </form>
 </div>
+
+<script>
+document.querySelector('form[action="{{ route("admin.media.upload") }}"]').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var form = this;
+  var btn = document.getElementById('galleryUploadBtn');
+  var prog = document.getElementById('galleryProgress');
+  var bar = document.getElementById('galleryBar');
+  var text = document.getElementById('galleryText');
+
+  btn.disabled = true; btn.textContent = 'Uploading...'; btn.style.opacity = '.5';
+  prog.style.display = 'block';
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', form.action, true);
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  xhr.upload.onprogress = function(e) {
+    if (e.lengthComputable) {
+      var pct = Math.round((e.loaded / e.total) * 100);
+      bar.style.width = pct + '%';
+      var mb = function(b) { return (b/1048576).toFixed(1) + 'MB'; };
+      text.textContent = pct + '% — ' + mb(e.loaded) + ' / ' + mb(e.total);
+      if (pct >= 100) text.textContent = 'Processing on server...';
+    }
+  };
+  xhr.onload = function() { window.location.reload(); };
+  xhr.onerror = function() {
+    text.textContent = 'Upload failed.'; text.style.color = '#dc2626';
+    btn.disabled = false; btn.textContent = 'Upload'; btn.style.opacity = '1';
+  };
+  xhr.send(new FormData(form));
+});
+</script>
 
 {{-- Filters --}}
 <div class="filter-bar">

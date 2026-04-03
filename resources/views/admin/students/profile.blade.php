@@ -72,11 +72,11 @@
 {{-- Upload --}}
 <div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;">
   <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--navy);margin:0 0 .75rem;">Upload Photos & Videos</h2>
-  <form method="POST" action="{{ route('admin.students.upload', $student) }}" enctype="multipart/form-data">
+  <form method="POST" action="{{ route('admin.students.upload', $student) }}" enctype="multipart/form-data" id="uploadForm" onsubmit="showUploadProgress()">
     @csrf
     <div class="upload-zone" onclick="document.getElementById('file-input').click()">
       <input type="file" id="file-input" name="files[]" multiple accept="image/*,video/*,.zip" style="display:none;"
-        onchange="document.getElementById('file-count').textContent = this.files.length + ' file(s) selected'">
+        onchange="document.getElementById('file-count').textContent = this.files.length + ' file(s) selected — ' + formatBytes(totalSize(this.files))"">
       <div style="font-size:2rem;margin-bottom:.5rem;">📸</div>
       <p style="font-weight:600;color:#1e40af;">Drop files here or tap to browse</p>
       <p style="font-size:.82rem;color:#6b7280;margin-top:.25rem;">JPG, PNG, WebP, HEIC, MP4, MOV, or ZIP — up to 500MB</p>
@@ -88,10 +88,132 @@
         <input type="text" name="caption" placeholder="e.g. Practice session at Creve Coeur"
           style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:6px 10px;font-size:.85rem;">
       </div>
-      <button type="submit" class="btn-sm btn-navy" style="padding:8px 20px;">Upload</button>
+      <button type="submit" class="btn-sm btn-navy" id="uploadBtn" style="padding:8px 20px;">Upload</button>
+    </div>
+    <div id="uploadProgress" style="display:none;margin-top:.75rem;">
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div style="flex:1;background:#e5eaf2;border-radius:4px;height:8px;overflow:hidden;">
+          <div id="progressBar" style="width:0%;height:100%;background:var(--navy);border-radius:4px;transition:width .3s;"></div>
+        </div>
+        <span id="progressText" style="font-size:.78rem;color:#6b7280;white-space:nowrap;">Uploading...</span>
+      </div>
     </div>
   </form>
 </div>
+
+<script>
+function totalSize(files) {
+  let s = 0; for (let f of files) s += f.size; return s;
+}
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+async function showUploadProgress() {
+  event.preventDefault();
+  var btn = document.getElementById('uploadBtn');
+  var prog = document.getElementById('uploadProgress');
+  var bar = document.getElementById('progressBar');
+  var text = document.getElementById('progressText');
+  var files = document.getElementById('file-input').files;
+  var caption = document.querySelector('#uploadForm input[name="caption"]').value;
+  if (!files.length) return;
+
+  btn.disabled = true; btn.textContent = 'Uploading...'; btn.style.opacity = '.5';
+  prog.style.display = 'block';
+
+  var total = files.length;
+  var done = 0;
+  var errors = 0;
+  var csrfToken = document.querySelector('input[name="_token"]').value;
+
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var isZip = file.name.toLowerCase().endsWith('.zip');
+    text.textContent = 'File ' + (i + 1) + '/' + total + ': ' + file.name + ' (' + formatBytes(file.size) + ')';
+    bar.style.width = Math.round((i / total) * 100) + '%';
+
+    // All files go direct to S3 (bypasses Cloudflare 100MB limit)
+    try {
+      // 1. Get presigned URL
+      var presignResp = await fetch('{{ route("admin.media.presigned") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body: JSON.stringify({
+          student_id: {{ $student->id }},
+          filename: file.name,
+          mime_type: file.type || 'application/octet-stream',
+          file_size: file.size,
+        })
+      });
+      if (!presignResp.ok) { errors++; continue; }
+      var presign = await presignResp.json();
+
+      // 2. Upload directly to S3
+      await new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('PUT', presign.upload_url, true);
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        xhr.upload.onprogress = function(e) {
+          if (e.lengthComputable) {
+            var filePct = Math.round((e.loaded / e.total) * 100);
+            var totalPct = Math.round(((i + e.loaded / e.total) / total) * 100);
+            bar.style.width = totalPct + '%';
+            text.textContent = 'File ' + (i + 1) + '/' + total + ': ' + file.name + ' — ' + filePct + '%';
+          }
+        };
+        xhr.onload = function() { xhr.status < 300 ? resolve() : reject(); };
+        xhr.onerror = reject;
+        xhr.send(file);
+      });
+
+      // 3. Get dimensions from browser for images
+      var w = null, h = null, dur = null;
+      if (file.type.startsWith('image/')) {
+        var dims = await new Promise(function(res) {
+          var img = new Image();
+          img.onload = function() { res({ w: img.naturalWidth, h: img.naturalHeight }); };
+          img.onerror = function() { res(null); };
+          img.src = URL.createObjectURL(file);
+        });
+        if (dims) { w = dims.w; h = dims.h; }
+      } else if (file.type.startsWith('video/')) {
+        var vdims = await new Promise(function(res) {
+          var vid = document.createElement('video');
+          vid.preload = 'metadata';
+          vid.onloadedmetadata = function() { res({ w: vid.videoWidth, h: vid.videoHeight, d: vid.duration }); };
+          vid.onerror = function() { res(null); };
+          vid.src = URL.createObjectURL(file);
+        });
+        if (vdims) { w = vdims.w; h = vdims.h; dur = vdims.d; }
+      }
+
+      // 4. Register in DB
+      await fetch('{{ route("admin.media.register") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body: JSON.stringify({
+          student_id: {{ $student->id }},
+          s3_path: presign.s3_path,
+          type: presign.type,
+          filename: file.name,
+          mime_type: file.type || 'application/octet-stream',
+          file_size: file.size,
+          width: w, height: h, duration: dur,
+          caption: caption,
+        })
+      });
+      done++;
+    } catch(e) { errors++; }
+  }
+
+  bar.style.width = '100%';
+  text.textContent = done + ' file(s) uploaded' + (errors ? ', ' + errors + ' failed' : '') + '. Reloading...';
+  text.style.color = errors ? '#f59e0b' : '#065f46';
+  setTimeout(function() { window.location.reload(); }, 1000);
+}
+</script>
 
 {{-- Media Grid --}}
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
