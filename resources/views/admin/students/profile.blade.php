@@ -75,11 +75,11 @@
   <form method="POST" action="{{ route('admin.students.upload', $student) }}" enctype="multipart/form-data">
     @csrf
     <div class="upload-zone" onclick="document.getElementById('file-input').click()">
-      <input type="file" id="file-input" name="files[]" multiple accept="image/*,video/*" style="display:none;"
+      <input type="file" id="file-input" name="files[]" multiple accept="image/*,video/*,.zip" style="display:none;"
         onchange="document.getElementById('file-count').textContent = this.files.length + ' file(s) selected'">
       <div style="font-size:2rem;margin-bottom:.5rem;">📸</div>
       <p style="font-weight:600;color:#1e40af;">Drop files here or tap to browse</p>
-      <p style="font-size:.82rem;color:#6b7280;margin-top:.25rem;">JPG, PNG, WebP, HEIC, MP4, MOV — up to 100MB each</p>
+      <p style="font-size:.82rem;color:#6b7280;margin-top:.25rem;">JPG, PNG, WebP, HEIC, MP4, MOV, or ZIP — up to 500MB</p>
       <p id="file-count" style="font-size:.82rem;color:var(--navy);font-weight:600;margin-top:.5rem;"></p>
     </div>
     <div style="display:flex;gap:.75rem;align-items:flex-end;margin-top:.75rem;">
@@ -133,9 +133,12 @@
       </form>
 
       <div class="media-card-body">
-        @if($item->caption)
-          <div class="media-card-caption">{{ $item->caption }}</div>
-        @endif
+        <form method="POST" action="{{ route('admin.students.update-caption', $item) }}" style="display:flex;gap:3px;align-items:center;">
+          @csrf @method('PATCH')
+          <input type="text" name="caption" value="{{ $item->caption }}" placeholder="Add caption..."
+            style="flex:1;border:none;border-bottom:1px solid transparent;font-size:.75rem;color:#6b7280;padding:2px 0;background:transparent;outline:none;"
+            onfocus="this.style.borderBottomColor='#001F5B'" onblur="this.style.borderBottomColor='transparent';if(this.defaultValue!==this.value)this.form.submit()">
+        </form>
         <div class="media-card-meta">
           {{ $item->created_at->format('M j, Y') }}
           @if($item->width && $item->height) · {{ $item->width }}×{{ $item->height }}@endif

@@ -264,6 +264,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('admin.users.reset-password');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
 
+    // Media Gallery
+    Route::get('/media', [App\Http\Controllers\Admin\MediaGalleryController::class, 'index'])->name('admin.media.index');
+    Route::post('/media/upload', [App\Http\Controllers\Admin\MediaGalleryController::class, 'upload'])->name('admin.media.upload');
+
     // Home Page Content
     Route::get('/home-page', [App\Http\Controllers\Admin\HomePageController::class, 'index'])->name('admin.homepage');
     Route::post('/home-page/hero-media', [App\Http\Controllers\Admin\HomePageController::class, 'updateHeroMedia'])->name('admin.homepage.update-hero');

@@ -39,10 +39,10 @@
     <form method="POST" action="{{ route('client.student.upload', $student) }}" enctype="multipart/form-data">
       @csrf
       <div class="upload-zone" onclick="document.getElementById('client-file-input').click()">
-        <input type="file" id="client-file-input" name="files[]" multiple accept="image/*,video/*" style="display:none;"
+        <input type="file" id="client-file-input" name="files[]" multiple accept="image/*,video/*,.zip" style="display:none;"
           onchange="document.getElementById('client-file-count').textContent = this.files.length + ' file(s) selected'">
         <p style="font-weight:600;color:#1e40af;">📸 Tap to add photos or videos</p>
-        <p style="font-size:.82rem;color:#6b7280;">JPG, PNG, MP4, MOV — up to 100MB each</p>
+        <p style="font-size:.82rem;color:#6b7280;">JPG, PNG, MP4, MOV, or ZIP — up to 500MB</p>
         <p id="client-file-count" style="font-size:.82rem;color:var(--navy);font-weight:600;margin-top:.25rem;"></p>
       </div>
       <div style="display:flex;gap:.5rem;align-items:flex-end;margin-top:.75rem;">
