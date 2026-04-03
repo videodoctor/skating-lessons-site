@@ -41,15 +41,33 @@ class StudentMedia extends Model
 
     public function getUrlAttribute(): string
     {
-        $cdn = config('services.media_cdn_url');
-        return "{$cdn}/{$this->path}";
+        return self::mediaUrl($this->path);
     }
 
     public function getThumbnailUrlAttribute(): ?string
     {
         if (!$this->thumbnail_path) return null;
-        $cdn = config('services.media_cdn_url');
-        return "{$cdn}/{$this->thumbnail_path}";
+        return self::mediaUrl($this->thumbnail_path);
+    }
+
+    /**
+     * Generate a URL for a media path.
+     * Prod: CloudFront CDN (origin path strips prefix from URL).
+     * Dev/Staging: Signed S3 URL (temporary, direct).
+     */
+    public static function mediaUrl(string $path): string
+    {
+        $prefix = config('services.media_path_prefix');
+
+        if (!$prefix || $prefix === 'prod') {
+            // Prod: CloudFront URL, strip the prefix from the path since origin path handles it
+            $cdn = config('services.media_cdn_url');
+            $cleanPath = $prefix ? preg_replace('#^' . preg_quote($prefix . '/', '#') . '#', '', $path) : $path;
+            return "{$cdn}/{$cleanPath}";
+        }
+
+        // Dev/Staging: signed S3 URL (15 min expiry)
+        return Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(15));
     }
 
     public function scopePhotos($query)
