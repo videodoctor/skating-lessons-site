@@ -219,6 +219,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/students/{student}/upload', [App\Http\Controllers\Admin\StudentProfileController::class, 'upload'])->name('admin.students.upload');
     Route::post('/students/{student}/profile-photo/{media}', [App\Http\Controllers\Admin\StudentProfileController::class, 'setProfilePhoto'])->name('admin.students.set-profile-photo');
     Route::patch('/student-media/{media}/caption', [App\Http\Controllers\Admin\StudentProfileController::class, 'updateCaption'])->name('admin.students.update-caption');
+    Route::patch('/student-media/{media}/reassign', [App\Http\Controllers\Admin\StudentProfileController::class, 'reassignMedia'])->name('admin.students.reassign-media');
     Route::delete('/student-media/{media}', [App\Http\Controllers\Admin\StudentProfileController::class, 'destroyMedia'])->name('admin.students.delete-media');
     Route::delete('/students/{student}/aliases/{alias}', [App\Http\Controllers\Admin\StudentController::class, 'removeAlias'])->name('admin.students.remove-alias');
 

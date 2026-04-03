@@ -254,6 +254,19 @@ async function showUploadProgress() {
         <button type="submit" class="delete-btn" title="Delete">✕</button>
       </form>
 
+      {{-- Reassign --}}
+      <form method="POST" action="{{ route('admin.students.reassign-media', $item) }}" style="display:inline;"
+        onsubmit="return confirm('Move this file to ' + this.student_id.options[this.student_id.selectedIndex].text + '?')">
+        @csrf @method('PATCH')
+        <select name="student_id" onchange="if(this.value)this.form.submit()"
+          style="position:absolute;bottom:6px;left:6px;font-size:.65rem;padding:2px 4px;border-radius:4px;background:rgba(0,31,91,.85);color:#fff;border:none;cursor:pointer;max-width:100px;">
+          <option value="">Move to...</option>
+          @foreach($allStudents as $s)
+            <option value="{{ $s->id }}">{{ $s->full_name }}</option>
+          @endforeach
+        </select>
+      </form>
+
       <div class="media-card-body">
         <form method="POST" action="{{ route('admin.students.update-caption', $item) }}" style="display:flex;gap:3px;align-items:center;">
           @csrf @method('PATCH')

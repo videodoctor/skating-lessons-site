@@ -18,8 +18,9 @@ class StudentProfileController extends Controller
         $photoCount = $student->photos()->count();
         $videoCount = $student->videos()->count();
         $lessonCount = $student->bookings()->count();
+        $allStudents = Student::where('id', '!=', $student->id)->orderBy('first_name')->get();
 
-        return view('admin.students.profile', compact('student', 'media', 'photoCount', 'videoCount', 'lessonCount'));
+        return view('admin.students.profile', compact('student', 'media', 'photoCount', 'videoCount', 'lessonCount', 'allStudents'));
     }
 
     public function upload(Request $request, Student $student)
@@ -45,6 +46,27 @@ class StudentProfileController extends Controller
 
         $student->update(['profile_photo_id' => $media->id]);
         return back()->with('success', 'Profile photo updated.');
+    }
+
+    public function reassignMedia(Request $request, StudentMedia $media)
+    {
+        $request->validate(['student_id' => 'required|exists:students,id']);
+        $oldStudent = $media->student;
+        $newStudent = \App\Models\Student::findOrFail($request->student_id);
+
+        // Clear profile photo if this was it
+        if ($oldStudent->profile_photo_id === $media->id) {
+            $oldStudent->update(['profile_photo_id' => null]);
+        }
+
+        $media->update(['student_id' => $newStudent->id]);
+
+        // Set as profile photo on new student if they don't have one
+        if ($media->type === 'photo' && !$newStudent->profile_photo_id) {
+            $newStudent->update(['profile_photo_id' => $media->id]);
+        }
+
+        return back()->with('success', "Moved \"{$media->original_filename}\" to {$newStudent->full_name}.");
     }
 
     public function updateCaption(Request $request, StudentMedia $media)

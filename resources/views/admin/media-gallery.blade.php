@@ -182,6 +182,21 @@ document.querySelector('form[action="{{ route("admin.media.upload") }}"]').addEv
         @csrf @method('DELETE')
         <button type="submit" class="delete-btn" title="Delete">✕</button>
       </form>
+      <form method="POST" action="{{ route('admin.students.reassign-media', $item) }}" style="display:inline;"
+        onsubmit="return confirm('Move to ' + this.student_id.options[this.student_id.selectedIndex].text + '?')">
+        @csrf @method('PATCH')
+        <select name="student_id" onchange="if(this.value)this.form.submit()"
+          style="position:absolute;bottom:6px;right:6px;font-size:.6rem;padding:2px 3px;border-radius:3px;background:rgba(0,31,91,.85);color:#fff;border:none;cursor:pointer;max-width:90px;opacity:0;transition:opacity .15s;"
+          onmouseenter="this.style.opacity=1" onmouseleave="if(!this.matches(':focus'))this.style.opacity=0"
+          onfocus="this.style.opacity=1" onblur="this.style.opacity=0">
+          <option value="">Move...</option>
+          @foreach($students as $s)
+            @if($item->student_id !== $s->id)
+            <option value="{{ $s->id }}">{{ $s->full_name }}</option>
+            @endif
+          @endforeach
+        </select>
+      </form>
       <div class="media-card-body">
         <form method="POST" action="{{ route('admin.students.update-caption', $item) }}" style="margin-bottom:3px;">
           @csrf @method('PATCH')
