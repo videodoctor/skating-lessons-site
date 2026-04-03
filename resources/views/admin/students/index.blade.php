@@ -118,6 +118,7 @@
         @endif
       </td>
       <td style="white-space:nowrap;">
+        <a href="{{ route('admin.students.profile', $student) }}" class="btn-sm" style="background:#dbeafe;color:#1e40af;text-decoration:none;">📸 Profile</a>
         <button class="btn-sm btn-edit"
           onclick="openEditModal({{ $student->id }},'{{ addslashes($student->first_name) }}','{{ addslashes($student->last_name ?? '') }}','{{ $student->client_id }}','{{ $student->age }}','{{ $student->skill_level }}','{{ addslashes($student->notes ?? '') }}','{{ $student->is_active ? 1 : 0 }}')">
           ✏ Edit
@@ -169,6 +170,7 @@
   </div>
   @if($student->notes)<div style="font-size:.78rem;color:#9ca3af;margin-bottom:.4rem;">{{ Str::limit($student->notes, 50) }}</div>@endif
   <div class="student-card-actions">
+    <a href="{{ route('admin.students.profile', $student) }}" class="btn-sm" style="background:#dbeafe;color:#1e40af;text-decoration:none;">📸 Profile</a>
     <button class="btn-sm btn-edit"
       onclick="openEditModal({{ $student->id }},'{{ addslashes($student->first_name) }}','{{ addslashes($student->last_name ?? '') }}','{{ $student->client_id }}','{{ $student->age }}','{{ $student->skill_level }}','{{ addslashes($student->notes ?? '') }}','{{ $student->is_active ? 1 : 0 }}')">
       ✏ Edit

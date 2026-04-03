@@ -41,6 +41,7 @@ class Booking extends Model
         'cash_marked_by',
         'price_paid',
         'notes',
+        'referred_by',
         'cancellation_reason',
         'confirmation_code',
         'email_consent_at',

@@ -8,7 +8,7 @@ class BookingInterest extends Model
 {
     protected $fillable = [
         'service_id', 'source',
-        'name', 'email', 'phone', 'message',
+        'name', 'email', 'phone', 'message', 'referred_by',
         'student_name', 'student_age', 'skill_level',
         'email_consent', 'sms_consent',
         'waiver_accepted', 'terms_accepted',

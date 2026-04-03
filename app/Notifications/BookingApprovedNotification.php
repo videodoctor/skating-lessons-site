@@ -26,23 +26,10 @@ class BookingApprovedNotification extends Notification
     public function toMail($notifiable)
     {
         $icsContent = $this->generateIcsFile();
-        
+
         return (new MailMessage)
             ->subject('Lesson Approved! - ' . $this->booking->service->name)
-            ->greeting('Great News!')
-            ->line('Your skating lesson request has been approved by Coach Kristine!')
-            ->line('**Service:** ' . $this->booking->service->name)
-            ->line('**Date:** ' . $this->booking->date->format('l, F j, Y'))
-            ->line('**Time:** ' . \Carbon\Carbon::parse($this->booking->start_time)->format('g:i A'))
-            ->line('**Location:** ' . $this->booking->timeSlot->rink->name . ' - ' . $this->booking->timeSlot->rink->address)
-            ->line('**Price:** $' . number_format($this->booking->price_paid, 2))
-            ->line('**Note:** Lesson price does not include rink admission fee.')
-            ->line('**What to bring:**')
-            ->line('• Skates and hockey gear')
-            ->line('• Water bottle')
-            ->line('• Arrive 10 minutes early')
-            ->line('Payment can be made via Venmo, cash, or check at the lesson.')
-            ->line('See you on the ice!')
+            ->view('emails.booking-approved', ['booking' => $this->booking])
             ->attachData($icsContent, 'skating-lesson.ics', [
                 'mime' => 'text/calendar',
             ]);
@@ -52,7 +39,7 @@ class BookingApprovedNotification extends Notification
     {
         $start = \Carbon\Carbon::parse($this->booking->date->format('Y-m-d') . ' ' . $this->booking->start_time);
         $end = \Carbon\Carbon::parse($this->booking->date->format('Y-m-d') . ' ' . $this->booking->end_time);
-        
+
         $ics = "BEGIN:VCALENDAR\r\n";
         $ics .= "VERSION:2.0\r\n";
         $ics .= "PRODID:-//Kristine Skates//Lesson Booking//EN\r\n";
@@ -63,11 +50,11 @@ class BookingApprovedNotification extends Notification
         $ics .= "DTEND:" . $end->format('Ymd\THis') . "\r\n";
         $ics .= "SUMMARY:Skating Lesson with Coach Kristine\r\n";
         $ics .= "DESCRIPTION:" . $this->booking->service->name . "\r\n";
-        $ics .= "LOCATION:" . $this->booking->timeSlot->rink->name . ", " . $this->booking->timeSlot->rink->address . "\r\n";
+        $ics .= "LOCATION:" . $this->booking->timeSlot->rink->name . ", " . ($this->booking->timeSlot->rink->address ?? '') . "\r\n";
         $ics .= "STATUS:CONFIRMED\r\n";
         $ics .= "END:VEVENT\r\n";
         $ics .= "END:VCALENDAR\r\n";
-        
+
         return $ics;
     }
 }

@@ -53,7 +53,16 @@ Route::get('/', function () {
     $services = \App\Models\Service::where('is_active', true)->orderBy('price')->get();
     $comingSoonServices = \App\Models\Service::where('coming_soon', true)->orderBy('price')->get();
     $rinks = \App\Models\Rink::where('is_displayed', true)->orderByRaw("FIELD(slug,'creve-coeur','kirkwood','webster-groves','brentwood','maryville')")->get();
-    return view('home', compact('services', 'rinks', 'comingSoonServices'));
+
+    // Hero media from admin config
+    $heroMediaIds = json_decode(\App\Models\SiteSetting::get('homepage_hero_media', '[]'), true) ?: [];
+    $heroMedia = $heroMediaIds ? \App\Models\StudentMedia::whereIn('id', $heroMediaIds)->get()->sortBy(fn($m) => array_search($m->id, $heroMediaIds))->values() : collect();
+
+    // Bio photos from admin config
+    $bioMediaIds = json_decode(\App\Models\SiteSetting::get('homepage_bio_media', '[]'), true) ?: [];
+    $bioMedia = $bioMediaIds ? \App\Models\StudentMedia::whereIn('id', $bioMediaIds)->get()->sortBy(fn($m) => array_search($m->id, $bioMediaIds))->values() : collect();
+
+    return view('home', compact('services', 'rinks', 'comingSoonServices', 'heroMedia', 'bioMedia'));
 });
 
 // Public Booking Flow
@@ -107,6 +116,8 @@ Route::get('/accept-terms', [\App\Http\Controllers\Auth\ClientAuthController::cl
             \App\Services\ActivityLogger::log($client->id, 'view_dashboard', "{$client->full_name} viewed dashboard");
             return view('client.dashboard', compact('bookings'));
         })->name('client.dashboard');
+        Route::get('/students/{student}', [App\Http\Controllers\ClientStudentController::class, 'show'])->name('client.student.show');
+        Route::post('/students/{student}/upload', [App\Http\Controllers\ClientStudentController::class, 'upload'])->name('client.student.upload');
         Route::get('/verify-phone', [App\Http\Controllers\Auth\ClientAuthController::class, 'showVerifyPhone'])->name('client.verify-phone');
         Route::post('/verify-phone', [App\Http\Controllers\Auth\ClientAuthController::class, 'verifyPhone'])->name('client.verify-phone.submit');
         Route::post('/verify-phone/resend', [App\Http\Controllers\Auth\ClientAuthController::class, 'resendPhoneCode'])->name('client.verify-phone.resend');
@@ -202,6 +213,13 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::patch('/students/{student}', [App\Http\Controllers\Admin\StudentController::class, 'update'])->name('admin.students.update');
     Route::delete('/students/{student}', [App\Http\Controllers\Admin\StudentController::class, 'destroy'])->name('admin.students.destroy');
     Route::post('/students/{student}/aliases', [App\Http\Controllers\Admin\StudentController::class, 'addAlias'])->name('admin.students.add-alias');
+
+    // Student profiles & media
+    Route::get('/students/{student}/profile', [App\Http\Controllers\Admin\StudentProfileController::class, 'show'])->name('admin.students.profile');
+    Route::post('/students/{student}/upload', [App\Http\Controllers\Admin\StudentProfileController::class, 'upload'])->name('admin.students.upload');
+    Route::post('/students/{student}/profile-photo/{media}', [App\Http\Controllers\Admin\StudentProfileController::class, 'setProfilePhoto'])->name('admin.students.set-profile-photo');
+    Route::patch('/student-media/{media}/caption', [App\Http\Controllers\Admin\StudentProfileController::class, 'updateCaption'])->name('admin.students.update-caption');
+    Route::delete('/student-media/{media}', [App\Http\Controllers\Admin\StudentProfileController::class, 'destroyMedia'])->name('admin.students.delete-media');
     Route::delete('/students/{student}/aliases/{alias}', [App\Http\Controllers\Admin\StudentController::class, 'removeAlias'])->name('admin.students.remove-alias');
 
     // Planner OCR (legacy stub)
@@ -245,6 +263,11 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('admin.users.update');
     Route::post('/users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('admin.users.reset-password');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+
+    // Home Page Content
+    Route::get('/home-page', [App\Http\Controllers\Admin\HomePageController::class, 'index'])->name('admin.homepage');
+    Route::post('/home-page/hero-media', [App\Http\Controllers\Admin\HomePageController::class, 'updateHeroMedia'])->name('admin.homepage.update-hero');
+    Route::post('/home-page/bio-media', [App\Http\Controllers\Admin\HomePageController::class, 'updateBioMedia'])->name('admin.homepage.update-bio');
 
     // Export / Reports
     Route::get('/export', [ExportController::class, 'index'])->name('admin.export');

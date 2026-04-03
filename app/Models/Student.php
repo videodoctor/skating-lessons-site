@@ -9,6 +9,7 @@ class Student extends Model
     protected $fillable = [
         'client_id', 'first_name', 'last_name', 'age',
         'skill_level', 'notes', 'is_active', 'waiver_signed',
+        'profile_photo_id',
     ];
 
     protected $casts = [
@@ -39,6 +40,41 @@ class Student extends Model
     public function plannerScanEntries()
     {
         return $this->hasMany(PlannerScanEntry::class);
+    }
+
+    public function media()
+    {
+        return $this->hasMany(StudentMedia::class)->latest();
+    }
+
+    public function photos()
+    {
+        return $this->hasMany(StudentMedia::class)->where('type', 'photo')->latest();
+    }
+
+    public function videos()
+    {
+        return $this->hasMany(StudentMedia::class)->where('type', 'video')->latest();
+    }
+
+    public function profilePhoto()
+    {
+        return $this->belongsTo(StudentMedia::class, 'profile_photo_id');
+    }
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if ($this->profilePhoto) {
+            return $this->profilePhoto->url;
+        }
+        $firstPhoto = $this->photos()->first();
+        return $firstPhoto?->url;
+    }
+
+    public function getRandomPhotoUrlAttribute(): ?string
+    {
+        $photo = $this->photos()->inRandomOrder()->first();
+        return $photo?->url;
     }
 
     public function getFullNameAttribute(): string

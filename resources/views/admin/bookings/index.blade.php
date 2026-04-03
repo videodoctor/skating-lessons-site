@@ -116,6 +116,9 @@
         @if($booking->student_name)
           <div style="font-size:.74rem;color:#0c4a6e;margin-top:2px;">⛸️ {{ $booking->student_name }}@if($booking->student_age), age {{ $booking->student_age }}@endif @if($booking->skill_level)· {{ ucfirst($booking->skill_level) }}@endif</div>
         @endif
+        @if($booking->referred_by)
+          <div style="font-size:.72rem;color:#5b21b6;margin-top:2px;">Ref: {{ $booking->referred_by }}</div>
+        @endif
         @if($booking->notes)
           <div style="font-size:.72rem;color:#9ca3af;margin-top:2px;">{{ Str::limit($booking->notes, 45) }}</div>
         @endif
@@ -160,9 +163,8 @@
           <form method="POST" action="{{ route('admin.bookings.approve', $booking) }}" style="display:inline">@csrf
             <button type="submit" class="btn-xs btn-approve">✓ Approve</button>
           </form>
-          <form method="POST" action="{{ route('admin.bookings.reject', $booking) }}" style="display:inline;margin-left:3px;" onsubmit="return confirm('Reject this booking?')">@csrf
-            <button type="submit" class="btn-xs btn-reject">✕ Reject</button>
-          </form>
+          <button type="button" class="btn-xs btn-reject" style="margin-left:3px;"
+            onclick="openRejectModal({{ $booking->id }}, '{{ addslashes($booking->client_name) }}')">✕ Reject</button>
           <button type="button" class="btn-xs" style="background:#fef3c7;color:#92400e;margin-left:3px;"
             onclick="openSuggestModal({{ $booking->id }}, '{{ addslashes($booking->client_name) }}', '{{ \Carbon\Carbon::parse($booking->date)->format('Y-m-d') }}')">
             🔄 Suggest Time
@@ -268,6 +270,9 @@
     </div>
   </div>
 
+  @if($booking->referred_by)
+    <div style="font-size:.78rem;color:#5b21b6;margin-bottom:.3rem;">Ref: {{ $booking->referred_by }}</div>
+  @endif
   @if($booking->notes)
     <div style="font-size:.78rem;color:#9ca3af;margin-bottom:.5rem;">📝 {{ Str::limit($booking->notes, 60) }}</div>
   @endif
@@ -277,9 +282,8 @@
       <form method="POST" action="{{ route('admin.bookings.approve', $booking) }}" style="display:inline">@csrf
         <button type="submit" class="btn-xs btn-approve">✓ Approve</button>
       </form>
-      <form method="POST" action="{{ route('admin.bookings.reject', $booking) }}" style="display:inline" onsubmit="return confirm('Reject this booking?')">@csrf
-        <button type="submit" class="btn-xs btn-reject">✕ Reject</button>
-      </form>
+      <button type="button" class="btn-xs btn-reject"
+        onclick="openRejectModal({{ $booking->id }}, '{{ addslashes($booking->client_name) }}')">✕ Reject</button>
       <button type="button" class="btn-xs" style="background:#fef3c7;color:#92400e;"
         onclick="openSuggestModal({{ $booking->id }}, '{{ addslashes($booking->client_name) }}', '{{ \Carbon\Carbon::parse($booking->date)->format('Y-m-d') }}')">
         🔄 Suggest
@@ -348,6 +352,29 @@
   </div>
 </div>
 
+{{-- Reject Modal --}}
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-title">Reject Booking</div>
+    <p style="font-size:.85rem;color:#6b7280;margin-bottom:1rem;">Reject booking for <strong id="reject-client-name"></strong>?</p>
+    <form method="POST" id="rejectForm" action="">
+      @csrf
+      <div style="display:flex;align-items:flex-start;gap:.6rem;margin-bottom:1rem;background:#fef3c7;border:1.5px solid #fde68a;border-radius:8px;padding:.75rem 1rem;">
+        <input type="checkbox" name="send_email" id="reject-send-email" value="1" checked
+               style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--navy);">
+        <label for="reject-send-email" style="font-size:.85rem;color:#374151;line-height:1.5;">
+          Send rejection email to client<br>
+          <span style="font-size:.78rem;color:#9ca3af;">Uncheck if you've already communicated with them</span>
+        </label>
+      </div>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+        <button type="button" class="btn-ghost" onclick="closeModals()">Cancel</button>
+        <button type="submit" style="background:#991b1b;color:#fff;border:none;border-radius:7px;padding:.5rem 1.3rem;font-weight:700;cursor:pointer;font-size:.86rem;">Reject Booking</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 {{-- Suggest Time Modal --}}
 <div class="modal-overlay" id="suggestModal">
   <div class="modal-box" style="max-width:480px;">
@@ -390,6 +417,12 @@ function openLinkModal(bookingId) {
 function openVenmoModal(bookingId) {
   document.getElementById('venmoForm').action = `/admin/bookings/${bookingId}/venmo-paid`;
   document.getElementById('venmoModal').classList.add('open');
+}
+function openRejectModal(bookingId, clientName) {
+  document.getElementById('rejectForm').action = `/admin/bookings/${bookingId}/reject`;
+  document.getElementById('reject-client-name').textContent = clientName;
+  document.getElementById('reject-send-email').checked = true;
+  document.getElementById('rejectModal').classList.add('open');
 }
 function openSuggestModal(bookingId, clientName, currentDate) {
   document.getElementById('suggestForm').action = `/admin/bookings/${bookingId}/suggest-time`;

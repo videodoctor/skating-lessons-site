@@ -129,17 +129,25 @@
   <div class="hero-accent"></div>
   <div class="hero-inner">
     <div class="hero-photo-wrap">
-      <video id="hero-video" autoplay muted playsinline preload="auto"
-        poster="{{ asset('images/kristine_and_mick_001.webp') }}">
-        <source id="hero-video-src" src="{{ asset('videos/mick_reel_001_web.mp4') }}" type="video/mp4">
-        <img src="{{ asset('images/kristine_and_mick_001.webp') }}" alt="Coach Kristine on ice">
-      </video>
-      <video id="hero-video-2" class="hero-video-secondary" autoplay muted playsinline preload="none">
-        <source id="hero-video-src-2" src="{{ asset('videos/mick_reel_002_web.mp4') }}" type="video/mp4">
-      </video>
-      <video id="hero-video-3" class="hero-video-secondary" autoplay muted playsinline preload="none">
-        <source id="hero-video-src-3" src="{{ asset('videos/mick_reel_003_web.mp4') }}" type="video/mp4">
-      </video>
+      @if($heroMedia->isNotEmpty())
+        @foreach($heroMedia as $i => $hm)
+          @if($hm->type === 'video')
+            <video id="hero-video-{{ $i }}" {{ $i === 0 ? 'autoplay preload="auto"' : 'preload="none"' }} muted playsinline
+              {{ $i > 0 ? 'class="hero-video-secondary"' : '' }}
+              @if($i === 0) poster="{{ $heroMedia->first()->type === 'photo' ? $heroMedia->first()->url : '' }}" @endif>
+              <source id="hero-video-src-{{ $i }}" src="{{ $hm->url }}" type="video/mp4">
+            </video>
+          @else
+            <img src="{{ $hm->url }}" alt="Coach Kristine" {{ $i > 0 ? 'class="hero-video-secondary"' : '' }}>
+          @endif
+        @endforeach
+      @else
+        {{-- Fallback to local assets --}}
+        <video id="hero-video-0" autoplay muted playsinline preload="auto"
+          poster="{{ asset('images/kristine_and_mick_001.webp') }}">
+          <source id="hero-video-src-0" src="{{ asset('videos/mick_reel_001_web.mp4') }}" type="video/mp4">
+        </video>
+      @endif
     </div>
     <div class="hero-content w-full pt-10 pb-10">
     {{-- TOP: eyebrow + title --}}
@@ -288,8 +296,15 @@
     <div class="grid md:grid-cols-2 gap-16 items-center">
       <div style="padding-bottom:2rem;padding-right:2rem;">
         <div class="bio-photo-wrap">
-          <img src="{{ asset('images/kristine_and_mick_004.webp') }}" alt="Coach Kristine" class="bio-photo bio-fade-a" loading="lazy">
-          <img src="{{ asset('images/kristine_and_mick_005.webp') }}" alt="Coach Kristine" class="bio-photo bio-fade-b" loading="lazy">
+          @if($bioMedia->count() >= 2)
+            <img src="{{ $bioMedia[0]->url }}" alt="Coach Kristine" class="bio-photo bio-fade-a" loading="lazy">
+            <img src="{{ $bioMedia[1]->url }}" alt="Coach Kristine" class="bio-photo bio-fade-b" loading="lazy">
+          @elseif($bioMedia->count() === 1)
+            <img src="{{ $bioMedia[0]->url }}" alt="Coach Kristine" class="bio-photo" loading="lazy">
+          @else
+            <img src="{{ asset('images/kristine_and_mick_004.webp') }}" alt="Coach Kristine" class="bio-photo bio-fade-a" loading="lazy">
+            <img src="{{ asset('images/kristine_and_mick_005.webp') }}" alt="Coach Kristine" class="bio-photo bio-fade-b" loading="lazy">
+          @endif
         </div>
       </div>
       <div>
@@ -395,17 +410,30 @@
 <script>
 (function() {
   const clips = [
+    @foreach($heroMedia->where('type', 'video') as $hm)
+    '{{ $hm->url }}',
+    @endforeach
+    @if($heroMedia->where('type', 'video')->isEmpty())
     '{{ asset("videos/mick_reel_001_web.mp4") }}',
-    '{{ asset("videos/mick_reel_002_web.mp4") }}',
-    '{{ asset("videos/mick_reel_003_web.mp4") }}',
+    @endif
   ];
   const isMobile = window.innerWidth <= 768;
 
-  const players = [
-    { v: document.getElementById('hero-video'),   s: document.getElementById('hero-video-src') },
-    { v: document.getElementById('hero-video-2'),  s: document.getElementById('hero-video-src-2') },
-    { v: document.getElementById('hero-video-3'),  s: document.getElementById('hero-video-src-3') },
-  ];
+  const players = [];
+  @foreach($heroMedia as $i => $hm)
+    @if($hm->type === 'video')
+    (function(){
+      var v = document.getElementById('hero-video-{{ $i }}');
+      var s = document.getElementById('hero-video-src-{{ $i }}');
+      if (v && s) players.push({ v: v, s: s });
+    })();
+    @endif
+  @endforeach
+  if (players.length === 0) {
+    var v = document.getElementById('hero-video-0');
+    var s = document.getElementById('hero-video-src-0');
+    if (v && s) players.push({ v: v, s: s });
+  }
 
   // Each slot tracks which clip index it's currently playing
   // Start: slot 0 = clip 0, slot 1 = clip 1, slot 2 = clip 2
@@ -524,30 +552,35 @@
       </div>
 
       <div style="margin-bottom:.55rem;">
+        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">How did you hear about us? <span style="color:#9ca3af;">(optional)</span></label>
+        <input type="text" name="referred_by" placeholder="e.g. Mike G., Google, Instagram"
+          style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+      </div>
+      <div style="margin-bottom:.55rem;">
         <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Anything else? <span style="color:#9ca3af;">(optional)</span></label>
         <textarea name="message" rows="2" placeholder="Goals, availability preferences..."
           style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;font-family:inherit;resize:vertical;"></textarea>
       </div>
 
       <div style="border-top:1px solid #f3f4f6;padding-top:.65rem;margin-bottom:.65rem;">
-        <div style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.5rem;">
-          <input type="checkbox" name="email_consent" id="wl-email" required style="margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:#001F5B;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;">
+          <input type="checkbox" name="email_consent" id="wl-email" required style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-email" style="font-size:.78rem;color:#374151;line-height:1.4;">I agree to receive email notifications from Kristine Skates. *</label>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.5rem;background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:7px;padding:.5rem .65rem;">
-          <input type="checkbox" name="sms_consent" id="wl-sms" value="1" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:#001F5B;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:7px;padding:.5rem .65rem;">
+          <input type="checkbox" name="sms_consent" id="wl-sms" value="1" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-sms" style="font-size:.78rem;color:#374151;line-height:1.4;">
             <strong>Optional:</strong> SMS lesson reminders. Msg & data rates apply. Reply STOP to opt out.
           </label>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.5rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px;padding:.5rem .65rem;">
-          <input type="checkbox" name="waiver_accepted" id="wl-waiver" required style="margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:#001F5B;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px;padding:.5rem .65rem;">
+          <input type="checkbox" name="waiver_accepted" id="wl-waiver" required style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-waiver" style="font-size:.78rem;color:#374151;line-height:1.4;">
             I agree to the <a href="{{ route('waiver.show') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Liability Waiver</a>. *
           </label>
         </div>
         <div style="display:flex;align-items:flex-start;gap:.5rem;">
-          <input type="checkbox" name="terms_accepted" id="wl-terms" required style="margin-top:3px;width:16px;height:16px;flex-shrink:0;accent-color:#001F5B;">
+          <input type="checkbox" name="terms_accepted" id="wl-terms" required style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-terms" style="font-size:.78rem;color:#374151;line-height:1.4;">
             I agree to the <a href="{{ route('terms') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Terms</a> &
             <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>. *

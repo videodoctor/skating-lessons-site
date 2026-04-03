@@ -46,7 +46,7 @@ class BookingController extends Controller
         return back()->with('success', 'Booking approved successfully!');
     }
 
-    public function reject(Booking $booking)
+    public function reject(Request $request, Booking $booking)
     {
         if ($booking->timeSlot) {
             $booking->timeSlot->update(['booking_id' => null, 'is_available' => true]);
@@ -54,14 +54,17 @@ class BookingController extends Controller
 
         $booking->update(['status' => 'rejected']);
 
-        if ($booking->client_id && $booking->client->email) {
-            $booking->client->notify(new BookingRejectedNotification($booking));
-        } elseif ($booking->client_email) {
-            \Illuminate\Support\Facades\Notification::route('mail', $booking->client_email)
-                ->notify(new BookingRejectedNotification($booking));
+        if ($request->boolean('send_email', true)) {
+            if ($booking->client_id && $booking->client->email) {
+                $booking->client->notify(new BookingRejectedNotification($booking));
+            } elseif ($booking->client_email) {
+                \Illuminate\Support\Facades\Notification::route('mail', $booking->client_email)
+                    ->notify(new BookingRejectedNotification($booking));
+            }
+            return back()->with('success', 'Booking rejected, email sent, and time slot released.');
         }
 
-        return back()->with('success', 'Booking rejected and time slot released.');
+        return back()->with('success', 'Booking rejected (no email sent) and time slot released.');
     }
 
     public function linkClient(Request $request, Booking $booking)

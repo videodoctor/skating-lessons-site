@@ -85,6 +85,7 @@
     <div class="sidebar-label">Payments</div>
     <a href="{{ route('admin.venmo.index') }}" class="nav-link {{ request()->routeIs('admin.venmo*') ? 'active' : '' }}" onclick="closeDrawer()">💜 Venmo</a>
     <div class="sidebar-label">Content</div>
+    <a href="{{ route('admin.homepage') }}" class="nav-link {{ request()->routeIs('admin.homepage*') ? 'active' : '' }}" onclick="closeDrawer()">🏠 Home Page</a>
     <a href="{{ route('admin.packages.index') }}" class="nav-link {{ request()->routeIs('admin.packages*') ? 'active' : '' }}" onclick="closeDrawer()">📦 Packages</a>
     <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ request()->routeIs('admin.testimonials*') ? 'active' : '' }}" onclick="closeDrawer()">⭐ Testimonials</a>
     <div class="sidebar-label">Tools</div>
@@ -127,6 +128,7 @@
   <div class="sidebar-label">Payments</div>
   <a href="{{ route('admin.venmo.index') }}" class="nav-link {{ request()->routeIs('admin.venmo*') ? 'active' : '' }}">💜 Venmo</a>
   <div class="sidebar-label">Content</div>
+  <a href="{{ route('admin.homepage') }}" class="nav-link {{ request()->routeIs('admin.homepage*') ? 'active' : '' }}">🏠 Home Page</a>
   <a href="{{ route('admin.packages.index') }}" class="nav-link {{ request()->routeIs('admin.packages*') ? 'active' : '' }}">📦 Packages</a>
   <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ request()->routeIs('admin.testimonials*') ? 'active' : '' }}">⭐ Testimonials</a>
   <div class="sidebar-label">Tools</div>

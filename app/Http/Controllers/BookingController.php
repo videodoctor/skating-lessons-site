@@ -57,6 +57,7 @@ class BookingController extends Controller
             'student_name'     => 'required|string|max:255',
             'student_age'      => 'required|integer|min:2|max:99',
             'skill_level'      => 'required|in:beginner,intermediate,advanced',
+            'referred_by'      => 'nullable|string|max:255',
             'email_consent'    => 'required|accepted',
             'waiver_accepted'  => 'required|accepted',
             'terms_accepted'   => 'required|accepted',
@@ -190,6 +191,7 @@ class BookingController extends Controller
             'student_age'         => 'required|integer|min:2|max:99',
             'skill_level'         => 'required|in:beginner,intermediate,advanced',
             'notes'               => 'nullable|string',
+            'referred_by'         => 'nullable|string|max:255',
             'email_consent'       => 'required|accepted',
             'cancellation_policy' => 'required|accepted',
         ]);
@@ -215,6 +217,7 @@ class BookingController extends Controller
             'student_age'        => $validated['student_age'],
             'skill_level'        => $validated['skill_level'],
             'notes'              => $validated['notes'] ?? null,
+            'referred_by'        => $validated['referred_by'] ?? null,
             'status'             => 'pending',
             'price_paid'         => Service::find($validated['service_id'])->effectivePrice(),
             'date'               => $timeSlot->date,

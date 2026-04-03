@@ -50,6 +50,8 @@ class ClientAuthTest extends TestCase
             'password'              => 'password123',
             'password_confirmation' => 'password123',
             'email_consent'         => '1',
+            'waiver_accepted'       => '1',
+            'terms_accepted'        => '1',
             'cf-turnstile-response' => 'test',
         ]);
 
@@ -65,6 +67,8 @@ class ClientAuthTest extends TestCase
             'password'              => 'password123',
             'password_confirmation' => 'password123',
             'email_consent'         => '1',
+            'waiver_accepted'       => '1',
+            'terms_accepted'        => '1',
             'cf-turnstile-response' => 'test',
         ]);
 
@@ -80,6 +84,8 @@ class ClientAuthTest extends TestCase
             'password'              => 'password123',
             'password_confirmation' => 'password123',
             'email_consent'         => '1',
+            'waiver_accepted'       => '1',
+            'terms_accepted'        => '1',
             'cf-turnstile-response' => 'test',
         ]);
 
@@ -96,6 +102,8 @@ class ClientAuthTest extends TestCase
             'password'              => 'password123',
             'password_confirmation' => 'wrong',
             'email_consent'         => '1',
+            'waiver_accepted'       => '1',
+            'terms_accepted'        => '1',
             'cf-turnstile-response' => 'test',
         ]);
 
@@ -114,6 +122,8 @@ class ClientAuthTest extends TestCase
             'password'              => 'password123',
             'password_confirmation' => 'password123',
             'email_consent'         => '1',
+            'waiver_accepted'       => '1',
+            'terms_accepted'        => '1',
             'cf-turnstile-response' => 'test',
         ]);
 
@@ -131,6 +141,8 @@ class ClientAuthTest extends TestCase
             'password'              => 'password123',
             'password_confirmation' => 'password123',
             'email_consent'         => '1',
+            'waiver_accepted'       => '1',
+            'terms_accepted'        => '1',
             'cf-turnstile-response' => 'test',
         ]);
 

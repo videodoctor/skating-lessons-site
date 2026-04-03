@@ -31,32 +31,52 @@ class ClientAuthController extends Controller
         }
 
         $validated = $request->validate([
-            'first_name'    => 'required|string|max:100',
-            'last_name'     => 'nullable|string|max:100',
-            'email'         => 'required|email|unique:clients,email',
-            'phone'         => 'nullable|string',
-            'password'      => 'required|string|min:8|confirmed',
-            'email_consent' => 'required|accepted',
+            'first_name'       => 'required|string|max:100',
+            'last_name'        => 'nullable|string|max:100',
+            'email'            => 'required|email|unique:clients,email',
+            'phone'            => 'nullable|string',
+            'password'         => 'required|string|min:8|confirmed',
+            'referred_by'      => 'nullable|string|max:255',
+            'email_consent'    => 'required|accepted',
+            'waiver_accepted'  => 'required|accepted',
+            'terms_accepted'   => 'required|accepted',
         ]);
 
         $normalizedPhone = !empty($validated['phone']) ? $sms->normalizePhone($validated['phone']) : '';
         $smsConsent      = $request->boolean('sms_consent');
 
         $client = Client::create([
-            'first_name'       => $validated['first_name'],
-            'last_name'        => $validated['last_name'] ?? null,
-            'name'             => trim($validated['first_name'] . ' ' . ($validated['last_name'] ?? '')),
-            'email'            => $validated['email'],
-            'phone'            => $normalizedPhone,
-            'password'         => Hash::make($validated['password']),
-            'email_consent_at' => now(),
-            'sms_consent'      => $smsConsent,
-            'sms_phone'        => $smsConsent ? $normalizedPhone : null,
+            'first_name'        => $validated['first_name'],
+            'last_name'         => $validated['last_name'] ?? null,
+            'name'              => trim($validated['first_name'] . ' ' . ($validated['last_name'] ?? '')),
+            'email'             => $validated['email'],
+            'phone'             => $normalizedPhone,
+            'password'          => Hash::make($validated['password']),
+            'email_consent_at'  => now(),
+            'terms_accepted_at' => now(),
+            'sms_consent'       => $smsConsent,
+            'sms_phone'         => $smsConsent ? $normalizedPhone : null,
         ]);
 
-        // Persist UTM/referral attribution from session
+        // Sign waiver
+        \App\Models\LiabilityWaiver::create([
+            'client_id'      => $client->id,
+            'waiver_version' => \App\Models\LiabilityWaiver::CURRENT_VERSION,
+            'waiver_text'    => \App\Models\LiabilityWaiver::currentWaiverText(),
+            'signed_name'    => $client->full_name,
+            'ip_address'     => $request->ip(),
+            'user_agent'     => $request->userAgent(),
+            'signed_at'      => now(),
+        ]);
+        $client->update([
+            'waiver_signed_at' => now(),
+            'waiver_version'   => \App\Models\LiabilityWaiver::CURRENT_VERSION,
+            'waiver_ip'        => $request->ip(),
+        ]);
+
+        // Persist UTM/referral attribution from session + form
         $client->update(array_filter([
-            'referral_source' => session('analytics.ref'),
+            'referral_source' => $validated['referred_by'] ?? session('analytics.ref'),
             'utm_source'      => session('analytics.utm_source'),
             'utm_medium'      => session('analytics.utm_medium'),
             'utm_campaign'    => session('analytics.utm_campaign'),

@@ -32,6 +32,9 @@ return [
         'key' => env('ANTHROPIC_API_KEY'),
     ],
 
+    'media_cdn_url'    => env('MEDIA_CDN_URL', 'https://media.kristineskates.com'),
+    'media_path_prefix' => env('MEDIA_PATH_PREFIX', ''),
+
     'turnstile' => [
         'key'    => env('TURNSTILE_SITE_KEY'),
         'secret' => env('TURNSTILE_SECRET_KEY'),

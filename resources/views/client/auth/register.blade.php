@@ -56,23 +56,49 @@
           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900">
       </div>
 
-      <div class="mb-6">
-        <label class="flex items-start">
-          <input type="checkbox" name="email_consent" required class="mt-1 mr-3">
-          <span class="text-gray-700 text-sm">
-            I agree to receive emails from Kristine Skates regarding my skating lessons, bookings, and account updates. *
-          </span>
-        </label>
-        @error('email_consent')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2">How did you hear about us? <span class="font-normal text-gray-400">(optional)</span></label>
+        <input type="text" name="referred_by" value="{{ old('referred_by') }}" placeholder="e.g. Mike G., Google, Instagram"
+          class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900">
       </div>
 
-      <div class="mb-4">
-        <label class="flex items-start">
-          <input type="checkbox" name="sms_consent" class="mt-1 mr-3">
-          <span class="text-gray-700 text-sm">
-            <strong>Optional:</strong> I agree to receive SMS text message lesson reminders from Kristine Skates. You will receive a confirmation text upon opting in. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help. View our <a href="{{ route('privacy') }}" target="_blank" class="underline">Privacy Policy</a>.
-          </span>
-        </label>
+      <div style="border-top:1px solid #f3f4f6;padding-top:1rem;margin-bottom:1rem;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.75rem;">
+          <input type="checkbox" name="email_consent" id="reg_email_consent" required
+                 style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
+          <label for="reg_email_consent" style="font-size:.85rem;color:#374151;line-height:1.5;">
+            I agree to receive emails from Kristine Skates regarding my skating lessons, bookings, and account updates. *
+          </label>
+        </div>
+        @error('email_consent')<p class="text-red-500 text-sm mb-2">{{ $message }}</p>@enderror
+
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.75rem;background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:8px;padding:.75rem 1rem;">
+          <input type="checkbox" name="sms_consent" id="reg_sms_consent" value="1"
+                 style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
+          <label for="reg_sms_consent" style="font-size:.85rem;color:#374151;line-height:1.5;">
+            <strong>Optional:</strong> I agree to receive SMS text message lesson reminders.
+            Message frequency varies. Message and data rates may apply.
+            Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
+            View our <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
+          </label>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.75rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:.75rem 1rem;">
+          <input type="checkbox" name="waiver_accepted" id="reg_waiver" required
+                 style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
+          <label for="reg_waiver" style="font-size:.85rem;color:#374151;line-height:1.5;">
+            I have read and agree to the <a href="{{ route('waiver.show') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Liability Waiver</a>. I understand that skating involves inherent risks. *
+          </label>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:.75rem;">
+          <input type="checkbox" name="terms_accepted" id="reg_terms" required
+                 style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
+          <label for="reg_terms" style="font-size:.85rem;color:#374151;line-height:1.5;">
+            I have read and agree to the <a href="{{ route('terms') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Terms &amp; Conditions</a>
+            and <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>. *
+          </label>
+        </div>
       </div>
 
       {{-- Cloudflare Turnstile --}}

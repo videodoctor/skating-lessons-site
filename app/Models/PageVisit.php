@@ -11,11 +11,13 @@ class PageVisit extends Model
     protected $fillable = [
         'ip_address', 'path', 'referrer_url', 'referrer_source',
         'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'ref_tag',
-        'country', 'region', 'city', 'user_agent', 'client_id', 'admin_user_id', 'created_at',
+        'country', 'region', 'city', 'org', 'isp', 'is_hosting',
+        'user_agent', 'client_id', 'admin_user_id', 'created_at',
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
+        'created_at'  => 'datetime',
+        'is_hosting'  => 'boolean',
     ];
 
     public function client()

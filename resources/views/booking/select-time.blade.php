@@ -163,6 +163,11 @@
               </div>
             </div>
             <div>
+              <label class="form-label">How did you hear about us? <span class="font-normal text-gray-400">(optional)</span></label>
+              <input type="text" name="referred_by" class="form-input"
+                value="{{ old('referred_by') }}" placeholder="e.g. Mike G., Google, Instagram">
+            </div>
+            <div>
               <label class="form-label">Notes <span class="font-normal text-gray-400">(optional)</span></label>
               <textarea name="notes" rows="2" class="form-input" placeholder="Goals, anything Coach Kristine should know…">{{ old('notes') }}</textarea>
             </div>

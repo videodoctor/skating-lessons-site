@@ -9,8 +9,8 @@
   .wl-input:focus{outline:none;border-color:var(--navy);}
   .wl-row{margin-bottom:.65rem;}
   .wl-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;}
-  .policy-check{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.65rem;}
-  .policy-check input{margin-top:3px;width:17px;height:17px;flex-shrink:0;accent-color:var(--navy);}
+  .policy-check{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;}
+  .policy-check input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--navy);}
   .policy-check label{font-size:.82rem;color:#374151;line-height:1.5;}
 </style>
 
@@ -80,6 +80,12 @@
                 </select>
               </div>
             </div>
+          </div>
+
+          {{-- Referred by --}}
+          <div class="wl-row">
+            <label class="wl-label">How did you hear about us? <span style="color:#9ca3af;">(optional)</span></label>
+            <input type="text" name="referred_by" value="{{ old('referred_by') }}" class="wl-input" placeholder="e.g. Mike G., Google, Instagram">
           </div>
 
           {{-- Notes --}}
