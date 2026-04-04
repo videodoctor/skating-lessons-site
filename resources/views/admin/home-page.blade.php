@@ -68,10 +68,24 @@
 
   <form method="POST" action="{{ route('admin.homepage.update-bio') }}" id="bioForm">
     @csrf
-    <div id="bio-selected-ids"></div>
+    <div id="bio-selected-ids">
+      @foreach($bioMediaIds as $bid)
+        <input type="hidden" name="media_ids[]" value="{{ $bid }}">
+      @endforeach
+    </div>
     <div class="section-label">Selected ({{ count($bioMediaIds) }})</div>
     <div class="selected-strip" id="bioStrip">
-      @if(empty($bioMediaIds))<span style="color:#9ca3af;font-size:.8rem;padding:.4rem;">None — click a photo below to crop & add</span>@endif
+      @if($bioMedia->isEmpty())
+        <span style="color:#9ca3af;font-size:.8rem;padding:.4rem;">None — click a photo below to crop & add</span>
+      @else
+        @foreach($bioMedia as $bm)
+          <div style="position:relative;display:inline-block;">
+            <img src="{{ $bm->url }}" style="width:48px;height:60px;border-radius:5px;object-fit:cover;border:2px solid #001F5B;">
+            <button type="button" onclick="removeBioPhoto({{ $bm->id }})"
+              style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#dc2626;color:#fff;border:none;font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
+          </div>
+        @endforeach
+      @endif
     </div>
     <div class="media-picker">
       @foreach($availablePhotos as $p)
@@ -229,6 +243,17 @@ window.addEventListener('load', () => setPreview('desktop', document.querySelect
 var bioCropper = null;
 var bioCropSourceId = null;
 var bioCropStudentId = null;
+
+function removeBioPhoto(id) {
+  if (!confirm('Remove this photo from the bio rotation?')) return;
+  var ids = @json($bioMediaIds).filter(function(i) { return i !== id; });
+  // Update via form submit
+  var form = document.getElementById('bioForm');
+  document.getElementById('bio-selected-ids').innerHTML = ids.map(function(i) {
+    return '<input type="hidden" name="media_ids[]" value="' + i + '">';
+  }).join('');
+  form.submit();
+}
 
 function openBioCrop(el) {
   bioCropSourceId = parseInt(el.dataset.id);
