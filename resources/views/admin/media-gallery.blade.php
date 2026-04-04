@@ -513,8 +513,8 @@ function applyAdjustments() {
   document.getElementById('valBrightness').textContent = b;
   document.getElementById('valContrast').textContent = c;
   document.getElementById('valSaturation').textContent = s;
-  var container = document.querySelector('.cropper-canvas');
-  if (container) container.style.filter = 'brightness(' + (b/100) + ') contrast(' + (c/100) + ') saturate(' + (s/100) + ')';
+  var f = 'brightness(' + (b/100) + ') contrast(' + (c/100) + ') saturate(' + (s/100) + ')';
+  document.querySelectorAll('.cropper-canvas img, .cropper-view-box img').forEach(function(el) { el.style.filter = f; });
 }
 
 function resetAdjustments() {
