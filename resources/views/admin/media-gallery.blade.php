@@ -177,8 +177,7 @@ document.querySelector('form[action="{{ route("admin.media.upload") }}"]').addEv
       <span class="type-tag">{{ strtoupper($item->type) }}</span>
       @if($item->type === 'photo')
         <button onclick="openEditor('{{ $item->url }}', {{ $item->id }}, {{ $item->student_id }})" title="Edit photo"
-          style="position:absolute;top:6px;left:6px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;"
-          onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0">✎</button>
+          style="position:absolute;top:6px;left:6px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✎</button>
       @endif
       @if($item->student)
         <a href="{{ route('admin.students.profile', $item->student) }}" class="student-tag" style="text-decoration:none;">{{ $item->student->first_name }}</a>
