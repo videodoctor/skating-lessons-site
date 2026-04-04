@@ -63,12 +63,12 @@
 {{-- ═══ BIO PHOTOS ═══ --}}
 <div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1.25rem;margin-bottom:1.25rem;">
   <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.15rem;color:var(--navy);margin:0 0 .5rem;">Bio Photos</h2>
-  <p style="font-size:.8rem;color:#6b7280;margin-bottom:.6rem;">Select 2 photos for the cross-dissolve in the "Meet Your Coach" section.</p>
+  <p style="font-size:.8rem;color:#6b7280;margin-bottom:.6rem;">Select photos for the rotating cross-dissolve in the "Meet Your Coach" section.</p>
 
   <form method="POST" action="{{ route('admin.homepage.update-bio') }}" id="bioForm">
     @csrf
     <div id="bio-selected-ids"></div>
-    <div class="section-label">Selected ({{ count($bioMediaIds) }}/2)</div>
+    <div class="section-label">Selected ({{ count($bioMediaIds) }})</div>
     <div class="selected-strip" id="bioStrip">
       @if(empty($bioMediaIds))<span style="color:#9ca3af;font-size:.8rem;padding:.4rem;">None selected</span>@endif
     </div>
@@ -109,7 +109,7 @@
 <script>
 const groups = {
   hero: { ids: @json($heroMediaIds), max: 99 },
-  bio:  { ids: @json($bioMediaIds), max: 2 },
+  bio:  { ids: @json($bioMediaIds), max: 99 },
 };
 
 function togglePick(el, group) {

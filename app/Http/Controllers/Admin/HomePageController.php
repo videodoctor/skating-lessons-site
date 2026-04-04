@@ -40,7 +40,7 @@ class HomePageController extends Controller
     public function updateBioMedia(Request $request)
     {
         $request->validate([
-            'media_ids'   => 'nullable|array|max:2',
+            'media_ids'   => 'nullable|array',
             'media_ids.*' => 'integer|exists:student_media,id',
         ]);
 

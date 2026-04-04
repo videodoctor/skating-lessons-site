@@ -21,8 +21,11 @@
   .media-card-body{padding:.5rem .65rem;}
   .media-card-caption{font-size:.75rem;color:#6b7280;margin-bottom:.3rem;}
   .media-card-meta{font-size:.65rem;color:#9ca3af;}
-  .media-card .profile-star{position:absolute;top:6px;left:6px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .media-card .type-icon{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.5);color:#fff;font-size:.8rem;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .media-card .edit-btn-card{position:absolute;top:6px;left:38px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .media-card .profile-star{position:absolute;top:6px;left:70px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .media-card .profile-star.active{background:var(--red);}
+  .media-card .revert-btn{position:absolute;top:6px;left:102px;background:rgba(200,16,46,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .media-card .delete-btn{position:absolute;top:6px;right:6px;background:rgba(220,38,38,.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .upload-zone{border:2.5px dashed #bfdbfe;border-radius:10px;background:#eff6ff;text-align:center;padding:2rem;cursor:pointer;transition:all .2s;}
   .upload-zone:hover{border-color:var(--navy);background:#dbeafe;}
@@ -235,29 +238,36 @@ async function showUploadProgress() {
         @else
           <video src="{{ $item->url }}" preload="metadata" style="cursor:pointer;" onclick="this.paused ? this.play() : this.pause()"></video>
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;font-size:2rem;text-shadow:0 2px 8px rgba(0,0,0,.4);">▶️</div>
-          <button onclick="openTrimmer('{{ $item->url }}', {{ $item->id }}, {{ $item->duration ?? 0 }})" title="Trim video"
-            style="position:absolute;top:6px;left:6px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✂</button>
         @endif
       </div>
 
-      {{-- Set as profile photo + Edit --}}
+      {{-- Type icon + Edit/Trim --}}
       @if($item->type === 'photo')
-      <form method="POST" action="{{ route('admin.students.set-profile-photo', [$student, $item]) }}" style="display:inline;">
-        @csrf
-        <button type="submit" class="profile-star {{ $student->profile_photo_id === $item->id ? 'active' : '' }}" title="Set as profile photo">
-          {{ $student->profile_photo_id === $item->id ? '★' : '☆' }}
-        </button>
-      </form>
-      <button onclick="openEditor('{{ $item->url }}', {{ $item->id }})" title="Edit photo"
-        style="position:absolute;top:6px;left:36px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✎</button>
-      @if($item->is_edited)
-      <form method="POST" action="{{ route('admin.students.revert-media', $item) }}" style="display:inline;"
-        onsubmit="return confirm('Revert to original photo? The edited version will be deleted.')">
-        @csrf
-        <button type="submit" title="Revert to original"
-          style="position:absolute;top:6px;left:68px;background:rgba(200,16,46,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">↩</button>
-      </form>
-      @endif
+        <span class="type-icon" title="Photo">📷</span>
+        <button onclick="openEditor('{{ $item->url }}', {{ $item->id }})" title="Edit photo" class="edit-btn-card">✎</button>
+        <form method="POST" action="{{ route('admin.students.set-profile-photo', [$student, $item]) }}" style="display:inline;">
+          @csrf
+          <button type="submit" class="profile-star {{ $student->profile_photo_id === $item->id ? 'active' : '' }}" title="Set as profile photo">
+            {{ $student->profile_photo_id === $item->id ? '★' : '☆' }}
+          </button>
+        </form>
+        @if($item->is_edited)
+        <form method="POST" action="{{ route('admin.students.revert-media', $item) }}" style="display:inline;"
+          onsubmit="return confirm('Revert to original photo?')">
+          @csrf
+          <button type="submit" title="Revert to original" class="revert-btn">↩</button>
+        </form>
+        @endif
+      @else
+        <span class="type-icon" title="Video">🎬</span>
+        <button onclick="openTrimmer('{{ $item->url }}', {{ $item->id }}, {{ $item->duration ?? 0 }})" title="Trim video" class="edit-btn-card">✂</button>
+        @if($item->is_edited)
+        <form method="POST" action="{{ route('admin.students.revert-media', $item) }}" style="display:inline;"
+          onsubmit="return confirm('Revert to original video?')">
+          @csrf
+          <button type="submit" title="Revert to original" class="profile-star" style="background:rgba(200,16,46,.8);">↩</button>
+        </form>
+        @endif
       @endif
 
       {{-- Delete --}}
@@ -306,8 +316,14 @@ async function showUploadProgress() {
       <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--navy);margin:0;">Edit Photo</h3>
       <button onclick="closeEditor()" style="background:none;border:none;font-size:1.3rem;color:#9ca3af;cursor:pointer;">✕</button>
     </div>
-    <div style="flex:1;overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:300px;">
-      <img id="editorImage" crossorigin="anonymous" style="max-width:100%;display:block;">
+    <div style="flex:1;overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:300px;position:relative;">
+      <div id="editorLoading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;z-index:5;">
+        <div style="font-size:1.5rem;margin-bottom:.5rem;">Loading photo...</div>
+        <div style="width:200px;height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;">
+          <div id="editorLoadBar" style="width:0%;height:100%;background:#fff;border-radius:3px;transition:width .3s;"></div>
+        </div>
+      </div>
+      <img id="editorImage" crossorigin="anonymous" style="max-width:100%;display:block;opacity:0;">
     </div>
     <div style="padding:.75rem 1.25rem;border-top:1px solid #e5eaf2;display:flex;gap:.5rem;flex-wrap:wrap;justify-content:space-between;align-items:center;">
       <div style="display:flex;gap:.4rem;">
@@ -341,9 +357,16 @@ async function showUploadProgress() {
     </div>
 
     {{-- Video preview --}}
-    <div style="background:#000;position:relative;">
+    <div style="background:#000;position:relative;min-height:200px;">
+      <div id="trimLoading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;z-index:5;">
+        <div style="font-size:1.2rem;margin-bottom:.5rem;">Loading video...</div>
+        <div style="width:200px;height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;">
+          <div id="trimLoadBar" style="width:0%;height:100%;background:#fff;border-radius:3px;transition:width .3s;"></div>
+        </div>
+        <div id="trimLoadText" style="font-size:.78rem;margin-top:.4rem;color:rgba(255,255,255,.6);"></div>
+      </div>
       <video id="trimVideo" style="width:100%;max-height:400px;display:block;" preload="auto" crossorigin="anonymous"></video>
-      <div id="trimPlayBtn" onclick="toggleTrimPlay()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3rem;cursor:pointer;text-shadow:0 2px 12px rgba(0,0,0,.5);pointer-events:auto;">▶️</div>
+      <div id="trimPlayBtn" onclick="toggleTrimPlay()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3rem;cursor:pointer;text-shadow:0 2px 12px rgba(0,0,0,.5);pointer-events:auto;display:none;">▶️</div>
     </div>
 
     {{-- Timeline / Range --}}
@@ -397,26 +420,38 @@ var editingMediaId = null;
 function openEditor(url, mediaId) {
   editingMediaId = mediaId;
   var img = document.getElementById('editorImage');
-  // Cache-bust to ensure CORS headers are fresh
-  img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  var loader = document.getElementById('editorLoading');
+  var loadBar = document.getElementById('editorLoadBar');
+
+  img.style.opacity = '0';
+  loader.style.display = 'flex';
+  loadBar.style.width = '10%';
   document.getElementById('editorModal').style.display = 'flex';
   document.getElementById('saveEditBtn').disabled = false;
   document.getElementById('saveEditBtn').textContent = 'Save';
   document.getElementById('saveEditBtn').style.opacity = '1';
 
-  img.onload = function() {
-    if (cropper) cropper.destroy();
-    cropper = new Cropper(img, {
-      viewMode: 1,
-      autoCropArea: 1,
-      responsive: true,
-      background: true,
-    });
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now(), true);
+  xhr.responseType = 'blob';
+  xhr.onprogress = function(e) {
+    if (e.lengthComputable) loadBar.style.width = Math.round((e.loaded / e.total) * 100) + '%';
   };
-  img.onerror = function() {
-    alert('Could not load image. Try hard-refreshing the page (Ctrl+Shift+R).');
-    closeEditor();
+  xhr.onload = function() {
+    loadBar.style.width = '100%';
+    var blobUrl = URL.createObjectURL(xhr.response);
+    img.src = blobUrl;
+    img.onload = function() {
+      loader.style.display = 'none';
+      img.style.opacity = '1';
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(img, { viewMode: 1, autoCropArea: 1, responsive: true, background: true });
+    };
   };
+  xhr.onerror = function() {
+    loader.innerHTML = '<div style="color:#fca5a5;">Failed to load. Try hard-refreshing (Ctrl+Shift+R).</div>';
+  };
+  xhr.send();
 }
 
 function closeEditor() {
@@ -502,23 +537,54 @@ function openTrimmer(url, mediaId, duration) {
   trimMediaId = mediaId;
   trimTotalDuration = duration || 30;
   trimVideoEl = document.getElementById('trimVideo');
-  trimVideoEl.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  var loader = document.getElementById('trimLoading');
+  var loadBar = document.getElementById('trimLoadBar');
+  var loadText = document.getElementById('trimLoadText');
 
+  loader.style.display = 'flex';
+  loadBar.style.width = '0%';
+  loadText.textContent = '';
+  document.getElementById('trimPlayBtn').style.display = 'none';
   document.getElementById('trimmerModal').style.display = 'flex';
   document.getElementById('saveTrimBtn').disabled = false;
   document.getElementById('saveTrimBtn').textContent = 'Save Trim';
   document.getElementById('saveTrimBtn').style.opacity = '1';
   document.getElementById('trimStatus').textContent = '';
 
-  trimVideoEl.onloadedmetadata = function() {
-    trimTotalDuration = trimVideoEl.duration;
-    document.getElementById('trimStart').value = '0';
-    document.getElementById('trimStart').max = trimTotalDuration;
-    document.getElementById('trimEnd').value = trimTotalDuration.toFixed(1);
-    document.getElementById('trimEnd').max = trimTotalDuration;
-    updateTrimRange();
-    startPlayheadUpdate();
+  // Load video with progress tracking
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now(), true);
+  xhr.responseType = 'blob';
+  xhr.onprogress = function(e) {
+    if (e.lengthComputable) {
+      var pct = Math.round((e.loaded / e.total) * 100);
+      loadBar.style.width = pct + '%';
+      loadText.textContent = (e.loaded / 1048576).toFixed(1) + ' / ' + (e.total / 1048576).toFixed(1) + ' MB';
+    }
   };
+  xhr.onload = function() {
+    loadBar.style.width = '100%';
+    loadText.textContent = 'Buffering...';
+    var blobUrl = URL.createObjectURL(xhr.response);
+    trimVideoEl.src = blobUrl;
+
+    trimVideoEl.onloadedmetadata = function() {
+      loader.style.display = 'none';
+      document.getElementById('trimPlayBtn').style.display = 'block';
+      trimTotalDuration = trimVideoEl.duration;
+      document.getElementById('trimStart').value = '0';
+      document.getElementById('trimStart').max = trimTotalDuration;
+      document.getElementById('trimEnd').value = trimTotalDuration.toFixed(1);
+      document.getElementById('trimEnd').max = trimTotalDuration;
+      updateTrimRange();
+      startPlayheadUpdate();
+    };
+  };
+  xhr.onerror = function() {
+    loadText.textContent = 'Failed to load video.';
+    loadText.style.color = '#fca5a5';
+  };
+  xhr.send();
 }
 
 function closeTrimmer() {

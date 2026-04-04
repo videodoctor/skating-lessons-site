@@ -19,7 +19,8 @@
   .media-card-body{padding:.5rem .65rem;}
   .media-card-meta{font-size:.65rem;color:#9ca3af;line-height:1.5;}
   .media-card .student-tag{position:absolute;bottom:60px;left:6px;background:rgba(0,31,91,.85);color:#fff;font-size:.65rem;font-weight:600;padding:2px 7px;border-radius:4px;}
-  .media-card .type-tag{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.5);color:#fff;font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:3px;}
+  .media-card .type-icon{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.5);color:#fff;font-size:.75rem;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .media-card .edit-btn{position:absolute;top:6px;left:34px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .media-card .delete-btn{position:absolute;top:6px;right:6px;background:rgba(220,38,38,.8);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;}
   .media-card:hover .delete-btn{opacity:1;}
   .upload-section{background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1.25rem;margin-bottom:1.25rem;}
@@ -176,10 +177,12 @@ document.querySelector('form[action="{{ route("admin.media.upload") }}"]').addEv
             style="position:absolute;top:6px;left:6px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✂</button>
         @endif
       </div>
-      <span class="type-tag">{{ strtoupper($item->type) }}</span>
       @if($item->type === 'photo')
-        <button onclick="openEditor('{{ $item->url }}', {{ $item->id }}, {{ $item->student_id }})" title="Edit photo"
-          style="position:absolute;top:6px;left:6px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✎</button>
+        <span class="type-icon" title="Photo">📷</span>
+        <button onclick="openEditor('{{ $item->url }}', {{ $item->id }}, {{ $item->student_id }})" title="Edit photo" class="edit-btn">✎</button>
+      @else
+        <span class="type-icon" title="Video">🎬</span>
+        <button onclick="openTrimmer('{{ $item->url }}', {{ $item->id }}, {{ $item->duration ?? 0 }}, {{ $item->student_id }})" title="Trim video" class="edit-btn">✂</button>
       @endif
       @if($item->student)
         <a href="{{ route('admin.students.profile', $item->student) }}" class="student-tag" style="text-decoration:none;">{{ $item->student->first_name }}</a>

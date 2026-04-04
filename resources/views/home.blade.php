@@ -102,10 +102,8 @@
   .service-book-btn.featured-btn:hover { background:#a50d24; }
   .bio-section { background:var(--ice); overflow:hidden; padding-bottom:5rem; }
   .bio-photo-wrap { position:relative;aspect-ratio:4/5;border-radius:8px;box-shadow:16px 16px 0 var(--navy);overflow:hidden; }
-  .bio-photo { position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center; }
-  .bio-fade-a { animation:bioDissolve 16s ease-in-out infinite; }
-  .bio-fade-b { animation:bioDissolve 16s ease-in-out infinite; animation-delay:-8s; }
-  @keyframes bioDissolve { 0%,40%{opacity:1} 50%,90%{opacity:0} 100%{opacity:1} }
+  .bio-photo { position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 2s ease-in-out; }
+  .bio-photo.active { opacity:1; }
   .bio-quote { font-family:'DM Serif Display',serif;font-style:italic;font-size:1.5rem;color:var(--navy);
     line-height:1.5;border-left:4px solid var(--red);padding-left:1.5rem; }
   .credential-chip { display:inline-flex;align-items:center;gap:6px;background:#fff;
@@ -295,15 +293,14 @@
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="grid md:grid-cols-2 gap-16 items-center">
       <div style="padding-bottom:2rem;padding-right:2rem;">
-        <div class="bio-photo-wrap">
-          @if($bioMedia->count() >= 2)
-            <img src="{{ $bioMedia[0]->url }}" alt="Coach Kristine" class="bio-photo bio-fade-a" loading="lazy">
-            <img src="{{ $bioMedia[1]->url }}" alt="Coach Kristine" class="bio-photo bio-fade-b" loading="lazy">
-          @elseif($bioMedia->count() === 1)
-            <img src="{{ $bioMedia[0]->url }}" alt="Coach Kristine" class="bio-photo" loading="lazy">
+        <div class="bio-photo-wrap" id="bioPhotoWrap">
+          @if($bioMedia->isNotEmpty())
+            @foreach($bioMedia as $i => $bm)
+              <img src="{{ $bm->url }}" alt="Coach Kristine" class="bio-photo {{ $i === 0 ? 'active' : '' }}" loading="lazy">
+            @endforeach
           @else
-            <img src="{{ asset('images/kristine_and_mick_004.webp') }}" alt="Coach Kristine" class="bio-photo bio-fade-a" loading="lazy">
-            <img src="{{ asset('images/kristine_and_mick_005.webp') }}" alt="Coach Kristine" class="bio-photo bio-fade-b" loading="lazy">
+            <img src="{{ asset('images/kristine_and_mick_004.webp') }}" alt="Coach Kristine" class="bio-photo active" loading="lazy">
+            <img src="{{ asset('images/kristine_and_mick_005.webp') }}" alt="Coach Kristine" class="bio-photo" loading="lazy">
           @endif
         </div>
       </div>
@@ -491,6 +488,21 @@
       });
     });
   }
+})();
+</script>
+
+<script>
+(function() {
+  var wrap = document.getElementById('bioPhotoWrap');
+  if (!wrap) return;
+  var photos = wrap.querySelectorAll('.bio-photo');
+  if (photos.length <= 1) return;
+  var current = 0;
+  setInterval(function() {
+    photos[current].classList.remove('active');
+    current = (current + 1) % photos.length;
+    photos[current].classList.add('active');
+  }, 5000);
 })();
 </script>
 
