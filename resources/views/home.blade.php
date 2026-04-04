@@ -127,25 +127,9 @@
   <div class="hero-accent"></div>
   <div class="hero-inner">
     <div class="hero-photo-wrap">
-      @if($heroMedia->isNotEmpty())
-        @foreach($heroMedia as $i => $hm)
-          @if($hm->type === 'video')
-            <video id="hero-video-{{ $i }}" {{ $i === 0 ? 'autoplay preload="auto"' : 'preload="none"' }} muted playsinline
-              {{ $i > 0 ? 'class="hero-video-secondary"' : '' }}
-              @if($i === 0) poster="{{ $heroMedia->first()->type === 'photo' ? $heroMedia->first()->url : '' }}" @endif>
-              <source id="hero-video-src-{{ $i }}" src="{{ $hm->url }}" type="video/mp4">
-            </video>
-          @else
-            <img src="{{ $hm->url }}" alt="Coach Kristine" {{ $i > 0 ? 'class="hero-video-secondary"' : '' }}>
-          @endif
-        @endforeach
-      @else
-        {{-- Fallback to local assets --}}
-        <video id="hero-video-0" autoplay muted playsinline preload="auto"
-          poster="{{ asset('images/kristine_and_mick_001.webp') }}">
-          <source id="hero-video-src-0" src="{{ asset('videos/mick_reel_001_web.mp4') }}" type="video/mp4">
-        </video>
-      @endif
+      <video id="hero-video-0" autoplay muted playsinline preload="auto"><source id="hero-src-0" src="" type="video/mp4"></video>
+      <video id="hero-video-1" class="hero-video-secondary" muted playsinline preload="none"><source id="hero-src-1" src="" type="video/mp4"></video>
+      <video id="hero-video-2" class="hero-video-secondary" muted playsinline preload="none"><source id="hero-src-2" src="" type="video/mp4"></video>
     </div>
     <div class="hero-content w-full pt-10 pb-10">
     {{-- TOP: eyebrow + title --}}
@@ -416,77 +400,70 @@
   ];
   const isMobile = window.innerWidth <= 768;
 
-  const players = [];
-  @foreach($heroMedia as $i => $hm)
-    @if($hm->type === 'video')
-    (function(){
-      var v = document.getElementById('hero-video-{{ $i }}');
-      var s = document.getElementById('hero-video-src-{{ $i }}');
-      if (v && s) players.push({ v: v, s: s });
-    })();
-    @endif
-  @endforeach
-  if (players.length === 0) {
-    var v = document.getElementById('hero-video-0');
-    var s = document.getElementById('hero-video-src-0');
-    if (v && s) players.push({ v: v, s: s });
+  // Shuffle clips for random initial order
+  for (let i = clips.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [clips[i], clips[j]] = [clips[j], clips[i]];
   }
 
-  // Each slot tracks which clip index it's currently playing
-  // Start: slot 0 = clip 0, slot 1 = clip 1, slot 2 = clip 2
-  const current = [0, 1, 2];
+  // 3 fixed viewports
+  const players = [
+    { v: document.getElementById('hero-video-0'), s: document.getElementById('hero-src-0') },
+    { v: document.getElementById('hero-video-1'), s: document.getElementById('hero-src-1') },
+    { v: document.getElementById('hero-video-2'), s: document.getElementById('hero-src-2') },
+  ];
 
-  function otherSlotClips(slotIdx) {
-    return current.filter((_, i) => i !== slotIdx);
-  }
+  // Assign initial clips: first 3 from shuffled pool (or repeat if < 3)
+  const numSlots = isMobile ? 1 : Math.min(3, clips.length);
+  const current = [];
+  for (let i = 0; i < numSlots; i++) current.push(i % clips.length);
 
   function pickNext(slotIdx) {
-    const inUse = otherSlotClips(slotIdx);
-    const prev = current[slotIdx];
-    // Find a clip not used by other slots AND not the same as current
-    for (let i = 1; i < clips.length; i++) {
-      const candidate = (prev + i) % clips.length;
-      if (!inUse.includes(candidate)) return candidate;
+    // Pick a random clip not currently showing in any slot
+    const inUse = current.filter((_, i) => i !== slotIdx);
+    const available = [];
+    for (let i = 0; i < clips.length; i++) {
+      if (!inUse.includes(i) && i !== current[slotIdx]) available.push(i);
     }
-    // Fallback: just advance
-    return (prev + 1) % clips.length;
+    if (available.length > 0) return available[Math.floor(Math.random() * available.length)];
+    return (current[slotIdx] + 1) % clips.length;
   }
 
   if (isMobile) {
-    // Mobile: defer video load — show poster first, load on user interaction
     const p = players[0];
-    let idx = 0;
     p.v.preload = 'none';
     function startMobileVideo() {
-      p.s.src = clips[idx];
+      p.s.src = clips[current[0]];
       p.v.load();
       p.v.play().catch(() => {});
       p.v.addEventListener('ended', function() {
-        idx = (idx + 1) % clips.length;
-        p.s.src = clips[idx];
+        current[0] = pickNext(0);
+        p.s.src = clips[current[0]];
         p.v.load();
         p.v.play().catch(() => {});
       });
     }
-    // Start loading after first user interaction or after 3s idle
     document.addEventListener('touchstart', function once() {
       startMobileVideo();
       document.removeEventListener('touchstart', once);
     });
     setTimeout(startMobileVideo, 3000);
   } else {
-    // Desktop: all 3 slots, each rotates independently
-    players.forEach((p, i) => {
-      p.s.src = clips[current[i]];
-      p.v.load();
-      p.v.play().catch(() => {});
-      p.v.addEventListener('ended', function() {
-        current[i] = pickNext(i);
-        p.s.src = clips[current[i]];
+    // Desktop: all slots, each rotates independently through the pool
+    for (let i = 0; i < numSlots; i++) {
+      (function(slot) {
+        var p = players[slot];
+        p.s.src = clips[current[slot]];
         p.v.load();
         p.v.play().catch(() => {});
-      });
-    });
+        p.v.addEventListener('ended', function() {
+          current[slot] = pickNext(slot);
+          p.s.src = clips[current[slot]];
+          p.v.load();
+          p.v.play().catch(() => {});
+        });
+      })(i);
+    }
   }
 })();
 </script>
