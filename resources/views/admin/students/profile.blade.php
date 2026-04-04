@@ -517,9 +517,9 @@ function applyAdjustments() {
   document.getElementById('valBrightness').textContent = b;
   document.getElementById('valContrast').textContent = c;
   document.getElementById('valSaturation').textContent = s;
-  // Live preview via CSS filter on the cropper image
-  var img = document.getElementById('editorImage');
-  img.style.filter = 'brightness(' + (b/100) + ') contrast(' + (c/100) + ') saturate(' + (s/100) + ')';
+  // Apply to the cropper container (Cropper.js clones the image, so we filter the wrapper)
+  var container = document.querySelector('.cropper-canvas');
+  if (container) container.style.filter = 'brightness(' + (b/100) + ') contrast(' + (c/100) + ') saturate(' + (s/100) + ')';
 }
 
 function resetAdjustments() {
