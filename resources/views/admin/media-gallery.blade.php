@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'Media Gallery — Admin')
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <style>
   :root{--navy:#001F5B;--red:#C8102E;}
   .stat-row{display:flex;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap;}
@@ -174,6 +175,11 @@ document.querySelector('form[action="{{ route("admin.media.upload") }}"]').addEv
         @endif
       </div>
       <span class="type-tag">{{ strtoupper($item->type) }}</span>
+      @if($item->type === 'photo')
+        <button onclick="openEditor('{{ $item->url }}', {{ $item->id }}, {{ $item->student_id }})" title="Edit photo"
+          style="position:absolute;top:6px;left:6px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;"
+          onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0">✎</button>
+      @endif
       @if($item->student)
         <a href="{{ route('admin.students.profile', $item->student) }}" class="student-tag" style="text-decoration:none;">{{ $item->student->first_name }}</a>
       @endif
@@ -217,4 +223,114 @@ document.querySelector('form[action="{{ route("admin.media.upload") }}"]').addEv
   </div>
   <div style="margin-top:1rem;">{{ $media->links() }}</div>
 @endif
+{{-- ═══ IMAGE EDITOR MODAL ═══ --}}
+<div id="editorModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeEditor()">
+  <div style="background:#fff;border-radius:12px;max-width:800px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid #e5eaf2;display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--navy);margin:0;">Edit Photo</h3>
+      <button onclick="closeEditor()" style="background:none;border:none;font-size:1.3rem;color:#9ca3af;cursor:pointer;">✕</button>
+    </div>
+    <div style="flex:1;overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:300px;">
+      <img id="editorImage" crossorigin="anonymous" style="max-width:100%;display:block;">
+    </div>
+    <div style="padding:.75rem 1.25rem;border-top:1px solid #e5eaf2;display:flex;gap:.5rem;flex-wrap:wrap;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:.4rem;">
+        <button onclick="editorAction('rotateCW')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↻ 90°</button>
+        <button onclick="editorAction('rotateCCW')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↺ 90°</button>
+        <button onclick="editorAction('flipH')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↔ Flip</button>
+        <button onclick="editorAction('flipV')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↕ Flip</button>
+        <button onclick="editorAction('reset')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">Reset</button>
+      </div>
+      <div style="display:flex;gap:.4rem;align-items:center;">
+        <span style="font-size:.75rem;color:#6b7280;">Aspect:</span>
+        <button onclick="setAspect(NaN)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">Free</button>
+        <button onclick="setAspect(1)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">1:1</button>
+        <button onclick="setAspect(4/3)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">4:3</button>
+        <button onclick="setAspect(16/9)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">16:9</button>
+      </div>
+      <div style="display:flex;gap:.4rem;">
+        <button onclick="closeEditor()" class="btn-ghost" style="font-size:.82rem;padding:5px 12px;">Cancel</button>
+        <button onclick="saveEdit()" class="btn-navy" id="saveEditBtn" style="padding:5px 16px;">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script>
+var cropper = null;
+var editingMediaId = null;
+var editingStudentId = null;
+
+function openEditor(url, mediaId, studentId) {
+  editingMediaId = mediaId;
+  editingStudentId = studentId;
+  var img = document.getElementById('editorImage');
+  img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  document.getElementById('editorModal').style.display = 'flex';
+  document.getElementById('saveEditBtn').disabled = false;
+  document.getElementById('saveEditBtn').textContent = 'Save';
+  document.getElementById('saveEditBtn').style.opacity = '1';
+
+  img.onload = function() {
+    if (cropper) cropper.destroy();
+    cropper = new Cropper(img, { viewMode: 1, autoCropArea: 1, responsive: true, background: true });
+  };
+  img.onerror = function() {
+    alert('Could not load image. Try hard-refreshing (Ctrl+Shift+R).');
+    closeEditor();
+  };
+}
+
+function closeEditor() {
+  document.getElementById('editorModal').style.display = 'none';
+  if (cropper) { cropper.destroy(); cropper = null; }
+}
+
+function editorAction(action) {
+  if (!cropper) return;
+  switch(action) {
+    case 'rotateCW': cropper.rotate(90); break;
+    case 'rotateCCW': cropper.rotate(-90); break;
+    case 'flipH': cropper.scaleX(cropper.getData().scaleX === -1 ? 1 : -1); break;
+    case 'flipV': cropper.scaleY(cropper.getData().scaleY === -1 ? 1 : -1); break;
+    case 'reset': cropper.reset(); break;
+  }
+}
+
+function setAspect(ratio) { if (cropper) cropper.setAspectRatio(ratio); }
+
+async function saveEdit() {
+  if (!cropper || !editingMediaId) return;
+  var btn = document.getElementById('saveEditBtn');
+  btn.disabled = true; btn.textContent = 'Saving...'; btn.style.opacity = '.5';
+  var csrfToken = '{{ csrf_token() }}';
+
+  try {
+    var canvas = cropper.getCroppedCanvas({ maxWidth: 4096, maxHeight: 4096 });
+    var blob = await new Promise(function(res) { canvas.toBlob(res, 'image/jpeg', 0.92); });
+
+    var resp = await fetch('{{ route("admin.media.presigned") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+      body: JSON.stringify({ student_id: editingStudentId, filename: 'edited_' + editingMediaId + '.jpg', mime_type: 'image/jpeg', file_size: blob.size })
+    });
+    var presign = await resp.json();
+
+    await fetch(presign.upload_url, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+
+    await fetch('{{ route("admin.media.register") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+      body: JSON.stringify({ student_id: editingStudentId, s3_path: presign.s3_path, type: 'photo', filename: 'edited_' + editingMediaId + '.jpg', mime_type: 'image/jpeg', file_size: blob.size, width: canvas.width, height: canvas.height, replace_media_id: editingMediaId, caption: null })
+    });
+
+    closeEditor();
+    window.location.reload();
+  } catch(e) {
+    btn.textContent = 'Failed — try again';
+    btn.style.opacity = '1'; btn.disabled = false;
+  }
+}
+</script>
 @endsection
