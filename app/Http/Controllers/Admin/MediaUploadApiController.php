@@ -66,13 +66,30 @@ class MediaUploadApiController extends Controller
             'filename'   => 'required|string|max:255',
             'mime_type'  => 'required|string|max:100',
             'file_size'  => 'required|integer',
-            'width'      => 'nullable|integer',
-            'height'     => 'nullable|integer',
-            'duration'   => 'nullable|numeric',
-            'caption'    => 'nullable|string|max:500',
+            'width'            => 'nullable|integer',
+            'height'           => 'nullable|integer',
+            'duration'         => 'nullable|numeric',
+            'caption'          => 'nullable|string|max:500',
+            'replace_media_id' => 'nullable|integer|exists:student_media,id',
         ]);
 
         $student = Student::findOrFail($request->student_id);
+
+        // Replace existing media (from image editor)
+        if ($request->replace_media_id) {
+            $existing = StudentMedia::findOrFail($request->replace_media_id);
+            // Delete old file from S3
+            Storage::disk('s3')->delete($existing->path);
+            // Update the record with new file
+            $existing->update([
+                'path'      => $request->s3_path,
+                'mime_type' => $request->mime_type,
+                'file_size' => $request->file_size,
+                'width'     => $request->width,
+                'height'    => $request->height,
+            ]);
+            return response()->json(['id' => $existing->id, 'url' => $existing->url]);
+        }
 
         if ($request->type === 'zip') {
             ProcessZipUpload::dispatch(
