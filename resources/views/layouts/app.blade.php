@@ -15,7 +15,7 @@
   <meta property="og:url" content="{{ url()->current() }}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="@hasSection('og_image')@yield('og_image')@else{{ asset('images/og-preview.png') }}@endif">
-  <script src="https://cdn.tailwindcss.com"></script>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
   <style>
     :root { --navy:#001F5B; --red:#C8102E; }
     a { text-decoration: none; }
