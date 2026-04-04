@@ -264,6 +264,25 @@ document.querySelector('form[action="{{ route("admin.media.upload") }}"]').addEv
         </div>
       </div>
     </div>
+    {{-- Video adjustments --}}
+    <div style="padding:.5rem 1.25rem;background:#fff;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <div style="display:flex;align-items:center;gap:.4rem;flex:1;min-width:140px;">
+        <label style="font-size:.68rem;font-weight:700;color:#6b7280;width:55px;">Bright</label>
+        <input type="range" id="vidBrightness" min="50" max="150" value="100" style="flex:1;accent-color:#001F5B;" oninput="applyVideoAdjustments()">
+        <span id="vidValB" style="font-size:.7rem;color:#9ca3af;width:30px;">100</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.4rem;flex:1;min-width:140px;">
+        <label style="font-size:.68rem;font-weight:700;color:#6b7280;width:55px;">Contrast</label>
+        <input type="range" id="vidContrast" min="50" max="150" value="100" style="flex:1;accent-color:#001F5B;" oninput="applyVideoAdjustments()">
+        <span id="vidValC" style="font-size:.7rem;color:#9ca3af;width:30px;">100</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.4rem;flex:1;min-width:140px;">
+        <label style="font-size:.68rem;font-weight:700;color:#6b7280;width:55px;">Saturate</label>
+        <input type="range" id="vidSaturation" min="0" max="200" value="100" style="flex:1;accent-color:#001F5B;" oninput="applyVideoAdjustments()">
+        <span id="vidValS" style="font-size:.7rem;color:#9ca3af;width:30px;">100</span>
+      </div>
+      <button onclick="resetVideoAdjustments()" class="btn-ghost" style="font-size:.72rem;padding:4px 10px;">Reset</button>
+    </div>
     <div style="padding:.75rem 1.25rem;border-top:1px solid #e5eaf2;display:flex;justify-content:space-between;align-items:center;">
       <div id="trimStatus" style="font-size:.82rem;color:#6b7280;"></div>
       <div style="display:flex;gap:.4rem;">
@@ -281,6 +300,22 @@ var trimTotalDuration = 0;
 var trimVideoEl = null;
 var trimAnimFrame = null;
 
+function applyVideoAdjustments() {
+  var b = document.getElementById('vidBrightness').value;
+  var c = document.getElementById('vidContrast').value;
+  var s = document.getElementById('vidSaturation').value;
+  document.getElementById('vidValB').textContent = b;
+  document.getElementById('vidValC').textContent = c;
+  document.getElementById('vidValS').textContent = s;
+  if (trimVideoEl) trimVideoEl.style.filter = 'brightness(' + (b/100) + ') contrast(' + (c/100) + ') saturate(' + (s/100) + ')';
+}
+function resetVideoAdjustments() {
+  document.getElementById('vidBrightness').value = 100;
+  document.getElementById('vidContrast').value = 100;
+  document.getElementById('vidSaturation').value = 100;
+  applyVideoAdjustments();
+}
+
 function openTrimmer(url, mediaId, duration, studentId) {
   trimMediaId = mediaId;
   trimStudentId = studentId;
@@ -292,6 +327,7 @@ function openTrimmer(url, mediaId, duration, studentId) {
   document.getElementById('saveTrimBtn').textContent = 'Save Trim';
   document.getElementById('saveTrimBtn').style.opacity = '1';
   document.getElementById('trimStatus').textContent = '';
+  resetVideoAdjustments();
 
   trimVideoEl.onloadedmetadata = function() {
     trimTotalDuration = trimVideoEl.duration;
@@ -354,7 +390,12 @@ async function saveTrim() {
   try {
     var resp = await fetch('{{ route("admin.media.trim-video") }}', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-      body: JSON.stringify({ media_id: trimMediaId, start_time: s, end_time: e })
+      body: JSON.stringify({
+        media_id: trimMediaId, start_time: s, end_time: e,
+        brightness: parseInt(document.getElementById('vidBrightness').value),
+        contrast: parseInt(document.getElementById('vidContrast').value),
+        saturation: parseInt(document.getElementById('vidSaturation').value),
+      })
     });
     var result = await resp.json();
     if (result.success) {
@@ -380,25 +421,42 @@ async function saveTrim() {
     <div style="flex:1;overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:300px;">
       <img id="editorImage" crossorigin="anonymous" style="max-width:100%;display:block;">
     </div>
-    <div style="padding:.75rem 1.25rem;border-top:1px solid #e5eaf2;display:flex;gap:.5rem;flex-wrap:wrap;justify-content:space-between;align-items:center;">
-      <div style="display:flex;gap:.4rem;">
-        <button onclick="editorAction('rotateCW')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↻ 90°</button>
-        <button onclick="editorAction('rotateCCW')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↺ 90°</button>
-        <button onclick="editorAction('flipH')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↔ Flip</button>
-        <button onclick="editorAction('flipV')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↕ Flip</button>
-        <button onclick="editorAction('reset')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">Reset</button>
+    {{-- Tools --}}
+    <div style="padding:.6rem 1.25rem;border-top:1px solid #e5eaf2;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;">
+      <button onclick="editorAction('rotateCW')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↻ 90°</button>
+      <button onclick="editorAction('rotateCCW')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↺ 90°</button>
+      <button onclick="editorAction('flipH')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↔ Flip</button>
+      <button onclick="editorAction('flipV')" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">↕ Flip</button>
+      <button onclick="editorAction('reset');resetAdjustments()" class="btn-ghost" style="font-size:.82rem;padding:5px 10px;">Reset</button>
+      <span style="color:#e5eaf2;margin:0 2px;">|</span>
+      <span style="font-size:.72rem;color:#6b7280;">Aspect:</span>
+      <button onclick="setAspect(NaN)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">Free</button>
+      <button onclick="setAspect(1)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">1:1</button>
+      <button onclick="setAspect(4/3)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">4:3</button>
+      <button onclick="setAspect(16/9)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">16:9</button>
+    </div>
+    {{-- Adjustments --}}
+    <div style="padding:.5rem 1.25rem;background:#f8fafc;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+      <div style="display:flex;align-items:center;gap:.4rem;flex:1;min-width:140px;">
+        <label style="font-size:.68rem;font-weight:700;color:#6b7280;width:55px;">Bright</label>
+        <input type="range" id="adjustBrightness" min="50" max="150" value="100" style="flex:1;accent-color:#001F5B;" oninput="applyAdjustments()">
+        <span id="valBrightness" style="font-size:.7rem;color:#9ca3af;width:30px;">100</span>
       </div>
-      <div style="display:flex;gap:.4rem;align-items:center;">
-        <span style="font-size:.75rem;color:#6b7280;">Aspect:</span>
-        <button onclick="setAspect(NaN)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">Free</button>
-        <button onclick="setAspect(1)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">1:1</button>
-        <button onclick="setAspect(4/3)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">4:3</button>
-        <button onclick="setAspect(16/9)" class="btn-ghost" style="font-size:.72rem;padding:4px 8px;">16:9</button>
+      <div style="display:flex;align-items:center;gap:.4rem;flex:1;min-width:140px;">
+        <label style="font-size:.68rem;font-weight:700;color:#6b7280;width:55px;">Contrast</label>
+        <input type="range" id="adjustContrast" min="50" max="150" value="100" style="flex:1;accent-color:#001F5B;" oninput="applyAdjustments()">
+        <span id="valContrast" style="font-size:.7rem;color:#9ca3af;width:30px;">100</span>
       </div>
-      <div style="display:flex;gap:.4rem;">
-        <button onclick="closeEditor()" class="btn-ghost" style="font-size:.82rem;padding:5px 12px;">Cancel</button>
-        <button onclick="saveEdit()" class="btn-navy" id="saveEditBtn" style="padding:5px 16px;">Save</button>
+      <div style="display:flex;align-items:center;gap:.4rem;flex:1;min-width:140px;">
+        <label style="font-size:.68rem;font-weight:700;color:#6b7280;width:55px;">Saturate</label>
+        <input type="range" id="adjustSaturation" min="0" max="200" value="100" style="flex:1;accent-color:#001F5B;" oninput="applyAdjustments()">
+        <span id="valSaturation" style="font-size:.7rem;color:#9ca3af;width:30px;">100</span>
       </div>
+    </div>
+    {{-- Actions --}}
+    <div style="padding:.6rem 1.25rem;border-top:1px solid #e5eaf2;display:flex;justify-content:flex-end;gap:.4rem;">
+      <button onclick="closeEditor()" class="btn-ghost" style="font-size:.82rem;padding:5px 12px;">Cancel</button>
+      <button onclick="saveEdit()" class="btn-navy" id="saveEditBtn" style="padding:5px 16px;">Save</button>
     </div>
   </div>
 </div>
@@ -415,6 +473,7 @@ function openEditor(url, mediaId, studentId) {
   var img = document.getElementById('editorImage');
   img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
   document.getElementById('editorModal').style.display = 'flex';
+  resetAdjustments();
   document.getElementById('saveEditBtn').disabled = false;
   document.getElementById('saveEditBtn').textContent = 'Save';
   document.getElementById('saveEditBtn').style.opacity = '1';
@@ -447,6 +506,24 @@ function editorAction(action) {
 
 function setAspect(ratio) { if (cropper) cropper.setAspectRatio(ratio); }
 
+function applyAdjustments() {
+  var b = document.getElementById('adjustBrightness').value;
+  var c = document.getElementById('adjustContrast').value;
+  var s = document.getElementById('adjustSaturation').value;
+  document.getElementById('valBrightness').textContent = b;
+  document.getElementById('valContrast').textContent = c;
+  document.getElementById('valSaturation').textContent = s;
+  var img = document.getElementById('editorImage');
+  img.style.filter = 'brightness(' + (b/100) + ') contrast(' + (c/100) + ') saturate(' + (s/100) + ')';
+}
+
+function resetAdjustments() {
+  document.getElementById('adjustBrightness').value = 100;
+  document.getElementById('adjustContrast').value = 100;
+  document.getElementById('adjustSaturation').value = 100;
+  applyAdjustments();
+}
+
 async function saveEdit() {
   if (!cropper || !editingMediaId) return;
   var btn = document.getElementById('saveEditBtn');
@@ -454,7 +531,18 @@ async function saveEdit() {
   var csrfToken = '{{ csrf_token() }}';
 
   try {
-    var canvas = cropper.getCroppedCanvas({ maxWidth: 4096, maxHeight: 4096 });
+    var srcCanvas = cropper.getCroppedCanvas({ maxWidth: 4096, maxHeight: 4096 });
+    var b = document.getElementById('adjustBrightness').value;
+    var c = document.getElementById('adjustContrast').value;
+    var s = document.getElementById('adjustSaturation').value;
+    var canvas = srcCanvas;
+    if (b != 100 || c != 100 || s != 100) {
+      canvas = document.createElement('canvas');
+      canvas.width = srcCanvas.width; canvas.height = srcCanvas.height;
+      var ctx = canvas.getContext('2d');
+      ctx.filter = 'brightness(' + (b/100) + ') contrast(' + (c/100) + ') saturate(' + (s/100) + ')';
+      ctx.drawImage(srcCanvas, 0, 0);
+    }
     var blob = await new Promise(function(res) { canvas.toBlob(res, 'image/jpeg', 0.92); });
 
     var resp = await fetch('{{ route("admin.media.presigned") }}', {
