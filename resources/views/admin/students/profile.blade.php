@@ -235,6 +235,8 @@ async function showUploadProgress() {
         @else
           <video src="{{ $item->url }}" preload="metadata" style="cursor:pointer;" onclick="this.paused ? this.play() : this.pause()"></video>
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;font-size:2rem;text-shadow:0 2px 8px rgba(0,0,0,.4);">▶️</div>
+          <button onclick="openTrimmer('{{ $item->url }}', {{ $item->id }}, {{ $item->duration ?? 0 }})" title="Trim video"
+            style="position:absolute;top:6px;left:6px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✂</button>
         @endif
       </div>
 
@@ -325,6 +327,63 @@ async function showUploadProgress() {
       <div style="display:flex;gap:.4rem;">
         <button onclick="closeEditor()" class="btn-sm btn-ghost">Cancel</button>
         <button onclick="saveEdit()" class="btn-sm btn-navy" id="saveEditBtn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{-- ═══ VIDEO TRIMMER MODAL ═══ --}}
+<div id="trimmerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeTrimmer()">
+  <div style="background:#fff;border-radius:12px;max-width:800px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid #e5eaf2;display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--navy);margin:0;">Trim Video</h3>
+      <button onclick="closeTrimmer()" style="background:none;border:none;font-size:1.3rem;color:#9ca3af;cursor:pointer;">✕</button>
+    </div>
+
+    {{-- Video preview --}}
+    <div style="background:#000;position:relative;">
+      <video id="trimVideo" style="width:100%;max-height:400px;display:block;" preload="auto" crossorigin="anonymous"></video>
+      <div id="trimPlayBtn" onclick="toggleTrimPlay()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3rem;cursor:pointer;text-shadow:0 2px 12px rgba(0,0,0,.5);pointer-events:auto;">▶️</div>
+    </div>
+
+    {{-- Timeline / Range --}}
+    <div style="padding:1rem 1.25rem;background:#f8fafc;">
+      <div style="position:relative;height:40px;background:#e5eaf2;border-radius:6px;overflow:hidden;cursor:pointer;" id="timeline" onclick="seekTimeline(event)">
+        <div id="trimRange" style="position:absolute;top:0;bottom:0;background:rgba(0,31,91,.2);border-left:3px solid var(--navy);border-right:3px solid var(--navy);"></div>
+        <div id="playhead" style="position:absolute;top:0;bottom:0;width:2px;background:var(--red);z-index:2;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:.75rem;gap:1rem;align-items:center;">
+        <div style="display:flex;gap:.75rem;align-items:center;">
+          <div>
+            <label style="display:block;font-size:.68rem;font-weight:700;color:#6b7280;text-transform:uppercase;">Start</label>
+            <input type="number" id="trimStart" value="0" min="0" step="0.1"
+              style="width:80px;border:1.5px solid #dbe4ff;border-radius:5px;padding:4px 8px;font-size:.88rem;font-weight:600;"
+              onchange="updateTrimRange()">
+          </div>
+          <div>
+            <label style="display:block;font-size:.68rem;font-weight:700;color:#6b7280;text-transform:uppercase;">End</label>
+            <input type="number" id="trimEnd" value="0" min="0" step="0.1"
+              style="width:80px;border:1.5px solid #dbe4ff;border-radius:5px;padding:4px 8px;font-size:.88rem;font-weight:600;"
+              onchange="updateTrimRange()">
+          </div>
+          <div style="padding-top:14px;">
+            <span style="font-size:.82rem;color:#6b7280;">Duration: <strong id="trimDuration">0.0</strong>s</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:.4rem;">
+          <button onclick="setTrimStart()" class="btn-sm btn-ghost" title="Set start to current position">[ In</button>
+          <button onclick="setTrimEnd()" class="btn-sm btn-ghost" title="Set end to current position">Out ]</button>
+          <button onclick="previewTrim()" class="btn-sm btn-ghost" title="Preview trimmed section">▶ Preview</button>
+        </div>
+      </div>
+    </div>
+
+    {{-- Actions --}}
+    <div style="padding:.75rem 1.25rem;border-top:1px solid #e5eaf2;display:flex;justify-content:space-between;align-items:center;">
+      <div id="trimStatus" style="font-size:.82rem;color:#6b7280;"></div>
+      <div style="display:flex;gap:.4rem;">
+        <button onclick="closeTrimmer()" class="btn-sm btn-ghost">Cancel</button>
+        <button onclick="saveTrim()" class="btn-sm btn-navy" id="saveTrimBtn">Save Trim</button>
       </div>
     </div>
   </div>
@@ -430,6 +489,153 @@ async function saveEdit() {
   } catch(e) {
     btn.textContent = 'Failed — try again';
     btn.style.opacity = '1'; btn.disabled = false;
+  }
+}
+
+// ═══ VIDEO TRIMMER ═══
+var trimMediaId = null;
+var trimTotalDuration = 0;
+var trimVideoEl = null;
+var trimAnimFrame = null;
+
+function openTrimmer(url, mediaId, duration) {
+  trimMediaId = mediaId;
+  trimTotalDuration = duration || 30;
+  trimVideoEl = document.getElementById('trimVideo');
+  trimVideoEl.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+
+  document.getElementById('trimmerModal').style.display = 'flex';
+  document.getElementById('saveTrimBtn').disabled = false;
+  document.getElementById('saveTrimBtn').textContent = 'Save Trim';
+  document.getElementById('saveTrimBtn').style.opacity = '1';
+  document.getElementById('trimStatus').textContent = '';
+
+  trimVideoEl.onloadedmetadata = function() {
+    trimTotalDuration = trimVideoEl.duration;
+    document.getElementById('trimStart').value = '0';
+    document.getElementById('trimStart').max = trimTotalDuration;
+    document.getElementById('trimEnd').value = trimTotalDuration.toFixed(1);
+    document.getElementById('trimEnd').max = trimTotalDuration;
+    updateTrimRange();
+    startPlayheadUpdate();
+  };
+}
+
+function closeTrimmer() {
+  document.getElementById('trimmerModal').style.display = 'none';
+  if (trimVideoEl) { trimVideoEl.pause(); trimVideoEl.src = ''; }
+  if (trimAnimFrame) cancelAnimationFrame(trimAnimFrame);
+}
+
+function toggleTrimPlay() {
+  if (!trimVideoEl) return;
+  if (trimVideoEl.paused) {
+    trimVideoEl.play();
+    document.getElementById('trimPlayBtn').style.display = 'none';
+  } else {
+    trimVideoEl.pause();
+    document.getElementById('trimPlayBtn').style.display = 'block';
+  }
+}
+
+function startPlayheadUpdate() {
+  function update() {
+    if (trimVideoEl && trimTotalDuration > 0) {
+      var pct = (trimVideoEl.currentTime / trimTotalDuration) * 100;
+      document.getElementById('playhead').style.left = pct + '%';
+    }
+    trimAnimFrame = requestAnimationFrame(update);
+  }
+  update();
+
+  trimVideoEl.onclick = function() { toggleTrimPlay(); };
+  trimVideoEl.onpause = function() { document.getElementById('trimPlayBtn').style.display = 'block'; };
+  trimVideoEl.onplay = function() { document.getElementById('trimPlayBtn').style.display = 'none'; };
+}
+
+function seekTimeline(e) {
+  if (!trimVideoEl || !trimTotalDuration) return;
+  var rect = document.getElementById('timeline').getBoundingClientRect();
+  var pct = (e.clientX - rect.left) / rect.width;
+  trimVideoEl.currentTime = pct * trimTotalDuration;
+}
+
+function updateTrimRange() {
+  var start = parseFloat(document.getElementById('trimStart').value) || 0;
+  var end = parseFloat(document.getElementById('trimEnd').value) || trimTotalDuration;
+  if (end > trimTotalDuration) end = trimTotalDuration;
+  if (start >= end) start = Math.max(0, end - 0.5);
+
+  var leftPct = (start / trimTotalDuration) * 100;
+  var rightPct = ((trimTotalDuration - end) / trimTotalDuration) * 100;
+  document.getElementById('trimRange').style.left = leftPct + '%';
+  document.getElementById('trimRange').style.right = rightPct + '%';
+  document.getElementById('trimDuration').textContent = (end - start).toFixed(1);
+}
+
+function setTrimStart() {
+  if (!trimVideoEl) return;
+  document.getElementById('trimStart').value = trimVideoEl.currentTime.toFixed(1);
+  updateTrimRange();
+}
+
+function setTrimEnd() {
+  if (!trimVideoEl) return;
+  document.getElementById('trimEnd').value = trimVideoEl.currentTime.toFixed(1);
+  updateTrimRange();
+}
+
+function previewTrim() {
+  if (!trimVideoEl) return;
+  var start = parseFloat(document.getElementById('trimStart').value) || 0;
+  var end = parseFloat(document.getElementById('trimEnd').value) || trimTotalDuration;
+  trimVideoEl.currentTime = start;
+  trimVideoEl.play();
+
+  // Stop at end point
+  var checkEnd = function() {
+    if (trimVideoEl.currentTime >= end) {
+      trimVideoEl.pause();
+      trimVideoEl.removeEventListener('timeupdate', checkEnd);
+    }
+  };
+  trimVideoEl.addEventListener('timeupdate', checkEnd);
+}
+
+async function saveTrim() {
+  var start = parseFloat(document.getElementById('trimStart').value) || 0;
+  var end = parseFloat(document.getElementById('trimEnd').value) || trimTotalDuration;
+
+  if (end - start < 0.5) {
+    document.getElementById('trimStatus').textContent = 'Clip must be at least 0.5 seconds';
+    document.getElementById('trimStatus').style.color = '#dc2626';
+    return;
+  }
+
+  var btn = document.getElementById('saveTrimBtn');
+  btn.disabled = true; btn.textContent = 'Trimming...'; btn.style.opacity = '.5';
+  document.getElementById('trimStatus').textContent = 'Processing on server — this may take a moment...';
+  document.getElementById('trimStatus').style.color = '#6b7280';
+
+  try {
+    var resp = await fetch('{{ route("admin.media.trim-video") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value },
+      body: JSON.stringify({ media_id: trimMediaId, start_time: start, end_time: end })
+    });
+
+    var result = await resp.json();
+    if (result.success) {
+      document.getElementById('trimStatus').textContent = 'Trimmed! New duration: ' + parseFloat(result.duration).toFixed(1) + 's. Reloading...';
+      document.getElementById('trimStatus').style.color = '#065f46';
+      setTimeout(function() { window.location.reload(); }, 1500);
+    } else {
+      throw new Error(result.error || 'Trim failed');
+    }
+  } catch(e) {
+    document.getElementById('trimStatus').textContent = 'Failed: ' + e.message;
+    document.getElementById('trimStatus').style.color = '#dc2626';
+    btn.disabled = false; btn.textContent = 'Save Trim'; btn.style.opacity = '1';
   }
 }
 </script>

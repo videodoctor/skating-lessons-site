@@ -271,6 +271,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/media/upload', [App\Http\Controllers\Admin\MediaGalleryController::class, 'upload'])->name('admin.media.upload');
     Route::post('/media/presigned-url', [App\Http\Controllers\Admin\MediaUploadApiController::class, 'presignedUrl'])->name('admin.media.presigned');
     Route::post('/media/register', [App\Http\Controllers\Admin\MediaUploadApiController::class, 'register'])->name('admin.media.register');
+    Route::post('/media/trim-video', [App\Http\Controllers\Admin\MediaUploadApiController::class, 'trimVideo'])->name('admin.media.trim-video');
 
     // Home Page Content
     Route::get('/home-page', [App\Http\Controllers\Admin\HomePageController::class, 'index'])->name('admin.homepage');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessZipUpload;
+use App\Jobs\TrimVideo;
 use App\Models\Student;
 use App\Models\StudentMedia;
 use Illuminate\Http\Request;
@@ -127,5 +128,37 @@ class MediaUploadApiController extends Controller
         }
 
         return response()->json(['id' => $media->id, 'url' => $media->url]);
+    }
+
+    /**
+     * Trim a video — runs FFmpeg server-side.
+     */
+    public function trimVideo(Request $request)
+    {
+        $request->validate([
+            'media_id'   => 'required|exists:student_media,id',
+            'start_time' => 'required|numeric|min:0',
+            'end_time'   => 'required|numeric|gt:start_time',
+        ]);
+
+        $media = StudentMedia::findOrFail($request->media_id);
+        if ($media->type !== 'video') {
+            return response()->json(['error' => 'Not a video'], 422);
+        }
+
+        TrimVideo::dispatchSync(
+            $media->id,
+            (float) $request->start_time,
+            (float) $request->end_time,
+        );
+
+        $media->refresh();
+
+        return response()->json([
+            'success'  => true,
+            'url'      => $media->url,
+            'duration' => $media->duration,
+            'size'     => $media->file_size,
+        ]);
     }
 }
