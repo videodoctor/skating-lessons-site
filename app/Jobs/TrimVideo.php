@@ -22,6 +22,9 @@ class TrimVideo implements ShouldQueue
         public int $mediaId,
         public float $startTime,
         public float $endTime,
+        public int $brightness = 100,
+        public int $contrast = 100,
+        public int $saturation = 100,
     ) {}
 
     public function handle(): void
@@ -41,27 +44,40 @@ class TrimVideo implements ShouldQueue
 
         file_put_contents($tempInput, Storage::disk('s3')->get($media->path));
 
-        // FFmpeg trim — use -c copy for instant lossless cut
         $ss = number_format($this->startTime, 3, '.', '');
         $to = number_format($this->endTime, 3, '.', '');
-        $cmd = sprintf(
-            'ffmpeg -y -ss %s -to %s -i %s -c copy -avoid_negative_ts make_zero %s 2>&1',
-            escapeshellarg($ss),
-            escapeshellarg($to),
-            escapeshellarg($tempInput),
-            escapeshellarg($tempOutput)
-        );
+        $hasAdjustments = $this->brightness !== 100 || $this->contrast !== 100 || $this->saturation !== 100;
 
-        $output = shell_exec($cmd);
-
-        if (!file_exists($tempOutput) || filesize($tempOutput) === 0) {
-            // Fallback: re-encode if copy fails (happens with some codecs at exact cut points)
+        if (!$hasAdjustments) {
+            // Lossless cut when no color adjustments
             $cmd = sprintf(
-                'ffmpeg -y -ss %s -to %s -i %s -preset fast -crf 23 %s 2>&1',
-                escapeshellarg($ss),
-                escapeshellarg($to),
-                escapeshellarg($tempInput),
-                escapeshellarg($tempOutput)
+                'ffmpeg -y -ss %s -to %s -i %s -c copy -avoid_negative_ts make_zero %s 2>&1',
+                escapeshellarg($ss), escapeshellarg($to),
+                escapeshellarg($tempInput), escapeshellarg($tempOutput)
+            );
+            $output = shell_exec($cmd);
+
+            if (!file_exists($tempOutput) || filesize($tempOutput) === 0) {
+                // Fallback re-encode
+                $cmd = sprintf(
+                    'ffmpeg -y -ss %s -to %s -i %s -preset fast -crf 23 %s 2>&1',
+                    escapeshellarg($ss), escapeshellarg($to),
+                    escapeshellarg($tempInput), escapeshellarg($tempOutput)
+                );
+                $output = shell_exec($cmd);
+            }
+        } else {
+            // Re-encode with color adjustments via eq + vibrance filters
+            // FFmpeg eq: brightness is -1 to 1 (0=normal), contrast is 0-2 (1=normal)
+            $eqBrightness = number_format(($this->brightness - 100) / 100, 2, '.', '');
+            $eqContrast = number_format($this->contrast / 100, 2, '.', '');
+            $eqSaturation = number_format($this->saturation / 100, 2, '.', '');
+            $vf = "eq=brightness={$eqBrightness}:contrast={$eqContrast}:saturation={$eqSaturation}";
+
+            $cmd = sprintf(
+                'ffmpeg -y -ss %s -to %s -i %s -vf %s -preset fast -crf 23 %s 2>&1',
+                escapeshellarg($ss), escapeshellarg($to),
+                escapeshellarg($tempInput), escapeshellarg($vf), escapeshellarg($tempOutput)
             );
             $output = shell_exec($cmd);
         }

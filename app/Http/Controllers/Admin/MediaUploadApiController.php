@@ -139,6 +139,9 @@ class MediaUploadApiController extends Controller
             'media_id'   => 'required|exists:student_media,id',
             'start_time' => 'required|numeric|min:0',
             'end_time'   => 'required|numeric|gt:start_time',
+            'brightness' => 'nullable|integer|min:50|max:150',
+            'contrast'   => 'nullable|integer|min:50|max:150',
+            'saturation' => 'nullable|integer|min:0|max:200',
         ]);
 
         $media = StudentMedia::findOrFail($request->media_id);
@@ -150,6 +153,9 @@ class MediaUploadApiController extends Controller
             $media->id,
             (float) $request->start_time,
             (float) $request->end_time,
+            (int) ($request->brightness ?? 100),
+            (int) ($request->contrast ?? 100),
+            (int) ($request->saturation ?? 100),
         );
 
         $media->refresh();
