@@ -338,10 +338,13 @@ var editingMediaId = null;
 function openEditor(url, mediaId) {
   editingMediaId = mediaId;
   var img = document.getElementById('editorImage');
-  img.src = url;
+  // Cache-bust to ensure CORS headers are fresh
+  img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
   document.getElementById('editorModal').style.display = 'flex';
+  document.getElementById('saveEditBtn').disabled = false;
+  document.getElementById('saveEditBtn').textContent = 'Save';
+  document.getElementById('saveEditBtn').style.opacity = '1';
 
-  // Init cropper after image loads
   img.onload = function() {
     if (cropper) cropper.destroy();
     cropper = new Cropper(img, {
@@ -351,8 +354,10 @@ function openEditor(url, mediaId) {
       background: true,
     });
   };
-  // If already loaded (cached)
-  if (img.complete) img.onload();
+  img.onerror = function() {
+    alert('Could not load image. Try hard-refreshing the page (Ctrl+Shift+R).');
+    closeEditor();
+  };
 }
 
 function closeEditor() {
