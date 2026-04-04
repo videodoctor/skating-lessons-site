@@ -10,7 +10,7 @@ class StudentMedia extends Model
     protected $table = 'student_media';
 
     protected $fillable = [
-        'student_id', 'type', 'path', 'thumbnail_path',
+        'student_id', 'type', 'path', 'original_path', 'thumbnail_path',
         'original_filename', 'mime_type', 'file_size',
         'width', 'height', 'duration', 'media_metadata',
         'caption', 'is_profile_photo',
@@ -25,6 +25,17 @@ class StudentMedia extends Model
         'duration'         => 'float',
         'media_metadata'   => 'array',
     ];
+
+    public function getIsEditedAttribute(): bool
+    {
+        return !empty($this->original_path);
+    }
+
+    public function getOriginalUrlAttribute(): ?string
+    {
+        if (!$this->original_path) return null;
+        return self::mediaUrl($this->original_path);
+    }
 
     public function getAspectRatioAttribute(): float
     {
@@ -67,7 +78,14 @@ class StudentMedia extends Model
         }
 
         // Dev/Staging: signed S3 URL (15 min expiry)
-        return Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(15));
+        try {
+            return Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(15));
+        } catch (\Throwable $e) {
+            // Fallback to direct S3 URL if credentials unavailable (dev without active SSO session)
+            $bucket = config('filesystems.disks.s3.bucket');
+            $region = config('filesystems.disks.s3.region');
+            return "https://{$bucket}.s3.{$region}.amazonaws.com/{$path}";
+        }
     }
 
     public function scopePhotos($query)

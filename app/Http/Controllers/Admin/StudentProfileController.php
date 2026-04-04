@@ -69,6 +69,24 @@ class StudentProfileController extends Controller
         return back()->with('success', "Moved \"{$media->original_filename}\" to {$newStudent->full_name}.");
     }
 
+    public function revertMedia(StudentMedia $media)
+    {
+        if (!$media->original_path) {
+            return back()->with('error', 'No original to revert to.');
+        }
+
+        // Delete the edited version
+        Storage::disk('s3')->delete($media->path);
+
+        // Restore original
+        $media->update([
+            'path'          => $media->original_path,
+            'original_path' => null,
+        ]);
+
+        return back()->with('success', 'Reverted to original photo.');
+    }
+
     public function updateCaption(Request $request, StudentMedia $media)
     {
         $request->validate(['caption' => 'nullable|string|max:500']);
@@ -80,8 +98,11 @@ class StudentProfileController extends Controller
     {
         $student = $media->student;
 
-        // Remove from S3
+        // Remove from S3 (both edited and original if exists)
         Storage::disk('s3')->delete($media->path);
+        if ($media->original_path) {
+            Storage::disk('s3')->delete($media->original_path);
+        }
         if ($media->thumbnail_path) {
             Storage::disk('s3')->delete($media->thumbnail_path);
         }

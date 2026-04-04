@@ -248,6 +248,14 @@ async function showUploadProgress() {
       </form>
       <button onclick="openEditor('{{ $item->url }}', {{ $item->id }})" title="Edit photo"
         style="position:absolute;top:6px;left:36px;background:rgba(0,31,91,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✎</button>
+      @if($item->is_edited)
+      <form method="POST" action="{{ route('admin.students.revert-media', $item) }}" style="display:inline;"
+        onsubmit="return confirm('Revert to original photo? The edited version will be deleted.')">
+        @csrf
+        <button type="submit" title="Revert to original"
+          style="position:absolute;top:6px;left:68px;background:rgba(200,16,46,.8);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">↩</button>
+      </form>
+      @endif
       @endif
 
       {{-- Delete --}}

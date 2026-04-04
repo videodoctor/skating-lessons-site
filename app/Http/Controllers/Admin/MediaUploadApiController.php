@@ -75,18 +75,23 @@ class MediaUploadApiController extends Controller
 
         $student = Student::findOrFail($request->student_id);
 
-        // Replace existing media (from image editor)
+        // Replace existing media (from image editor) — keep original
         if ($request->replace_media_id) {
             $existing = StudentMedia::findOrFail($request->replace_media_id);
-            // Delete old file from S3
-            Storage::disk('s3')->delete($existing->path);
-            // Update the record with new file
+            // Preserve the original (first edit saves it, subsequent edits keep the first original)
+            if (!$existing->original_path) {
+                $existing->original_path = $existing->path;
+            } else {
+                // Delete the previous edited version (not the original)
+                Storage::disk('s3')->delete($existing->path);
+            }
             $existing->update([
-                'path'      => $request->s3_path,
-                'mime_type' => $request->mime_type,
-                'file_size' => $request->file_size,
-                'width'     => $request->width,
-                'height'    => $request->height,
+                'original_path' => $existing->original_path,
+                'path'          => $request->s3_path,
+                'mime_type'     => $request->mime_type,
+                'file_size'     => $request->file_size,
+                'width'         => $request->width,
+                'height'        => $request->height,
             ]);
             return response()->json(['id' => $existing->id, 'url' => $existing->url]);
         }
