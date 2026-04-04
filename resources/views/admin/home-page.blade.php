@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 @section('title', 'Home Page — Admin')
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <style>
   :root{--navy:#001F5B;--red:#C8102E;}
   .media-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.5rem;max-height:300px;overflow-y:auto;padding:.25rem;}
@@ -63,21 +64,19 @@
 {{-- ═══ BIO PHOTOS ═══ --}}
 <div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1.25rem;margin-bottom:1.25rem;">
   <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.15rem;color:var(--navy);margin:0 0 .5rem;">Bio Photos</h2>
-  <p style="font-size:.8rem;color:#6b7280;margin-bottom:.6rem;">Select photos for the rotating cross-dissolve in the "Meet Your Coach" section.</p>
+  <p style="font-size:.8rem;color:#6b7280;margin-bottom:.6rem;">Click a photo to crop it to the 4:5 bio frame, then it's added to the rotation.</p>
 
   <form method="POST" action="{{ route('admin.homepage.update-bio') }}" id="bioForm">
     @csrf
     <div id="bio-selected-ids"></div>
     <div class="section-label">Selected ({{ count($bioMediaIds) }})</div>
     <div class="selected-strip" id="bioStrip">
-      @if(empty($bioMediaIds))<span style="color:#9ca3af;font-size:.8rem;padding:.4rem;">None selected</span>@endif
+      @if(empty($bioMediaIds))<span style="color:#9ca3af;font-size:.8rem;padding:.4rem;">None — click a photo below to crop & add</span>@endif
     </div>
     <div class="media-picker">
       @foreach($availablePhotos as $p)
-      <div class="media-pick {{ in_array($p->id, $bioMediaIds) ? 'selected' : '' }}" data-id="{{ $p->id }}" data-url="{{ $p->url }}" data-group="bio" onclick="togglePick(this,'bio')">
+      <div class="media-pick" data-id="{{ $p->id }}" data-url="{{ $p->url }}" data-student="{{ $p->student->first_name ?? '' }}" onclick="openBioCrop(this)">
         <img src="{{ $p->url }}" class="thumb" loading="lazy">
-        <div class="pick-check">✓</div>
-        @if(in_array($p->id, $bioMediaIds))<div class="pick-order">{{ array_search($p->id, $bioMediaIds) + 1 }}</div>@endif
         <div class="pick-label">{{ $p->student->first_name ?? '' }}</div>
       </div>
       @endforeach
@@ -198,5 +197,138 @@ function setPreview(mode, btn) {
 
 // Set initial scale
 window.addEventListener('load', () => setPreview('desktop', document.querySelector('.preview-tab.active')));
+</script>
+{{-- ═══ BIO CROP MODAL ═══ --}}
+<div id="bioCropModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this)closeBioCrop()">
+  <div style="background:#fff;border-radius:12px;max-width:700px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid #e5eaf2;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--navy);margin:0;">Crop for Bio Section</h3>
+        <p style="font-size:.78rem;color:#6b7280;margin:2px 0 0;">Position the 4:5 frame over the area you want shown</p>
+      </div>
+      <button onclick="closeBioCrop()" style="background:none;border:none;font-size:1.3rem;color:#9ca3af;cursor:pointer;">✕</button>
+    </div>
+    <div style="flex:1;overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:300px;position:relative;">
+      <div id="bioCropLoading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;z-index:5;">
+        <div style="font-size:1.2rem;margin-bottom:.5rem;">Loading...</div>
+        <div style="width:200px;height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;">
+          <div id="bioCropLoadBar" style="width:0%;height:100%;background:#fff;border-radius:3px;transition:width .3s;"></div>
+        </div>
+      </div>
+      <img id="bioCropImage" crossorigin="anonymous" style="max-width:100%;display:block;opacity:0;">
+    </div>
+    <div style="padding:.75rem 1.25rem;border-top:1px solid #e5eaf2;display:flex;justify-content:flex-end;gap:.4rem;">
+      <button onclick="closeBioCrop()" class="btn-ghost" style="font-size:.82rem;padding:6px 14px;">Cancel</button>
+      <button onclick="saveBioCrop()" class="btn-navy" id="saveBioCropBtn" style="padding:6px 18px;">Crop & Add to Bio</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script>
+var bioCropper = null;
+var bioCropSourceId = null;
+var bioCropStudentId = null;
+
+function openBioCrop(el) {
+  bioCropSourceId = parseInt(el.dataset.id);
+  // Find the student_id from the available photos data
+  @foreach($availablePhotos as $p)
+  if (bioCropSourceId === {{ $p->id }}) bioCropStudentId = {{ $p->student_id }};
+  @endforeach
+
+  var url = el.dataset.url;
+  var img = document.getElementById('bioCropImage');
+  var loader = document.getElementById('bioCropLoading');
+  var loadBar = document.getElementById('bioCropLoadBar');
+
+  img.style.opacity = '0';
+  loader.style.display = 'flex';
+  loadBar.style.width = '10%';
+  document.getElementById('bioCropModal').style.display = 'flex';
+  document.getElementById('saveBioCropBtn').disabled = false;
+  document.getElementById('saveBioCropBtn').textContent = 'Crop & Add to Bio';
+  document.getElementById('saveBioCropBtn').style.opacity = '1';
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now(), true);
+  xhr.responseType = 'blob';
+  xhr.onprogress = function(e) {
+    if (e.lengthComputable) loadBar.style.width = Math.round((e.loaded / e.total) * 100) + '%';
+  };
+  xhr.onload = function() {
+    loadBar.style.width = '100%';
+    img.src = URL.createObjectURL(xhr.response);
+    img.onload = function() {
+      loader.style.display = 'none';
+      img.style.opacity = '1';
+      if (bioCropper) bioCropper.destroy();
+      bioCropper = new Cropper(img, {
+        aspectRatio: 4 / 5,
+        viewMode: 1,
+        autoCropArea: 0.9,
+        responsive: true,
+        background: true,
+      });
+    };
+  };
+  xhr.onerror = function() {
+    loader.innerHTML = '<div style="color:#fca5a5;">Failed to load image.</div>';
+  };
+  xhr.send();
+}
+
+function closeBioCrop() {
+  document.getElementById('bioCropModal').style.display = 'none';
+  if (bioCropper) { bioCropper.destroy(); bioCropper = null; }
+}
+
+async function saveBioCrop() {
+  if (!bioCropper || !bioCropSourceId) return;
+  var btn = document.getElementById('saveBioCropBtn');
+  btn.disabled = true; btn.textContent = 'Saving...'; btn.style.opacity = '.5';
+
+  try {
+    var canvas = bioCropper.getCroppedCanvas({ maxWidth: 2048, maxHeight: 2560 });
+    var blob = await new Promise(function(res) { canvas.toBlob(res, 'image/jpeg', 0.92); });
+
+    // Get presigned URL
+    var csrfToken = '{{ csrf_token() }}';
+    var resp = await fetch('{{ route("admin.media.presigned") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+      body: JSON.stringify({
+        student_id: bioCropStudentId,
+        filename: 'bio_crop_' + bioCropSourceId + '.jpg',
+        mime_type: 'image/jpeg',
+        file_size: blob.size,
+      })
+    });
+    var presign = await resp.json();
+
+    // Upload to S3
+    await fetch(presign.upload_url, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+
+    // Register the bio crop
+    var regResp = await fetch('{{ route("admin.homepage.bio-crop") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+      body: JSON.stringify({
+        s3_path: presign.s3_path,
+        source_media_id: bioCropSourceId,
+        width: canvas.width,
+        height: canvas.height,
+        file_size: blob.size,
+      })
+    });
+
+    var result = await regResp.json();
+    closeBioCrop();
+    window.location.reload();
+  } catch(e) {
+    btn.textContent = 'Failed — try again';
+    btn.style.opacity = '1'; btn.disabled = false;
+  }
+}
 </script>
 @endsection

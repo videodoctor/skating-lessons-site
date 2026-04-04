@@ -277,6 +277,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/home-page', [App\Http\Controllers\Admin\HomePageController::class, 'index'])->name('admin.homepage');
     Route::post('/home-page/hero-media', [App\Http\Controllers\Admin\HomePageController::class, 'updateHeroMedia'])->name('admin.homepage.update-hero');
     Route::post('/home-page/bio-media', [App\Http\Controllers\Admin\HomePageController::class, 'updateBioMedia'])->name('admin.homepage.update-bio');
+    Route::post('/home-page/bio-crop', [App\Http\Controllers\Admin\HomePageController::class, 'registerBioCrop'])->name('admin.homepage.bio-crop');
 
     // Export / Reports
     Route::get('/export', [ExportController::class, 'index'])->name('admin.export');

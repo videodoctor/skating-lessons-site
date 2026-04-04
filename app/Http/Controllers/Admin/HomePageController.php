@@ -48,4 +48,43 @@ class HomePageController extends Controller
 
         return back()->with('success', 'Bio photos updated.');
     }
+
+    /**
+     * Register a cropped bio photo (uploaded to S3 via presigned URL from the browser).
+     */
+    public function registerBioCrop(Request $request)
+    {
+        $request->validate([
+            's3_path'          => 'required|string',
+            'source_media_id'  => 'required|exists:student_media,id',
+            'width'            => 'nullable|integer',
+            'height'           => 'nullable|integer',
+            'file_size'        => 'required|integer',
+        ]);
+
+        $source = StudentMedia::findOrFail($request->source_media_id);
+
+        // Create a new media record for the bio crop
+        $crop = StudentMedia::create([
+            'student_id'        => $source->student_id,
+            'type'              => 'photo',
+            'path'              => $request->s3_path,
+            'original_path'     => $source->path,
+            'original_filename' => 'bio_crop_' . $source->original_filename,
+            'mime_type'         => 'image/jpeg',
+            'file_size'         => $request->file_size,
+            'width'             => $request->width,
+            'height'            => $request->height,
+            'caption'           => 'Bio crop of ' . ($source->caption ?? $source->original_filename),
+            'uploaded_by_type'  => 'admin',
+            'uploaded_by_id'    => auth()->id(),
+        ]);
+
+        // Add this crop to the bio media list
+        $bioIds = json_decode(SiteSetting::get('homepage_bio_media', '[]'), true) ?: [];
+        $bioIds[] = $crop->id;
+        SiteSetting::set('homepage_bio_media', json_encode($bioIds));
+
+        return response()->json(['id' => $crop->id, 'url' => $crop->url]);
+    }
 }
