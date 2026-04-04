@@ -297,7 +297,7 @@ async function showUploadProgress() {
       <button onclick="closeEditor()" style="background:none;border:none;font-size:1.3rem;color:#9ca3af;cursor:pointer;">✕</button>
     </div>
     <div style="flex:1;overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:300px;">
-      <img id="editorImage" style="max-width:100%;display:block;">
+      <img id="editorImage" crossorigin="anonymous" style="max-width:100%;display:block;">
     </div>
     <div style="padding:.75rem 1.25rem;border-top:1px solid #e5eaf2;display:flex;gap:.5rem;flex-wrap:wrap;justify-content:space-between;align-items:center;">
       <div style="display:flex;gap:.4rem;">
