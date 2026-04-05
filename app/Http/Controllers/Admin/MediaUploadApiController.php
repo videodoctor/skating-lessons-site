@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessZipUpload;
 use App\Jobs\TrimVideo;
+use App\Models\MediaJob;
 use App\Models\Student;
 use App\Models\StudentMedia;
 use Illuminate\Http\Request;
@@ -149,7 +150,16 @@ class MediaUploadApiController extends Controller
             return response()->json(['error' => 'Not a video'], 422);
         }
 
-        TrimVideo::dispatchSync(
+        // Create tracker for progress polling
+        $tracker = MediaJob::create([
+            'media_id' => $media->id,
+            'type'     => 'trim',
+            'status'   => 'pending',
+            'progress' => 0,
+            'message'  => 'Starting...',
+        ]);
+
+        $job = new TrimVideo(
             $media->id,
             (float) $request->start_time,
             (float) $request->end_time,
@@ -157,14 +167,21 @@ class MediaUploadApiController extends Controller
             (int) ($request->contrast ?? 100),
             (int) ($request->saturation ?? 100),
         );
+        $job->jobTrackerId = $tracker->id;
 
+        // Run synchronously but with progress updates
+        dispatch_sync($job);
+
+        $tracker->refresh();
         $media->refresh();
 
         return response()->json([
-            'success'  => true,
+            'success'  => $tracker->status === 'complete',
+            'status'   => $tracker->status,
             'url'      => $media->url,
             'duration' => $media->duration,
             'size'     => $media->file_size,
+            'message'  => $tracker->message,
         ]);
     }
 }

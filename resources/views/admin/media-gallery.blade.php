@@ -385,8 +385,28 @@ async function saveTrim() {
   if (e - s < 0.5) { document.getElementById('trimStatus').textContent = 'Clip must be at least 0.5s'; document.getElementById('trimStatus').style.color = '#dc2626'; return; }
   var btn = document.getElementById('saveTrimBtn');
   btn.disabled = true; btn.textContent = 'Trimming...'; btn.style.opacity = '.5';
-  document.getElementById('trimStatus').textContent = 'Processing on server...';
-  document.getElementById('trimStatus').style.color = '#6b7280';
+
+  var hasAdjust = parseInt(document.getElementById('vidBrightness').value) !== 100 ||
+                  parseInt(document.getElementById('vidContrast').value) !== 100 ||
+                  parseInt(document.getElementById('vidSaturation').value) !== 100;
+  var clipDuration = e - s;
+  var estimatedSec = hasAdjust ? Math.max(5, clipDuration * 0.8) : Math.max(2, clipDuration * 0.2);
+
+  var statusEl = document.getElementById('trimStatus');
+  statusEl.style.color = '#6b7280';
+  statusEl.innerHTML = '<div style="margin-bottom:4px;">Starting...</div><div style="background:#e5eaf2;border-radius:4px;height:6px;overflow:hidden;"><div id="trimProgressBar" style="width:0%;height:100%;background:#001F5B;border-radius:4px;transition:width .5s;"></div></div>';
+  var progBar = document.getElementById('trimProgressBar');
+  var steps = [
+    { pct: 10, msg: 'Downloading...' },
+    { pct: 25, msg: hasAdjust ? 'Re-encoding...' : 'Trimming...' },
+    { pct: 50, msg: 'Processing ' + clipDuration.toFixed(1) + 's...' },
+    { pct: 75, msg: 'Almost done...' },
+    { pct: 85, msg: 'Uploading...' },
+  ];
+  var stepIdx = 0;
+  var progInterval = setInterval(function() {
+    if (stepIdx < steps.length) { progBar.style.width = steps[stepIdx].pct + '%'; statusEl.querySelector('div').textContent = steps[stepIdx].msg; stepIdx++; }
+  }, (estimatedSec * 1000) / steps.length);
   try {
     var resp = await fetch('{{ route("admin.media.trim-video") }}', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
@@ -398,14 +418,17 @@ async function saveTrim() {
       })
     });
     var result = await resp.json();
+    clearInterval(progInterval);
     if (result.success) {
-      document.getElementById('trimStatus').textContent = 'Trimmed! ' + parseFloat(result.duration).toFixed(1) + 's. Reloading...';
-      document.getElementById('trimStatus').style.color = '#065f46';
+      progBar.style.width = '100%';
+      statusEl.querySelector('div').textContent = 'Done! ' + parseFloat(result.duration).toFixed(1) + 's. Reloading...';
+      statusEl.style.color = '#065f46';
       setTimeout(function() { window.location.reload(); }, 1500);
-    } else { throw new Error(result.error || 'Trim failed'); }
+    } else { throw new Error(result.message || result.error || 'Trim failed'); }
   } catch(err) {
-    document.getElementById('trimStatus').textContent = 'Failed: ' + err.message;
-    document.getElementById('trimStatus').style.color = '#dc2626';
+    clearInterval(progInterval);
+    statusEl.innerHTML = 'Failed: ' + err.message;
+    statusEl.style.color = '#dc2626';
     btn.disabled = false; btn.textContent = 'Save Trim'; btn.style.opacity = '1';
   }
 }
