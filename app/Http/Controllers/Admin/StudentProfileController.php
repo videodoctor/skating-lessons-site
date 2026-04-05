@@ -13,7 +13,7 @@ class StudentProfileController extends Controller
 {
     public function show(Student $student)
     {
-        $student->load(['client', 'aliases', 'bookings.service', 'media', 'profilePhoto']);
+        $student->load(['client', 'aliases', 'bookings.service', 'media.versions', 'profilePhoto']);
         $media = $student->media()->paginate(24);
         $photoCount = $student->photos()->count();
         $videoCount = $student->videos()->count();
@@ -69,22 +69,38 @@ class StudentProfileController extends Controller
         return back()->with('success', "Moved \"{$media->original_filename}\" to {$newStudent->full_name}.");
     }
 
-    public function revertMedia(StudentMedia $media)
+    public function revertMedia(Request $request, StudentMedia $media)
     {
+        $versionId = $request->input('version_id');
+
+        if ($versionId) {
+            // Revert to a specific version
+            $version = $media->versions()->findOrFail($versionId);
+            $media->update([
+                'path'      => $version->path,
+                'file_size' => $version->file_size,
+                'width'     => $version->width,
+                'height'    => $version->height,
+                'duration'  => $version->duration,
+            ]);
+            // If reverting to version 1 (original), clear original_path
+            if ($version->version === 1) {
+                $media->update(['original_path' => null]);
+            }
+            return back()->with('success', "Reverted to version {$version->version}.");
+        }
+
+        // Revert to original (legacy behavior)
         if (!$media->original_path) {
             return back()->with('error', 'No original to revert to.');
         }
 
-        // Delete the edited version
-        Storage::disk('s3')->delete($media->path);
-
-        // Restore original
         $media->update([
             'path'          => $media->original_path,
             'original_path' => null,
         ]);
 
-        return back()->with('success', 'Reverted to original photo.');
+        return back()->with('success', 'Reverted to original.');
     }
 
     public function updateCaption(Request $request, StudentMedia $media)

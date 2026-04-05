@@ -105,12 +105,27 @@ class TrimVideo implements ShouldQueue
             $duration = (float)($metadata['format']['duration'] ?? 0);
         }
 
-        // Preserve original
+        // Preserve original + version history
         if (!$media->original_path) {
             $media->original_path = $media->path;
-        } else {
-            Storage::disk('s3')->delete($media->path);
+            if ($media->versions()->count() === 0) {
+                $media->addVersion($media->path, 'original', null, [
+                    'file_size' => $media->file_size, 'width' => $media->width,
+                    'height' => $media->height, 'duration' => $media->duration,
+                    'created_by_type' => $media->uploaded_by_type, 'created_by_id' => $media->uploaded_by_id,
+                ]);
+            }
         }
+
+        $editParams = ['start' => $this->startTime, 'end' => $this->endTime];
+        if ($this->brightness !== 100) $editParams['brightness'] = $this->brightness;
+        if ($this->contrast !== 100) $editParams['contrast'] = $this->contrast;
+        if ($this->saturation !== 100) $editParams['saturation'] = $this->saturation;
+
+        $media->addVersion($newPath, $hasAdjustments ? 'trim+adjust' : 'trim', $editParams, [
+            'file_size' => filesize($tempOutput), 'width' => $width,
+            'height' => $height, 'duration' => $duration,
+        ]);
 
         $media->update([
             'original_path'  => $media->original_path,

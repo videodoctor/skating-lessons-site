@@ -302,6 +302,31 @@ async function showUploadProgress() {
           @if($item->width && $item->height) · {{ $item->width }}×{{ $item->height }}@endif
           @if($item->type === 'video' && $item->duration) · {{ gmdate($item->duration >= 3600 ? 'H:i:s' : 'i:s', (int)$item->duration) }}@endif
           · {{ number_format(($item->file_size ?? 0) / 1048576, 1) }}MB
+          @if($item->versions->count() > 1)
+            · <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="background:none;border:none;color:#001F5B;font-size:.65rem;font-weight:700;cursor:pointer;padding:0;">{{ $item->versions->count() }} versions ▾</button>
+            <div style="display:none;margin-top:4px;border-top:1px solid #f3f4f6;padding-top:4px;">
+              @foreach($item->versions as $ver)
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:.62rem;">
+                <span>
+                  <strong>v{{ $ver->version }}</strong> · {{ $ver->edit_type }}
+                  @if($ver->file_size) · {{ number_format($ver->file_size / 1048576, 1) }}MB @endif
+                  @if($ver->duration) · {{ number_format($ver->duration, 1) }}s @endif
+                  · {{ $ver->created_at->format('M j g:ia') }}
+                </span>
+                @if($ver->path !== $item->path)
+                <form method="POST" action="{{ route('admin.students.revert-media', $item) }}" style="display:inline;"
+                  onsubmit="return confirm('Restore version {{ $ver->version }}?')">
+                  @csrf
+                  <input type="hidden" name="version_id" value="{{ $ver->id }}">
+                  <button type="submit" style="background:#dbeafe;color:#1e40af;border:none;border-radius:3px;font-size:.6rem;padding:1px 5px;cursor:pointer;font-weight:600;">Restore</button>
+                </form>
+                @else
+                <span style="color:#065f46;font-weight:700;">Current</span>
+                @endif
+              </div>
+              @endforeach
+            </div>
+          @endif
         </div>
       </div>
     </div>

@@ -50,6 +50,34 @@ class StudentMedia extends Model
         return $this->belongsTo(Student::class);
     }
 
+    public function versions()
+    {
+        return $this->hasMany(MediaVersion::class, 'student_media_id')->orderBy('version');
+    }
+
+    public function latestVersion()
+    {
+        return $this->hasOne(MediaVersion::class, 'student_media_id')->latestOfMany('version');
+    }
+
+    public function addVersion(string $path, string $editType, ?array $editParams = null, ?array $meta = []): MediaVersion
+    {
+        $nextVersion = ($this->versions()->max('version') ?? 0) + 1;
+        return MediaVersion::create([
+            'student_media_id' => $this->id,
+            'version'          => $nextVersion,
+            'path'             => $path,
+            'edit_type'        => $editType,
+            'edit_params'      => $editParams,
+            'file_size'        => $meta['file_size'] ?? null,
+            'width'            => $meta['width'] ?? null,
+            'height'           => $meta['height'] ?? null,
+            'duration'         => $meta['duration'] ?? null,
+            'created_by_type'  => $meta['created_by_type'] ?? 'admin',
+            'created_by_id'    => $meta['created_by_id'] ?? null,
+        ]);
+    }
+
     public function getUrlAttribute(): string
     {
         return self::mediaUrl($this->path);
