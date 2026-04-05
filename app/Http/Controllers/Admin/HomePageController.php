@@ -22,7 +22,9 @@ class HomePageController extends Controller
         $availableVideos = StudentMedia::where('type', 'video')->with('student')->latest()->get();
         $availablePhotos = StudentMedia::where('type', 'photo')->with('student')->latest()->get();
 
-        return view('admin.home-page', compact('heroMedia', 'heroMediaIds', 'bioMedia', 'bioMediaIds', 'availableVideos', 'availablePhotos'));
+        $sections = json_decode(SiteSetting::get('homepage_sections', '[]'), true) ?: self::defaultSections();
+
+        return view('admin.home-page', compact('heroMedia', 'heroMediaIds', 'bioMedia', 'bioMediaIds', 'availableVideos', 'availablePhotos', 'sections'));
     }
 
     public function updateHeroMedia(Request $request)
@@ -86,5 +88,32 @@ class HomePageController extends Controller
         SiteSetting::set('homepage_bio_media', json_encode($bioIds));
 
         return response()->json(['id' => $crop->id, 'url' => $crop->url]);
+    }
+
+    public function updateSections(Request $request)
+    {
+        $request->validate([
+            'sections'           => 'required|array',
+            'sections.*.key'     => 'required|string',
+            'sections.*.label'   => 'required|string',
+            'sections.*.visible' => 'required|boolean',
+        ]);
+
+        SiteSetting::set('homepage_sections', json_encode($request->sections));
+
+        return response()->json(['success' => true]);
+    }
+
+    public static function defaultSections(): array
+    {
+        return [
+            ['key' => 'hero', 'label' => 'Hero Banner', 'visible' => true],
+            ['key' => 'services', 'label' => 'Lesson Packages', 'visible' => true],
+            ['key' => 'how-it-works', 'label' => 'How It Works', 'visible' => true],
+            ['key' => 'bio', 'label' => 'Coach Bio', 'visible' => true],
+            ['key' => 'testimonials', 'label' => 'Testimonials & Player Highlight', 'visible' => true],
+            ['key' => 'rinks', 'label' => 'Rink Calendars', 'visible' => true],
+            ['key' => 'cta', 'label' => 'Call to Action Banner', 'visible' => true],
+        ];
     }
 }

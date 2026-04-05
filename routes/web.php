@@ -62,7 +62,11 @@ Route::get('/', function () {
     $bioMediaIds = json_decode(\App\Models\SiteSetting::get('homepage_bio_media', '[]'), true) ?: [];
     $bioMedia = $bioMediaIds ? \App\Models\StudentMedia::whereIn('id', $bioMediaIds)->get()->sortBy(fn($m) => array_search($m->id, $bioMediaIds))->values() : collect();
 
-    return view('home', compact('services', 'rinks', 'comingSoonServices', 'heroMedia', 'bioMedia'));
+    // Section order from admin config
+    $sections = json_decode(\App\Models\SiteSetting::get('homepage_sections', '[]'), true)
+        ?: \App\Http\Controllers\Admin\HomePageController::defaultSections();
+
+    return view('home', compact('services', 'rinks', 'comingSoonServices', 'heroMedia', 'bioMedia', 'sections'));
 });
 
 // Public Booking Flow
@@ -278,6 +282,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/home-page/hero-media', [App\Http\Controllers\Admin\HomePageController::class, 'updateHeroMedia'])->name('admin.homepage.update-hero');
     Route::post('/home-page/bio-media', [App\Http\Controllers\Admin\HomePageController::class, 'updateBioMedia'])->name('admin.homepage.update-bio');
     Route::post('/home-page/bio-crop', [App\Http\Controllers\Admin\HomePageController::class, 'registerBioCrop'])->name('admin.homepage.bio-crop');
+    Route::post('/home-page/sections', [App\Http\Controllers\Admin\HomePageController::class, 'updateSections'])->name('admin.homepage.update-sections');
 
     // Export / Reports
     Route::get('/export', [ExportController::class, 'index'])->name('admin.export');

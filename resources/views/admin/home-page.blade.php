@@ -14,6 +14,12 @@
   .media-pick .pick-order{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
   .media-pick .pick-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:.6rem;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .selected-strip{display:flex;gap:.4rem;flex-wrap:wrap;min-height:50px;padding:.4rem;background:#f8fafc;border:1.5px dashed #e5eaf2;border-radius:6px;margin-bottom:.75rem;}
+  .section-toggle{width:36px;height:20px;border-radius:10px;background:#d1d5db;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+  .section-toggle.on{background:var(--navy);}
+  .section-toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;}
+  .section-toggle.on::after{transform:translateX(16px);}
+  .section-row.dragging{opacity:.4;border-style:dashed;}
+  .section-row.drag-over{border-color:var(--navy);background:#eff6ff;}
   .btn-navy{background:var(--navy);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-weight:700;font-size:.85rem;cursor:pointer;}
   .btn-navy:hover{background:var(--red);}
   .btn-ghost{background:#f3f4f6;color:#374151;border:none;border-radius:7px;padding:7px 14px;font-weight:600;font-size:.82rem;cursor:pointer;}
@@ -30,6 +36,26 @@
     <p style="color:#6b7280;font-size:.85rem;">Manage hero videos, bio photos, and preview the home page</p>
   </div>
   <a href="/" target="_blank" class="btn-ghost" style="text-decoration:none;">View Live Site →</a>
+</div>
+
+{{-- ═══ SECTION ORDER ═══ --}}
+<div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1.25rem;margin-bottom:1.25rem;">
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.15rem;color:var(--navy);margin:0 0 .5rem;">Page Sections</h2>
+  <p style="font-size:.8rem;color:#6b7280;margin-bottom:.6rem;">Drag to reorder. Toggle visibility with the switch. Changes save automatically.</p>
+  <div id="sectionList" style="display:flex;flex-direction:column;gap:4px;">
+    @foreach($sections as $i => $sec)
+    <div class="section-row" data-key="{{ $sec['key'] }}" draggable="true"
+      style="display:flex;align-items:center;gap:.75rem;background:#f8fafc;border:1.5px solid #e5eaf2;border-radius:8px;padding:.6rem 1rem;cursor:grab;user-select:none;"
+      ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dropSection(event)" ondragend="dragEnd(event)">
+      <span style="color:#9ca3af;font-size:1rem;cursor:grab;">☰</span>
+      <span style="flex:1;font-weight:600;font-size:.88rem;color:#374151;">{{ $sec['label'] }}</span>
+      <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.78rem;color:#6b7280;">
+        <div class="section-toggle {{ ($sec['visible'] ?? true) ? 'on' : '' }}" data-key="{{ $sec['key'] }}" onclick="toggleSectionVisibility(this, '{{ $sec['key'] }}')"></div>
+      </label>
+    </div>
+    @endforeach
+  </div>
+  <div id="sectionSaveStatus" style="font-size:.78rem;color:#065f46;margin-top:.5rem;display:none;">✓ Saved</div>
 </div>
 
 {{-- ═══ HERO MEDIA ═══ --}}
@@ -137,6 +163,69 @@
 </div>
 
 <script>
+// ═══ SECTION ORDERING ═══
+var draggedRow = null;
+var sectionLabels = @json(collect($sections)->pluck('label', 'key')->toArray());
+
+function dragStart(e) {
+  draggedRow = e.target.closest('.section-row');
+  draggedRow.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function dragOver(e) {
+  e.preventDefault();
+  var row = e.target.closest('.section-row');
+  if (row && row !== draggedRow) {
+    row.classList.add('drag-over');
+  }
+}
+function dropSection(e) {
+  e.preventDefault();
+  var target = e.target.closest('.section-row');
+  if (target && target !== draggedRow) {
+    var list = document.getElementById('sectionList');
+    var rows = Array.from(list.children);
+    var dragIdx = rows.indexOf(draggedRow);
+    var dropIdx = rows.indexOf(target);
+    if (dragIdx < dropIdx) {
+      target.after(draggedRow);
+    } else {
+      target.before(draggedRow);
+    }
+  }
+  document.querySelectorAll('.section-row').forEach(r => r.classList.remove('drag-over'));
+  saveSections();
+}
+function dragEnd(e) {
+  if (draggedRow) draggedRow.classList.remove('dragging');
+  document.querySelectorAll('.section-row').forEach(r => r.classList.remove('drag-over'));
+  draggedRow = null;
+}
+
+function toggleSectionVisibility(toggleEl, key) {
+  toggleEl.classList.toggle('on');
+  saveSections();
+}
+
+function saveSections() {
+  var rows = document.querySelectorAll('.section-row');
+  var sections = [];
+  rows.forEach(function(row) {
+    var key = row.dataset.key;
+    var toggle = row.querySelector('.section-toggle');
+    sections.push({ key: key, label: sectionLabels[key] || key, visible: toggle.classList.contains('on') });
+  });
+  fetch('{{ route("admin.homepage.update-sections") }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+    body: JSON.stringify({ sections: sections })
+  }).then(function() {
+    var status = document.getElementById('sectionSaveStatus');
+    status.style.display = 'block';
+    setTimeout(function() { status.style.display = 'none'; }, 2000);
+  });
+}
+
 const groups = {
   hero: { ids: @json($heroMediaIds), max: 99 },
   bio:  { ids: @json($bioMediaIds), max: 99 },
