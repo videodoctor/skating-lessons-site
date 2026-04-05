@@ -638,40 +638,53 @@ function openTrimmer(url, mediaId, duration) {
   document.getElementById('trimStatus').textContent = '';
   resetVideoAdjustments();
 
-  // Load video with progress tracking
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now(), true);
-  xhr.responseType = 'blob';
-  xhr.onprogress = function(e) {
-    if (e.lengthComputable) {
-      var pct = Math.round((e.loaded / e.total) * 100);
-      loadBar.style.width = pct + '%';
-      loadText.textContent = (e.loaded / 1048576).toFixed(1) + ' / ' + (e.total / 1048576).toFixed(1) + ' MB';
-    }
-  };
-  xhr.onload = function() {
-    loadBar.style.width = '100%';
-    loadText.textContent = 'Buffering...';
-    var blobUrl = URL.createObjectURL(xhr.response);
-    trimVideoEl.src = blobUrl;
+  // Load video with fetch (avoids Range request CORS issues)
+  loadText.textContent = 'Downloading...';
+  fetch(url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now())
+    .then(function(resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var total = parseInt(resp.headers.get('content-length') || '0');
+      var loaded = 0;
+      var reader = resp.body.getReader();
+      var chunks = [];
 
-    trimVideoEl.onloadedmetadata = function() {
-      loader.style.display = 'none';
-      document.getElementById('trimPlayBtn').style.display = 'block';
-      trimTotalDuration = trimVideoEl.duration;
-      document.getElementById('trimStart').value = '0';
-      document.getElementById('trimStart').max = trimTotalDuration;
-      document.getElementById('trimEnd').value = trimTotalDuration.toFixed(1);
-      document.getElementById('trimEnd').max = trimTotalDuration;
-      updateTrimRange();
-      startPlayheadUpdate();
-    };
-  };
-  xhr.onerror = function() {
-    loadText.textContent = 'Failed to load video.';
-    loadText.style.color = '#fca5a5';
-  };
-  xhr.send();
+      function pump() {
+        return reader.read().then(function(result) {
+          if (result.done) return new Blob(chunks, { type: 'video/mp4' });
+          chunks.push(result.value);
+          loaded += result.value.length;
+          if (total > 0) {
+            var pct = Math.round((loaded / total) * 100);
+            loadBar.style.width = pct + '%';
+            loadText.textContent = (loaded / 1048576).toFixed(1) + ' / ' + (total / 1048576).toFixed(1) + ' MB';
+          } else {
+            loadText.textContent = (loaded / 1048576).toFixed(1) + ' MB downloaded';
+          }
+          return pump();
+        });
+      }
+      return pump();
+    })
+    .then(function(blob) {
+      loadBar.style.width = '100%';
+      loadText.textContent = 'Buffering...';
+      trimVideoEl.src = URL.createObjectURL(blob);
+      trimVideoEl.onloadedmetadata = function() {
+        loader.style.display = 'none';
+        document.getElementById('trimPlayBtn').style.display = 'block';
+        trimTotalDuration = trimVideoEl.duration;
+        document.getElementById('trimStart').value = '0';
+        document.getElementById('trimStart').max = trimTotalDuration;
+        document.getElementById('trimEnd').value = trimTotalDuration.toFixed(1);
+        document.getElementById('trimEnd').max = trimTotalDuration;
+        updateTrimRange();
+        startPlayheadUpdate();
+      };
+    })
+    .catch(function(err) {
+      loadText.textContent = 'Failed to load: ' + err.message;
+      loadText.style.color = '#fca5a5';
+    });
 }
 
 function closeTrimmer() {

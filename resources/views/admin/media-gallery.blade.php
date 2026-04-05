@@ -234,9 +234,16 @@ document.querySelector('form[action="{{ route("admin.media.upload") }}"]').addEv
       <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--navy);margin:0;">Trim Video</h3>
       <button onclick="closeTrimmer()" style="background:none;border:none;font-size:1.3rem;color:#9ca3af;cursor:pointer;">✕</button>
     </div>
-    <div style="background:#000;position:relative;">
-      <video id="trimVideo" style="width:100%;max-height:400px;display:block;" preload="auto" crossorigin="anonymous"></video>
-      <div id="trimPlayBtn" onclick="toggleTrimPlay()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3rem;cursor:pointer;text-shadow:0 2px 12px rgba(0,0,0,.5);">▶️</div>
+    <div style="background:#000;position:relative;min-height:200px;">
+      <div id="trimLoading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;z-index:5;">
+        <div style="font-size:1.2rem;margin-bottom:.5rem;">Loading video...</div>
+        <div style="width:200px;height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;">
+          <div id="trimLoadBar" style="width:0%;height:100%;background:#fff;border-radius:3px;transition:width .3s;"></div>
+        </div>
+        <div id="trimLoadText" style="font-size:.78rem;margin-top:.4rem;color:rgba(255,255,255,.6);"></div>
+      </div>
+      <video id="trimVideo" style="width:100%;max-height:400px;display:block;" preload="auto"></video>
+      <div id="trimPlayBtn" onclick="toggleTrimPlay()" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3rem;cursor:pointer;text-shadow:0 2px 12px rgba(0,0,0,.5);display:none;">▶️</div>
     </div>
     <div style="padding:1rem 1.25rem;background:#f8fafc;">
       <div style="position:relative;height:40px;background:#e5eaf2;border-radius:6px;overflow:hidden;cursor:pointer;" id="timeline" onclick="seekTimeline(event)">
@@ -321,7 +328,14 @@ function openTrimmer(url, mediaId, duration, studentId) {
   trimStudentId = studentId;
   trimTotalDuration = duration || 30;
   trimVideoEl = document.getElementById('trimVideo');
-  trimVideoEl.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  var loader = document.getElementById('trimLoading');
+  var loadBar = document.getElementById('trimLoadBar');
+  var loadText = document.getElementById('trimLoadText');
+
+  loader.style.display = 'flex';
+  loadBar.style.width = '0%';
+  loadText.textContent = 'Downloading...';
+  document.getElementById('trimPlayBtn').style.display = 'none';
   document.getElementById('trimmerModal').style.display = 'flex';
   document.getElementById('saveTrimBtn').disabled = false;
   document.getElementById('saveTrimBtn').textContent = 'Save Trim';
@@ -329,15 +343,49 @@ function openTrimmer(url, mediaId, duration, studentId) {
   document.getElementById('trimStatus').textContent = '';
   resetVideoAdjustments();
 
-  trimVideoEl.onloadedmetadata = function() {
-    trimTotalDuration = trimVideoEl.duration;
-    document.getElementById('trimStart').value = '0';
-    document.getElementById('trimStart').max = trimTotalDuration;
-    document.getElementById('trimEnd').value = trimTotalDuration.toFixed(1);
-    document.getElementById('trimEnd').max = trimTotalDuration;
-    updateTrimRange();
-    startPlayheadUpdate();
-  };
+  fetch(url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now())
+    .then(function(resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var total = parseInt(resp.headers.get('content-length') || '0');
+      var loaded = 0;
+      var reader = resp.body.getReader();
+      var chunks = [];
+      function pump() {
+        return reader.read().then(function(result) {
+          if (result.done) return new Blob(chunks, { type: 'video/mp4' });
+          chunks.push(result.value);
+          loaded += result.value.length;
+          if (total > 0) {
+            loadBar.style.width = Math.round((loaded / total) * 100) + '%';
+            loadText.textContent = (loaded / 1048576).toFixed(1) + ' / ' + (total / 1048576).toFixed(1) + ' MB';
+          } else {
+            loadText.textContent = (loaded / 1048576).toFixed(1) + ' MB';
+          }
+          return pump();
+        });
+      }
+      return pump();
+    })
+    .then(function(blob) {
+      loadBar.style.width = '100%';
+      loadText.textContent = 'Buffering...';
+      trimVideoEl.src = URL.createObjectURL(blob);
+      trimVideoEl.onloadedmetadata = function() {
+        loader.style.display = 'none';
+        document.getElementById('trimPlayBtn').style.display = 'block';
+        trimTotalDuration = trimVideoEl.duration;
+        document.getElementById('trimStart').value = '0';
+        document.getElementById('trimStart').max = trimTotalDuration;
+        document.getElementById('trimEnd').value = trimTotalDuration.toFixed(1);
+        document.getElementById('trimEnd').max = trimTotalDuration;
+        updateTrimRange();
+        startPlayheadUpdate();
+      };
+    })
+    .catch(function(err) {
+      loadText.textContent = 'Failed: ' + err.message;
+      loadText.style.color = '#fca5a5';
+    });
 }
 function closeTrimmer() {
   document.getElementById('trimmerModal').style.display = 'none';
