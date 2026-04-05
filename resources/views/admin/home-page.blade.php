@@ -198,7 +198,8 @@ function updateGroup(group) {
 }
 
 // Init
-['hero', 'bio'].forEach(g => updateGroup(g));
+// Only init hero strip via JS — bio strip is server-rendered
+updateGroup('hero');
 
 // Preview tabs
 const previewSizes = {
