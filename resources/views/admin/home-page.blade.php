@@ -89,10 +89,27 @@
     </div>
     <div class="media-picker">
       @foreach($availablePhotos as $p)
-      <div class="media-pick" data-id="{{ $p->id }}" data-url="{{ $p->url }}" data-student="{{ $p->student->first_name ?? '' }}" onclick="openBioCrop(this)">
+      @php $bioIdx = array_search($p->id, $bioMediaIds); @endphp
+      <div class="media-pick {{ $bioIdx !== false ? 'selected' : '' }}" data-id="{{ $p->id }}" data-url="{{ $p->url }}" data-student="{{ $p->student->first_name ?? '' }}" onclick="openBioCrop(this)">
         <img src="{{ $p->url }}" class="thumb" loading="lazy">
+        @if($bioIdx !== false)
+          <div class="pick-order">{{ $bioIdx + 1 }}</div>
+          <div class="pick-check">✓</div>
+        @endif
         <div class="pick-label">{{ $p->student->first_name ?? '' }}</div>
       </div>
+      @endforeach
+      {{-- Also show bio crops that aren't in the main available list --}}
+      @foreach($bioMedia as $bm)
+        @if(!$availablePhotos->contains('id', $bm->id))
+        @php $bioIdx = array_search($bm->id, $bioMediaIds); @endphp
+        <div class="media-pick selected" data-id="{{ $bm->id }}" data-url="{{ $bm->url }}">
+          <img src="{{ $bm->url }}" class="thumb" loading="lazy">
+          @if($bioIdx !== false)<div class="pick-order">{{ $bioIdx + 1 }}</div>@endif
+          <div class="pick-check">✓</div>
+          <div class="pick-label">Bio crop</div>
+        </div>
+        @endif
       @endforeach
     </div>
     <div style="display:flex;gap:.5rem;margin-top:.75rem;">
