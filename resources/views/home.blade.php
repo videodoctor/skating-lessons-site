@@ -299,7 +299,11 @@
         <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:7px;padding:.5rem .65rem;">
           <input type="checkbox" name="sms_consent" id="wl-sms" value="1" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-sms" style="font-size:.78rem;color:#374151;line-height:1.4;">
-            <strong>Optional:</strong> SMS lesson reminders. Msg & data rates apply. Reply STOP to opt out.
+            <strong>Optional:</strong> I agree to receive SMS text message lesson reminders from Kristine Skates.
+            You will receive a confirmation text upon opting in.
+            Message frequency varies. Message and data rates may apply.
+            Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
+            View our <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
           </label>
         </div>
         <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px;padding:.5rem .65rem;">

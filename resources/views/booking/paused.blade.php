@@ -104,9 +104,11 @@
             <div class="policy-check" style="background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:7px;padding:.6rem .75rem;">
               <input type="checkbox" name="sms_consent" id="sms_consent" value="1">
               <label for="sms_consent">
-                <strong>Optional:</strong> I agree to receive SMS text message notifications.
+                <strong>Optional:</strong> I agree to receive SMS text message lesson reminders from Kristine Skates.
+                You will receive a confirmation text upon opting in.
                 Message frequency varies. Message and data rates may apply.
-                Reply <strong>STOP</strong> to opt out. View our <a href="{{ route('privacy') }}" target="_blank" style="color:var(--navy);text-decoration:underline;">Privacy Policy</a>.
+                Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
+                View our <a href="{{ route('privacy') }}" target="_blank" style="color:var(--navy);text-decoration:underline;">Privacy Policy</a>.
               </label>
             </div>
             <div class="policy-check" style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px;padding:.6rem .75rem;">
