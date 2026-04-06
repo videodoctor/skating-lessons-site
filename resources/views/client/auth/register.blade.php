@@ -63,7 +63,7 @@
       </div>
 
       <div style="border-top:1px solid #f3f4f6;padding-top:1rem;margin-bottom:1rem;">
-        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.75rem;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#f8fafc;border:1.5px solid #e5eaf2;">
           <input type="checkbox" name="email_consent" id="reg_email_consent" required
                  style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="reg_email_consent" style="font-size:.85rem;color:#374151;line-height:1.5;">
@@ -72,7 +72,7 @@
         </div>
         @error('email_consent')<p class="text-red-500 text-sm mb-2">{{ $message }}</p>@enderror
 
-        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.75rem;background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:8px;padding:.75rem 1rem;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#f0f4ff;border:1.5px solid #dbe4ff;">
           <input type="checkbox" name="sms_consent" id="reg_sms_consent" value="1"
                  style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="reg_sms_consent" style="font-size:.85rem;color:#374151;line-height:1.5;">
@@ -84,7 +84,7 @@
           </label>
         </div>
 
-        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.75rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:.75rem 1rem;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#fffbeb;border:1.5px solid #fde68a;">
           <input type="checkbox" name="waiver_accepted" id="reg_waiver" required
                  style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="reg_waiver" style="font-size:.85rem;color:#374151;line-height:1.5;">
@@ -92,7 +92,7 @@
           </label>
         </div>
 
-        <div style="display:flex;align-items:flex-start;gap:.75rem;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.6rem .75rem;border-radius:7px;background:#f8fafc;border:1.5px solid #e5eaf2;">
           <input type="checkbox" name="terms_accepted" id="reg_terms" required
                  style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="reg_terms" style="font-size:.85rem;color:#374151;line-height:1.5;">

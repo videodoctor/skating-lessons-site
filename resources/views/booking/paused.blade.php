@@ -9,13 +9,16 @@
   .wl-input:focus{outline:none;border-color:var(--navy);}
   .wl-row{margin-bottom:.65rem;}
   .wl-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;}
-  .policy-check{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;}
+  .policy-check{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;}
   .policy-check input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--navy);}
   .policy-check label{font-size:.82rem;color:#374151;line-height:1.5;}
+  .policy-check.bg-blue{background:#f0f4ff;border:1.5px solid #dbe4ff;}
+  .policy-check.bg-yellow{background:#fffbeb;border:1.5px solid #fde68a;}
+  .policy-check.bg-plain{background:#f8fafc;border:1.5px solid #e5eaf2;}
 </style>
 
 <div style="min-height:70vh;display:flex;align-items:center;justify-content:center;padding:2rem;">
-  <div style="max-width:520px;width:100%;text-align:center;">
+  <div style="max-width:640px;width:100%;text-align:center;">
     <div style="font-size:3rem;margin-bottom:.5rem;">⛸️</div>
     <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--navy);margin:0 0 .75rem;">Booking Is Paused</h1>
     <p style="color:#6b7280;font-size:1rem;line-height:1.6;margin-bottom:.5rem;">{{ str_replace(':month', now()->format('F'), $message) }}</p>
@@ -97,11 +100,11 @@
 
           {{-- Consent --}}
           <div style="border-top:1px solid #f3f4f6;padding-top:.75rem;margin-bottom:.75rem;">
-            <div class="policy-check">
+            <div class="policy-check bg-plain">
               <input type="checkbox" name="email_consent" id="email_consent" required>
               <label for="email_consent">I agree to receive email notifications about lesson availability from Kristine Skates. *</label>
             </div>
-            <div class="policy-check" style="background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:7px;padding:.6rem .75rem;">
+            <div class="policy-check bg-blue">
               <input type="checkbox" name="sms_consent" id="sms_consent" value="1">
               <label for="sms_consent">
                 <strong>Optional:</strong> I agree to receive SMS text message lesson reminders from Kristine Skates.
@@ -111,13 +114,13 @@
                 View our <a href="{{ route('privacy') }}" target="_blank" style="color:var(--navy);text-decoration:underline;">Privacy Policy</a>.
               </label>
             </div>
-            <div class="policy-check" style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px;padding:.6rem .75rem;">
+            <div class="policy-check bg-yellow">
               <input type="checkbox" name="waiver_accepted" id="waiver_accepted" required>
               <label for="waiver_accepted">
                 I have read and agree to the <a href="{{ route('waiver.show') }}" target="_blank" style="color:var(--navy);text-decoration:underline;">Liability Waiver</a>. I understand that skating involves inherent risks. *
               </label>
             </div>
-            <div class="policy-check">
+            <div class="policy-check bg-plain">
               <input type="checkbox" name="terms_accepted" id="terms_accepted" required>
               <label for="terms_accepted">
                 I have read and agree to the <a href="{{ route('terms') }}" target="_blank" style="color:var(--navy);text-decoration:underline;">Terms &amp; Conditions</a>

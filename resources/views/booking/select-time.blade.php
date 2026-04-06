@@ -36,8 +36,10 @@
     padding:1rem;border-radius:8px;border:none;cursor:pointer;transition:background .2s;font-family:'DM Sans',sans-serif;}
   .submit-btn:hover{background:var(--red);}
   .summary-box{background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;padding:1rem 1.25rem;}
-  .policy-check{display:flex;align-items:flex-start;gap:.75rem;}
+  .policy-check{display:flex;align-items:flex-start;gap:.75rem;padding:.5rem .65rem;border-radius:7px;margin-bottom:.5rem;}
   .policy-check input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--navy);}
+  .policy-check.bg-blue{background:#f0f4ff;border:1.5px solid #dbe4ff;}
+  .policy-check.bg-plain{background:#f8fafc;border:1.5px solid #e5eaf2;}
 </style>
 
 <div class="page-header">
@@ -173,25 +175,23 @@
             </div>
           </div>
 
-          <div class="space-y-3 mb-5">
-            @guest('client')
-            <div style="background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:8px;padding:1rem 1.25rem;">
-              <div class="policy-check">
-                <input type="checkbox" name="guest_sms_consent" id="guest_sms_consent" value="1">
-                <label for="guest_sms_consent" class="text-sm text-gray-700" style="line-height:1.6;">
-                  <strong>Optional:</strong> I agree to receive SMS text message lesson reminders from Kristine Skates.
-                  You will receive a confirmation text upon opting in. Message frequency varies.
-                  Message and data rates may apply. Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
-                  View our <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
-                </label>
-              </div>
-            </div>
-            @endguest
-            <div class="policy-check">
+          <div class="mb-5">
+            <div class="policy-check bg-plain">
               <input type="checkbox" name="email_consent" id="email_consent" required>
               <label for="email_consent" class="text-sm text-gray-600">I agree to receive booking confirmation and update emails. *</label>
             </div>
-            <div class="policy-check">
+            @guest('client')
+            <div class="policy-check bg-blue">
+              <input type="checkbox" name="guest_sms_consent" id="guest_sms_consent" value="1">
+              <label for="guest_sms_consent" class="text-sm text-gray-700" style="line-height:1.6;">
+                <strong>Optional:</strong> I agree to receive SMS text message lesson reminders from Kristine Skates.
+                You will receive a confirmation text upon opting in. Message frequency varies.
+                Message and data rates may apply. Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
+                View our <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
+              </label>
+            </div>
+            @endguest
+            <div class="policy-check bg-plain">
               <input type="checkbox" name="cancellation_policy" id="cancel_policy" required>
               <label for="cancel_policy" class="text-sm text-gray-600">I understand that cancellations within 24 hours of the lesson will be charged the full lesson price. *</label>
             </div>
