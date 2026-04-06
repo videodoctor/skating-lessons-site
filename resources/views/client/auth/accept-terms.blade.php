@@ -73,7 +73,7 @@
             <input type="checkbox" name="sms_consent" id="sms_consent" value="1"
                    style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--navy);">
             <label for="sms_consent" style="font-size:.85rem;color:#374151;line-height:1.5;">
-              <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders and availability notifications.
+              <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders, booking confirmations, schedule changes, availability notifications, and public skate schedules.
               You will receive a confirmation text upon opting in.
               Message frequency varies. Message and data rates may apply.
               Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.

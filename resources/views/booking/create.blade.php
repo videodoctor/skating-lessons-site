@@ -121,7 +121,7 @@
                                style="margin-top:3px;width:18px;height:18px;flex-shrink:0;"
                                {{ old('guest_sms_consent') ? 'checked' : '' }}>
                         <span style="font-size:.85rem;color:#374151;line-height:1.6;">
-                            <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders and availability notifications. You will receive a confirmation text upon opting in. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help. View our <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
+                            <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders, booking confirmations, schedule changes, availability notifications, and public skate schedules. You will receive a confirmation text upon opting in. Message frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for help. View our <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
                         </span>
                     </label>
                 </div>

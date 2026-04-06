@@ -54,7 +54,7 @@
         <input type="checkbox" disabled
                style="margin-top:3px;width:18px;height:18px;flex-shrink:0;">
         <span style="font-size:.85rem;color:#374151;line-height:1.6;">
-          <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders and availability notifications.
+          <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders, booking confirmations, schedule changes, availability notifications, and public skate schedules.
           You will receive a confirmation text upon opting in. Message frequency varies.
           Message and data rates may apply. Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
           View our <a href="{{ url('/privacy-policy') }}" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
@@ -92,7 +92,7 @@
         <input type="checkbox" disabled
                style="margin-top:3px;width:18px;height:18px;flex-shrink:0;">
         <span style="font-size:.85rem;color:#374151;line-height:1.6;">
-          <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders and availability notifications.
+          <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders, booking confirmations, schedule changes, availability notifications, and public skate schedules.
           You will receive a confirmation text upon opting in. Message frequency varies.
           Message and data rates may apply. Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
           View our <a href="{{ url('/privacy-policy') }}" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
