@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
+use App\Models\NotificationTemplate;
+use App\Services\TemplateVars;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -25,8 +27,15 @@ class BookingRequestedNotification extends Notification
 
     public function toMail($notifiable)
     {
+        $vars = TemplateVars::fromBooking($this->booking);
+        $subject = NotificationTemplate::renderSubject('email_booking_requested', $vars)
+            ?? 'Lesson Request Received - Kristine Skates';
+
         return (new MailMessage)
-            ->subject('Lesson Request Received - Kristine Skates')
-            ->view('emails.booking-requested', ['booking' => $this->booking]);
+            ->subject($subject)
+            ->view('emails.booking-requested', [
+                'booking' => $this->booking,
+                'templateBody' => NotificationTemplate::render('email_booking_requested', $vars),
+            ]);
     }
 }

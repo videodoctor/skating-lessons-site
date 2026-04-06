@@ -1,7 +1,7 @@
 @extends('emails.layout')
 @section('content')
 <h1 class="greeting">Lesson Request Update</h1>
-<p class="text">Hi {{ $booking->client_name }}, unfortunately we're unable to accommodate your lesson request at this time.</p>
+<p class="text">{{ $templateBody ?? "Hi {$booking->client_name}, unfortunately we're unable to accommodate your lesson request at this time." }}</p>
 
 <div class="detail-box">
   <table style="width:100%;border-collapse:collapse;">

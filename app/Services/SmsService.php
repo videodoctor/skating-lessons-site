@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Client;
+use App\Models\NotificationTemplate;
 use App\Models\SmsReminder;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -68,24 +69,12 @@ class SmsService
 
     public function buildReminderMessage(Booking $booking): string
     {
-        $date     = Carbon::parse($booking->date ?? $booking->timeSlot?->date);
-        $time     = Carbon::parse($booking->start_time ?? $booking->timeSlot?->start_time);
-        $rinkName = $booking->timeSlot?->rink?->name ?? 'the rink';
-        $student  = $booking->student;
+        $vars = TemplateVars::fromBooking($booking);
+        $rendered = NotificationTemplate::render('sms_lesson_reminder', $vars);
+        if ($rendered) return $rendered;
 
-        $when = $date->isTomorrow()
-            ? 'tomorrow at ' . $time->format('g:i A')
-            : 'on ' . $date->format('l, F j') . ' at ' . $time->format('g:i A');
-
-        $studentPart = $student ? " for {$student->first_name}" : '';
-
-        $price = $booking->price_paid
-            ? ' $' . number_format($booking->price_paid, 0) . ' due at lesson.'
-            : '';
-
-        $cancellationNote = ' Reply YES to confirm, NO to cancel (cancellations <24hrs will be billed).';
-
-        return "Reminder: Your skating lesson{$studentPart} is {$when} at {$rinkName}.{$price}{$cancellationNote} — Kristine Skates";
+        // Fallback
+        return "Reminder: Your skating lesson for {$vars['student_name']} is {$vars['lesson_date']} at {$vars['lesson_time']} at {$vars['rink_name']}. Reply STOP to opt out. — Kristine Skates";
     }
 
     // ── Handle inbound YES/NO/LESSONS/SKATE/HELP reply ───────────────────────
@@ -130,7 +119,10 @@ class SmsService
                 return "{$date} {$time} " . trim($rink);
             })->implode(', ');
 
-            return "Upcoming lessons for {$client->first_name}: {$lines}. Reply HELP for assistance or STOP to opt out. — Kristine Skates";
+            return NotificationTemplate::render('sms_upcoming_lessons', [
+                'first_name'  => $client->first_name,
+                'lesson_list' => $lines,
+            ]) ?? "Upcoming lessons for {$client->first_name}: {$lines}. Reply HELP for assistance or STOP to opt out. — Kristine Skates";
         }
 
         // ── SKATE — today's public skate sessions ─────────────────────────────
@@ -152,7 +144,9 @@ class SmsService
                 return trim($rink) . " {$start}-{$end}";
             })->implode(', ');
 
-            return "Today's public skate: {$lines}. Book a lesson at kristineskates.com — Kristine Skates";
+            return NotificationTemplate::render('sms_public_skate', [
+                'skate_times' => $lines,
+            ]) ?? "Today's public skate: {$lines}. Reply STOP to opt out or HELP for assistance. — Kristine Skates";
         }
 
         // ── YES / NO — lesson confirmation ────────────────────────────────────
@@ -241,9 +235,11 @@ class SmsService
     {
         $normalized = $this->normalizePhone($phone);
         try {
+            $body = NotificationTemplate::render('sms_opt_in_confirmation', [])
+                ?? 'You are now opted in to SMS notifications from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates';
             $this->twilio->messages->create($normalized, [
                 'from' => $this->from,
-                'body' => 'You are now opted in to SMS notifications from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates',
+                'body' => $body,
             ]);
             Log::info("Opt-in confirmation sent to {$normalized}");
         } catch (\Exception $e) {

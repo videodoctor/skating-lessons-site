@@ -9,7 +9,7 @@
 </div>
 @endif
 
-<p class="text">Thank you for your lesson request, {{ $booking->client_name }}! Coach Kristine will review your request and email you confirmation shortly.</p>
+<p class="text">{{ $templateBody ?? "Thank you for your lesson request, {$booking->client_name}! Coach Kristine will review your request and email you confirmation shortly." }}</p>
 
 <div class="detail-box">
   <table style="width:100%;border-collapse:collapse;">

@@ -10,7 +10,7 @@
 </div>
 @endif
 
-<p class="text">Great news, {{ $booking->client_name }}! Coach Kristine has approved your skating lesson request.</p>
+<p class="text">{{ $templateBody ?? "Great news, {$booking->client_name}! Coach Kristine has approved your skating lesson request." }}</p>
 
 <div class="detail-box">
   <table style="width:100%;border-collapse:collapse;">

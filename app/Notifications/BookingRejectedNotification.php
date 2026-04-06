@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
+use App\Models\NotificationTemplate;
+use App\Services\TemplateVars;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -25,8 +27,15 @@ class BookingRejectedNotification extends Notification
 
     public function toMail($notifiable)
     {
+        $vars = TemplateVars::fromBooking($this->booking);
+        $subject = NotificationTemplate::renderSubject('email_booking_rejected', $vars)
+            ?? 'Lesson Request Update - Kristine Skates';
+
         return (new MailMessage)
-            ->subject('Lesson Request Update - Kristine Skates')
-            ->view('emails.booking-rejected', ['booking' => $this->booking]);
+            ->subject($subject)
+            ->view('emails.booking-rejected', [
+                'booking' => $this->booking,
+                'templateBody' => NotificationTemplate::render('email_booking_rejected', $vars),
+            ]);
     }
 }

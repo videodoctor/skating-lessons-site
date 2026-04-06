@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
+use App\Models\NotificationTemplate;
+use App\Services\TemplateVars;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -25,11 +27,18 @@ class BookingApprovedNotification extends Notification
 
     public function toMail($notifiable)
     {
+        $vars = TemplateVars::fromBooking($this->booking);
+        $subject = NotificationTemplate::renderSubject('email_booking_approved', $vars)
+            ?? 'Lesson Approved! - ' . $this->booking->service->name;
+
         $icsContent = $this->generateIcsFile();
 
         return (new MailMessage)
-            ->subject('Lesson Approved! - ' . $this->booking->service->name)
-            ->view('emails.booking-approved', ['booking' => $this->booking])
+            ->subject($subject)
+            ->view('emails.booking-approved', [
+                'booking' => $this->booking,
+                'templateBody' => NotificationTemplate::render('email_booking_approved', $vars),
+            ])
             ->attachData($icsContent, 'skating-lesson.ics', [
                 'mime' => 'text/calendar',
             ]);
