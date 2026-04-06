@@ -389,7 +389,7 @@
       <div class="chk-row sms-opt" id="sms-row" style="opacity:.4;pointer-events:none;">
         <input type="checkbox" id="f-sms" disabled>
         <label for="f-sms">
-          <strong>Optional:</strong> I agree to receive SMS text message lesson reminders from Kristine Skates.
+          <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders and availability notifications.
           You will receive a confirmation text upon opting in. Message frequency varies.
           Message and data rates may apply. Reply STOP to opt out or HELP for help.
         </label>
