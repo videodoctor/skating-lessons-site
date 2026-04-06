@@ -264,6 +264,12 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Impersonate client (start requires admin auth)
     Route::post('/impersonate/{client}', [\App\Http\Controllers\Admin\ImpersonateController::class, 'start'])->name('admin.impersonate.start');
 
+    // Notification Templates
+    Route::get('/notifications', [App\Http\Controllers\Admin\NotificationTemplateController::class, 'index'])->name('admin.notifications.index');
+    Route::patch('/notifications/{template}', [App\Http\Controllers\Admin\NotificationTemplateController::class, 'update'])->name('admin.notifications.update');
+    Route::post('/notifications/{template}/toggle', [App\Http\Controllers\Admin\NotificationTemplateController::class, 'toggle'])->name('admin.notifications.toggle');
+    Route::get('/notifications/{template}/preview', [App\Http\Controllers\Admin\NotificationTemplateController::class, 'preview'])->name('admin.notifications.preview');
+
     // Admin Users
     Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
     Route::post('/users', [AdminUserController::class, 'store'])->name('admin.users.store');

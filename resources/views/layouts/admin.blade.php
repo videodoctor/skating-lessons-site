@@ -89,6 +89,7 @@
     <a href="{{ route('admin.media.index') }}" class="nav-link {{ request()->routeIs('admin.media.*') ? 'active' : '' }}" onclick="closeDrawer()">📸 Media Gallery</a>
     <a href="{{ route('admin.packages.index') }}" class="nav-link {{ request()->routeIs('admin.packages*') ? 'active' : '' }}" onclick="closeDrawer()">📦 Packages</a>
     <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ request()->routeIs('admin.testimonials*') ? 'active' : '' }}" onclick="closeDrawer()">⭐ Testimonials</a>
+    <a href="{{ route('admin.notifications.index') }}" class="nav-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}" onclick="closeDrawer()">🔔 Notifications</a>
     <div class="sidebar-label">Tools</div>
     <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}" onclick="closeDrawer()">✍️ Planner OCR</a>
     <a href="{{ route('admin.scraper.index') }}" class="nav-link {{ request()->routeIs('admin.scraper*') ? 'active' : '' }}" onclick="closeDrawer()">🔧 Scraper</a>
@@ -133,6 +134,7 @@
   <a href="{{ route('admin.media.index') }}" class="nav-link {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">📸 Media Gallery</a>
   <a href="{{ route('admin.packages.index') }}" class="nav-link {{ request()->routeIs('admin.packages*') ? 'active' : '' }}">📦 Packages</a>
   <a href="{{ route('admin.testimonials.index') }}" class="nav-link {{ request()->routeIs('admin.testimonials*') ? 'active' : '' }}">⭐ Testimonials</a>
+  <a href="{{ route('admin.notifications.index') }}" class="nav-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}">🔔 Notifications</a>
   <div class="sidebar-label">Tools</div>
   <a href="{{ route('admin.planner') }}" class="nav-link {{ request()->routeIs('admin.planner*') ? 'active' : '' }}">✍️ Planner OCR</a>
   <a href="{{ route('admin.scraper.index') }}" class="nav-link {{ request()->routeIs('admin.scraper*') ? 'active' : '' }}">🔧 Scraper</a>
