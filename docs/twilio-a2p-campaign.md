@@ -70,7 +70,7 @@ Reminder: Your skating lesson for [Student] is tomorrow at 3:30 PM at Creve Coeu
 
 ### Sample 2 — Opt-In Confirmation
 ```
-You are now opted in to SMS lesson reminders from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates
+You are now opted in to SMS notifications from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates
 ```
 
 ### Sample 3 — Upcoming Lessons (LESSONS keyword reply)
@@ -122,6 +122,8 @@ When a user replies STOP:
 
 | Date | Change |
 |------|--------|
+| 2026-04-06 | Updated Sample 2 opt-in confirmation: "lesson reminders" → "notifications" |
+| 2026-04-06 | Updated SmsService opt-in confirmation message to match |
 | 2026-04-06 | Added payment reminders to consent text and campaign description |
 | 2026-04-06 | Expanded consent to list all 6 message types explicitly |
 | 2026-04-06 | Added waitlist sign-up as third opt-in method |

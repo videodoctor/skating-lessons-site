@@ -243,7 +243,7 @@ class SmsService
         try {
             $this->twilio->messages->create($normalized, [
                 'from' => $this->from,
-                'body' => 'You are now opted in to SMS lesson reminders from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates',
+                'body' => 'You are now opted in to SMS notifications from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates',
             ]);
             Log::info("Opt-in confirmation sent to {$normalized}");
         } catch (\Exception $e) {
