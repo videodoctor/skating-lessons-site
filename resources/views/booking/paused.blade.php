@@ -54,7 +54,7 @@
             @error('email')<span style="color:#dc2626;font-size:.75rem;">{{ $message }}</span>@enderror
           </div>
           <div class="wl-row">
-            <label class="wl-label">Phone <span style="color:#9ca3af;">(for SMS reminders)</span></label>
+            <label class="wl-label">Phone <span style="color:#9ca3af;">(optional, for SMS reminders)</span></label>
             <input type="tel" name="phone" value="{{ old('phone') }}" class="wl-input" placeholder="(314) 555-0000" oninput="formatPhone(this)">
           </div>
 

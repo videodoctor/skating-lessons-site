@@ -249,7 +249,7 @@
           style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
       </div>
       <div style="margin-bottom:.55rem;">
-        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Phone <span style="color:#9ca3af;">(for SMS reminders)</span></label>
+        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Phone <span style="color:#9ca3af;">(optional, for SMS reminders)</span></label>
         <input type="tel" name="phone" placeholder="(314) 555-0000"
           style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;"
           oninput="wlFormatPhone(this)">

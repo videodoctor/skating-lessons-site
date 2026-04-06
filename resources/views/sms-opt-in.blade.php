@@ -41,7 +41,7 @@
       <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 .75rem;">Phone Field (optional, as shown to users):</p>
       <div style="margin-bottom:.5rem;">
         <label style="display:block;font-weight:600;font-size:.9rem;color:#374151;margin-bottom:.4rem;">
-          Phone <span style="font-weight:400;color:#9ca3af;font-size:.85rem;">(optional — needed for SMS reminders)</span>
+          Phone <span style="font-weight:400;color:#9ca3af;font-size:.85rem;">(optional, for SMS reminders)</span>
         </label>
         <input type="tel" disabled placeholder="(314) 555-0000"
                style="width:100%;padding:.7rem 1rem;border:2px solid #e5eaf2;border-radius:8px;font-size:.95rem;background:#f9fafb;">
@@ -79,7 +79,7 @@
       <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 .75rem;">Phone Field (optional, as shown to users):</p>
       <div style="margin-bottom:.5rem;">
         <label style="display:block;font-weight:700;color:#374151;margin-bottom:.4rem;">
-          Phone <span style="font-weight:400;color:#9ca3af;font-size:.85rem;">(optional — needed for SMS reminders)</span>
+          Phone <span style="font-weight:400;color:#9ca3af;font-size:.85rem;">(optional, for SMS reminders)</span>
         </label>
         <input type="tel" disabled placeholder="(314) 555-0000"
                style="width:100%;padding:.6rem 1rem;border:1.5px solid #e5eaf2;border-radius:8px;font-size:.95rem;background:#f9fafb;">
