@@ -39,6 +39,18 @@
   <div>
     <h1 class="dash-greeting">Dashboard</h1>
     <p class="dash-sub">{{ now()->format('l, F j, Y') }}</p>
+    @php
+      $a2pStatus = \App\Models\SiteSetting::get('a2p_campaign_status');
+      $a2pChecked = \App\Models\SiteSetting::get('a2p_campaign_last_checked');
+    @endphp
+    @if($a2pStatus)
+    <div style="margin-top:.5rem;display:inline-flex;align-items:center;gap:.5rem;background:{{ $a2pStatus === 'VERIFIED' || $a2pStatus === 'APPROVED' ? '#d1fae5' : ($a2pStatus === 'FAILED' || $a2pStatus === 'REJECTED' ? '#fee2e2' : '#fef3c7') }};border-radius:6px;padding:.35rem .75rem;font-size:.82rem;font-weight:600;color:{{ $a2pStatus === 'VERIFIED' || $a2pStatus === 'APPROVED' ? '#065f46' : ($a2pStatus === 'FAILED' || $a2pStatus === 'REJECTED' ? '#991b1b' : '#92400e') }};">
+      📱 A2P Campaign: {{ $a2pStatus }}
+      @if($a2pChecked)
+        <span style="font-weight:400;color:#6b7280;font-size:.75rem;">· Checked {{ \Carbon\Carbon::parse($a2pChecked)->diffForHumans() }}</span>
+      @endif
+    </div>
+    @endif
   </div>
   <div style="font-size:.78rem;color:#9ca3af;">Toggle sections with the switches</div>
 </div>

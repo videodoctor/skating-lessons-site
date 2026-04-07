@@ -22,6 +22,14 @@ class Kernel extends ConsoleKernel
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        // Check A2P campaign status every 30 minutes (staging + production only)
+        if (app()->environment('production', 'staging')) {
+            $schedule->command('twilio:check-campaign')
+                     ->everyThirtyMinutes()
+                     ->withoutOverlapping()
+                     ->runInBackground();
+        }
+
         // Parse Venmo payment emails every 15 minutes (production only)
         if (app()->environment('production')) {
             $schedule->command('venmo:parse-emails')
