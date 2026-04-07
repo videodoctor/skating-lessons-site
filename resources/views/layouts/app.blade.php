@@ -161,6 +161,7 @@
         <div class="text-sm" style="display:flex;gap:1.25rem;">
           <a href="{{ route('privacy') }}" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">Privacy Policy</a>
           <a href="{{ route('terms') }}" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">Terms &amp; Conditions</a>
+          <a href="{{ route('sms.optin') }}" style="color:#94a3b8;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">SMS Opt-In</a>
         </div>
       </div>
     </div>
