@@ -17,7 +17,7 @@
       @csrf
 
       {{-- Row 1: Name --}}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <div>
           <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">First Name *</label>
           <input type="text" name="first_name" value="{{ old('first_name') }}" required
@@ -32,7 +32,7 @@
       </div>
 
       {{-- Row 2: Email + Phone --}}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <div>
           <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">Email *</label>
           <input type="email" name="email" value="{{ old('email') }}" required
@@ -47,7 +47,7 @@
       </div>
 
       {{-- Row 3: Password --}}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <div>
           <label style="display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:3px;">Password *</label>
           <input type="password" name="password" required

@@ -33,7 +33,7 @@
     <div style="position:relative;z-index:2;background:#fff;">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Desktop: single row -->
-      <div class="hidden lg:flex justify-between h-16 items-center">
+      <div class="hidden md:flex justify-between h-16 items-center">
         <a href="/" style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--navy);letter-spacing:.05em;display:flex;align-items:center;gap:8px;white-space:nowrap;">
           <img src="/images/HOCKEY_SKATER.webp" style="width:30px;height:30px;display:inline-block;vertical-align:middle;margin-right:6px;object-fit:contain;">Kristine Skates
         </a>
@@ -61,7 +61,7 @@
         </div>
       </div>
       <!-- Mobile: hamburger -->
-      <div class="lg:hidden flex justify-between items-center h-14" style="position:relative;">
+      <div class="md:hidden flex justify-between items-center h-14" style="position:relative;">
         <a href="/" style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--navy);letter-spacing:.05em;display:flex;align-items:center;gap:8px;white-space:nowrap;">
           <img src="/images/HOCKEY_SKATER.webp" style="width:26px;height:26px;object-fit:contain;">Kristine Skates
         </a>
