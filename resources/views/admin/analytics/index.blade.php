@@ -167,6 +167,7 @@
     <table style="width:100%;font-size:.85rem;border-collapse:collapse;">
       <thead><tr style="text-align:left;color:#94a3b8;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;">
         <th style="padding:.4rem .5rem;">Time</th>
+        <th style="padding:.4rem .5rem;">Status</th>
         <th style="padding:.4rem .5rem;">Page</th>
         <th style="padding:.4rem .5rem;">IP</th>
         <th style="padding:.4rem .5rem;">Location</th>
@@ -202,12 +203,14 @@
               <div style="font-size:.68rem;font-weight:700;color:#be185d;">Datacenter IP</div>
             @endif
           </td>
-          <td style="padding:.4rem .5rem;font-family:monospace;font-size:.8rem;">
-            {{ $visit->path }}
-            @if($visit->http_status && $visit->http_status !== 200)
-              <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:.65rem;font-weight:700;margin-left:3px;{{ $visit->http_status >= 500 ? 'background:#fee2e2;color:#991b1b;' : ($visit->http_status >= 400 ? 'background:#fef3c7;color:#92400e;' : ($visit->http_status >= 300 ? 'background:#dbeafe;color:#1e40af;' : '')) }}">{{ $visit->http_status }}</span>
+          <td style="padding:.4rem .5rem;text-align:center;">
+            @if($visit->http_status)
+              <span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:.72rem;font-weight:700;font-family:monospace;{{ $visit->http_status >= 500 ? 'background:#fee2e2;color:#991b1b;' : ($visit->http_status >= 400 ? 'background:#fef3c7;color:#92400e;' : ($visit->http_status >= 300 ? 'background:#dbeafe;color:#1e40af;' : 'background:#d1fae5;color:#065f46;')) }}">{{ $visit->http_status }}</span>
+            @else
+              <span style="color:#d1d5db;">—</span>
             @endif
           </td>
+          <td style="padding:.4rem .5rem;font-family:monospace;font-size:.8rem;">{{ $visit->path }}</td>
           <td style="padding:.4rem .5rem;font-family:monospace;font-size:.8rem;" title="{{ $visit->org ?? '' }}{{ $visit->isp ? ' / ' . $visit->isp : '' }}">
             {{ $visit->ip_address }}
             @if($isHosting && $visit->org)
