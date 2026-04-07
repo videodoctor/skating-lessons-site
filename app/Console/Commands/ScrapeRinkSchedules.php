@@ -543,17 +543,31 @@ class ScrapeRinkSchedules extends Command
                 @$dom->loadHTML($response->body());
                 $xpath = new DOMXPath($dom);
                 $links = $xpath->query('//a[contains(@href, "/DocumentCenter/View/")]');
+                // Collect all PDF links with month names, prefer current month
+                $candidates = [];
                 foreach ($links as $link) {
                     $href = $link->getAttribute('href');
                     $txt  = trim($link->textContent);
-                    if (!preg_match('/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(Skate\s+)?Calendar/i', $txt)) continue;
+                    if (!preg_match('/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(Skate\s+)?Calendar/i', $txt, $monthMatch)) continue;
                     if (!preg_match('/\/DocumentCenter\/View\/(\d+)/', $href, $dm)) continue;
-                    $pdfUrl = 'https://www.webstergrovesmo.gov' . $href;
-                    $docId  = $dm[1];
-                    $this->log("  Found PDF link on schedule page: {$pdfUrl}");
-                    // Update schedule_pdf_url automatically
+                    $candidates[] = [
+                        'url'   => str_starts_with($href, 'http') ? $href : 'https://www.webstergrovesmo.gov' . $href,
+                        'docId' => $dm[1],
+                        'month' => $monthMatch[1],
+                        'text'  => $txt,
+                    ];
+                }
+                // Prefer current month, then next month, then any
+                $currentMonthName = date('F');
+                $nextMonthName = date('F', strtotime('+1 month'));
+                $picked = collect($candidates)->first(fn($c) => strcasecmp($c['month'], $currentMonthName) === 0)
+                       ?? collect($candidates)->first(fn($c) => strcasecmp($c['month'], $nextMonthName) === 0)
+                       ?? collect($candidates)->last();
+                if ($picked) {
+                    $pdfUrl = $picked['url'];
+                    $docId  = $picked['docId'];
+                    $this->log("  Found " . count($candidates) . " PDF link(s), selected: {$picked['month']} ({$pdfUrl})");
                     $rink->update(['schedule_pdf_url' => $pdfUrl]);
-                    break;
                 }
             }
         } catch (\Exception $e) {
