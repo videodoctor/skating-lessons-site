@@ -292,11 +292,11 @@
       </div>
 
       <div style="border-top:1px solid #f3f4f6;padding-top:.65rem;margin-bottom:.65rem;">
-        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#f8fafc;border:1.5px solid #e5eaf2;">
           <input type="checkbox" name="email_consent" id="wl-email" required style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-email" style="font-size:.78rem;color:#374151;line-height:1.4;">I agree to receive email notifications from Kristine Skates. *</label>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:7px;padding:.5rem .65rem;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#f0f4ff;border:1.5px solid #dbe4ff;">
           <input type="checkbox" name="sms_consent" id="wl-sms" value="1" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-sms" style="font-size:.78rem;color:#374151;line-height:1.4;">
             <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders, booking confirmations, schedule changes, payment reminders, availability notifications, and public skate schedules.
@@ -306,13 +306,13 @@
             View our <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
           </label>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px;padding:.5rem .65rem;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#fffbeb;border:1.5px solid #fde68a;">
           <input type="checkbox" name="waiver_accepted" id="wl-waiver" required style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-waiver" style="font-size:.78rem;color:#374151;line-height:1.4;">
             I agree to the <a href="{{ route('waiver.show') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Liability Waiver</a>. *
           </label>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:.5rem;">
+        <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.6rem .75rem;border-radius:7px;background:#f8fafc;border:1.5px solid #e5eaf2;">
           <input type="checkbox" name="terms_accepted" id="wl-terms" required style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-terms" style="font-size:.78rem;color:#374151;line-height:1.4;">
             I agree to the <a href="{{ route('terms') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Terms</a> &
