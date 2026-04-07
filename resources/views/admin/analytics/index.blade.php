@@ -202,7 +202,12 @@
               <div style="font-size:.68rem;font-weight:700;color:#be185d;">Datacenter IP</div>
             @endif
           </td>
-          <td style="padding:.4rem .5rem;font-family:monospace;font-size:.8rem;">{{ $visit->path }}</td>
+          <td style="padding:.4rem .5rem;font-family:monospace;font-size:.8rem;">
+            {{ $visit->path }}
+            @if($visit->http_status && $visit->http_status !== 200)
+              <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:.65rem;font-weight:700;margin-left:3px;{{ $visit->http_status >= 500 ? 'background:#fee2e2;color:#991b1b;' : ($visit->http_status >= 400 ? 'background:#fef3c7;color:#92400e;' : ($visit->http_status >= 300 ? 'background:#dbeafe;color:#1e40af;' : '')) }}">{{ $visit->http_status }}</span>
+            @endif
+          </td>
           <td style="padding:.4rem .5rem;font-family:monospace;font-size:.8rem;" title="{{ $visit->org ?? '' }}{{ $visit->isp ? ' / ' . $visit->isp : '' }}">
             {{ $visit->ip_address }}
             @if($isHosting && $visit->org)

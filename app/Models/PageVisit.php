@@ -9,7 +9,7 @@ class PageVisit extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'ip_address', 'path', 'referrer_url', 'referrer_source',
+        'ip_address', 'path', 'http_status', 'referrer_url', 'referrer_source',
         'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'ref_tag',
         'country', 'region', 'city', 'org', 'isp', 'is_hosting',
         'user_agent', 'client_id', 'admin_user_id', 'created_at',

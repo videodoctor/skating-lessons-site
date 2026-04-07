@@ -49,6 +49,7 @@ class TrackPageVisit
         PageVisit::create([
             'ip_address'      => $request->ip(),
             'path'            => '/' . ltrim($path, '/'),
+            'http_status'     => $response->getStatusCode(),
             'referrer_url'    => $referrer,
             'referrer_source' => PageVisit::classifyReferrer($referrer),
             'utm_source'      => $request->get('utm_source'),
