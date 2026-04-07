@@ -141,7 +141,6 @@
   <a href="{{ route('admin.export') }}" class="nav-link {{ request()->routeIs('admin.export') ? 'active' : '' }}">📤 Export</a>
   <div class="sidebar-footer">
     <div class="sidebar-label">Account</div>
-    <div style="padding:.4rem 1.25rem .5rem;color:rgba(255,255,255,.5);font-size:.78rem;">Hi, <span style="color:#fff;font-weight:600;">{{ Auth::user()?->name ? explode(' ', Auth::user()->name)[0] : 'Admin' }}</span></div>
     <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">👤 Admin Users</a>
     <a href="/" class="nav-link">🏠 View Site</a>
     <form method="POST" action="{{ route('logout') }}">
