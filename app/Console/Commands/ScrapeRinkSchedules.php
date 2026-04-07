@@ -629,6 +629,26 @@ class ScrapeRinkSchedules extends Command
         $text = (new \Smalot\PdfParser\Parser())->parseFile($tempPdf)->getText();
         unlink($tempPdf);
 
+        // Extract the actual month from the PDF content — don't trust the link text
+        $allMonths = 'January|February|March|April|May|June|July|August|September|October|November|December';
+        if (preg_match("/($allMonths)\s+(\d{4})/i", $text, $pdfMonthMatch)) {
+            $pdfMonth = $pdfMonthMatch[1];
+            $pdfYear = (int)$pdfMonthMatch[2];
+            if (strcasecmp($pdfMonth, $monthName) !== 0) {
+                $this->warn("    PDF says '{$pdfMonth} {$pdfYear}' but expected '{$monthName} {$year}' — using PDF's month");
+                $monthName = $pdfMonth;
+                $year = $pdfYear;
+            } else {
+                $this->log("    PDF confirms: {$pdfMonth} {$pdfYear}");
+            }
+        } elseif (preg_match("/($allMonths)/i", $text, $pdfMonthOnly)) {
+            $pdfMonth = $pdfMonthOnly[1];
+            if (strcasecmp($pdfMonth, $monthName) !== 0) {
+                $this->warn("    PDF contains '{$pdfMonth}' but expected '{$monthName}' — using PDF's month");
+                $monthName = $pdfMonth;
+            }
+        }
+
         $monthNumber = (int)date('n', strtotime($monthName . ' 1'));
         $lines       = explode("\n", $text);
         $currentDate = null;
