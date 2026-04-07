@@ -43,9 +43,7 @@
   .btn-ghost{background:#f3f4f6;color:#374151;border:none;border-radius:7px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer;font-size:.87rem;}
 </style>
 
-@if(session('success'))
-<div style="background:#d1fae5;border:1.5px solid #a7f3d0;color:#065f46;padding:.65rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.83rem;font-weight:600;">✓ {{ session('success') }}</div>
-@endif
+{{-- Success flash handled by admin layout --}}
 @if($errors->any())
 <div style="background:#fee2e2;border:1.5px solid #fecaca;color:#991b1b;padding:.65rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.83rem;">
   @foreach($errors->all() as $e)<div>✕ {{ $e }}</div>@endforeach
