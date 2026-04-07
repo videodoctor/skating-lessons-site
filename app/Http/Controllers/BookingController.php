@@ -29,7 +29,10 @@ class BookingController extends Controller
         if (SiteSetting::isBookingPaused()) {
             $message = SiteSetting::get('booking_paused_message', 'Booking is currently closed.');
             $opensAt = SiteSetting::get('booking_opens_at');
-            return view('booking.paused', compact('message', 'opensAt'));
+            $clientStudents = auth('client')->check()
+                ? auth('client')->user()->students()->where('is_active', true)->get()
+                : collect();
+            return view('booking.paused', compact('message', 'opensAt', 'clientStudents'));
         }
 
         $services = Service::where('is_active', true)->orderBy('price')->get();
