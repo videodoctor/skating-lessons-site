@@ -172,6 +172,66 @@
   </table>
 </div>
 
+{{-- Payment History --}}
+<div class="section-head" style="margin-top:2rem;">💰 Payment History</div>
+<div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;overflow:hidden;">
+  <table style="width:100%;border-collapse:collapse;font-size:.86rem;">
+    <thead style="background:#f8fafc;"><tr>
+      <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#9ca3af;">Date</th>
+      <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#9ca3af;">Source</th>
+      <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#9ca3af;">From</th>
+      <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#9ca3af;">Amount</th>
+      <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#9ca3af;">Linked To</th>
+    </tr></thead>
+    <tbody>
+    @php
+      // Combine booking payments + Venmo payments into one timeline
+      $payments = collect();
+      foreach ($bookings->where('payment_status', 'paid') as $b) {
+        $payments->push([
+          'date' => $b->cash_paid_at ?? $b->venmo_confirmed_at ?? $b->updated_at,
+          'source' => $b->payment_type === 'cash' ? '💵 Cash' : '💜 Venmo',
+          'from' => $client->full_name,
+          'amount' => $b->price_paid,
+          'linked' => $b->confirmation_code . ' — ' . ($b->service->name ?? ''),
+        ]);
+      }
+      foreach ($venmoPayments as $vp) {
+        // Skip if already counted via a booking link
+        $alreadyCounted = $bookings->where('payment_status', 'paid')->where('payment_type', 'venmo')
+          ->contains(fn($b) => $b->venmo_confirmed_at && abs($b->price_paid - $vp->amount) < 0.01);
+        if (!$alreadyCounted) {
+          $payments->push([
+            'date' => $vp->created_at,
+            'source' => '💜 Venmo',
+            'from' => $vp->sender_name,
+            'amount' => $vp->amount,
+            'linked' => $vp->match_status === 'matched' ? 'Matched' : 'Client-linked',
+          ]);
+        }
+      }
+      $payments = $payments->sortByDesc('date');
+    @endphp
+    @forelse($payments as $p)
+    <tr style="border-bottom:1px solid #f3f4f6;">
+      <td style="padding:.55rem 1rem;color:#6b7280;">{{ \Carbon\Carbon::parse($p['date'])->format('M j, Y') }}</td>
+      <td style="padding:.55rem 1rem;">{{ $p['source'] }}</td>
+      <td style="padding:.55rem 1rem;color:#374151;">{{ $p['from'] }}</td>
+      <td style="padding:.55rem 1rem;font-weight:700;color:#065f46;">${{ number_format($p['amount'], 2) }}</td>
+      <td style="padding:.55rem 1rem;color:#6b7280;font-size:.8rem;">{{ $p['linked'] }}</td>
+    </tr>
+    @empty
+    <tr><td colspan="5" style="padding:1.5rem;text-align:center;color:#9ca3af;">No payments recorded.</td></tr>
+    @endforelse
+    <tr style="background:#f8fafc;border-top:2px solid #e5eaf2;">
+      <td colspan="3" style="padding:.6rem 1rem;font-weight:700;color:#374151;">Total</td>
+      <td style="padding:.6rem 1rem;font-weight:700;color:#065f46;font-size:1rem;">${{ number_format($payments->sum('amount'), 2) }}</td>
+      <td></td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
 {{-- EDIT CLIENT MODAL --}}
 <div class="modal-overlay" id="editClientModal">
   <div class="modal-box">

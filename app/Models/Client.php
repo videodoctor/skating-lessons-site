@@ -55,6 +55,11 @@ class Client extends Authenticatable
         return $this->hasMany(Booking::class);
     }
 
+    public function venmoPayments()
+    {
+        return $this->hasMany(\App\Models\VenmoPayment::class);
+    }
+
     public function waivers()
     {
         return $this->hasMany(LiabilityWaiver::class);

@@ -43,6 +43,7 @@ class ClientController extends Controller
         $clients = Client::withCount('bookings')
             ->withCount('students')
             ->withSum('bookings', 'price_paid')
+            ->withSum('venmoPayments', 'amount')
             ->with('students')
             ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%")
                 ->orWhere('first_name', 'like', "%{$search}%")
@@ -64,8 +65,9 @@ class ClientController extends Controller
         $bookings = $client->bookings()->with(['service', 'timeSlot.rink', 'student'])
             ->orderByDesc('date')->orderByDesc('start_time')->get();
         $students = $client->students()->with('aliases')->orderBy('first_name')->get();
+        $venmoPayments = $client->venmoPayments()->orderByDesc('created_at')->get();
 
-        return view('admin.clients.show', compact('client', 'bookings', 'students'));
+        return view('admin.clients.show', compact('client', 'bookings', 'students', 'venmoPayments'));
     }
 
     // ── Store ──────────────────────────────────────────────────────────────────

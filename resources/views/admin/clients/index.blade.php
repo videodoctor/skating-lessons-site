@@ -96,7 +96,7 @@
       <td class="text-center">
         <span style="background:#dbeafe;color:#1e40af;font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:10px;">{{ $client->bookings_count }}</span>
       </td>
-      <td class="font-semibold">${{ number_format($client->bookings_sum_price_paid ?? 0, 0) }}</td>
+      <td class="font-semibold">${{ number_format(max($client->bookings_sum_price_paid ?? 0, $client->venmo_payments_sum_amount ?? 0), 0) }}</td>
       <td class="text-gray-400 text-xs">{{ $client->created_at->format('M j, Y') }}</td>
       <td style="white-space:nowrap;">
         <button class="btn-sm btn-edit" onclick="openEditModal({{ $client->id }}, '{{ addslashes($client->first_name) }}', '{{ addslashes($client->last_name ?? '') }}', '{{ $client->email }}', '{{ \App\Http\Controllers\Admin\ClientController::displayPhone($client->phone) ?? '' }}', '{{ addslashes($client->notes ?? '') }}')">✏</button>
@@ -133,7 +133,7 @@
   </div>
   <div class="client-card-meta">
     <div><div class="client-card-label">Phone</div>{{ \App\Http\Controllers\Admin\ClientController::displayPhone($client->phone) ?? '—' }}</div>
-    <div><div class="client-card-label">Total Paid</div>${{ number_format($client->bookings_sum_price_paid ?? 0, 0) }}</div>
+    <div><div class="client-card-label">Total Paid</div>${{ number_format(max($client->bookings_sum_price_paid ?? 0, $client->venmo_payments_sum_amount ?? 0), 0) }}</div>
     <div><div class="client-card-label">Students</div>@forelse($client->students as $s)<span class="student-chip">{{ $s->first_name }}</span>@empty <span style="color:#d1d5db;">none</span> @endforelse</div>
     <div><div class="client-card-label">Since</div>{{ $client->created_at->format('M j, Y') }}</div>
     <div>
