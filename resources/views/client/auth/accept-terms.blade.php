@@ -56,9 +56,8 @@
         {{-- Consent checkboxes --}}
         <div style="border-top:1px solid #f3f4f6;padding-top:1.25rem;margin-bottom:1.25rem;">
 
-          {{-- Email consent (skip if already given) --}}
           @if(!$client->email_consent_at)
-          <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:1rem;">
+          <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#f8fafc;border:1.5px solid #e5eaf2;">
             <input type="checkbox" name="email_consent" id="email_consent" required
                    style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--navy);">
             <label for="email_consent" style="font-size:.85rem;color:#374151;line-height:1.5;">
@@ -67,9 +66,8 @@
           </div>
           @endif
 
-          {{-- SMS consent (skip if already opted in) --}}
           @if(!$client->sms_consent)
-          <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:1rem;background:#f0f4ff;border:1.5px solid #dbe4ff;border-radius:8px;padding:.75rem 1rem;">
+          <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#f0f4ff;border:1.5px solid #dbe4ff;">
             <input type="checkbox" name="sms_consent" id="sms_consent" value="1"
                    style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--navy);">
             <label for="sms_consent" style="font-size:.85rem;color:#374151;line-height:1.5;">
@@ -82,9 +80,8 @@
           </div>
           @endif
 
-          {{-- Waiver (skip if already signed current version) --}}
           @if(!$client->hasSignedCurrentWaiver())
-          <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:1rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:.75rem 1rem;">
+          <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#fffbeb;border:1.5px solid #fde68a;">
             <input type="checkbox" name="waiver_accepted" id="waiver_accepted" required
                    style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--navy);">
             <label for="waiver_accepted" style="font-size:.85rem;color:#374151;line-height:1.5;">
@@ -93,9 +90,8 @@
           </div>
           @endif
 
-          {{-- Terms (skip if already accepted) --}}
           @if(!$client->terms_accepted_at)
-          <div style="display:flex;align-items:flex-start;gap:.75rem;">
+          <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.6rem .75rem;border-radius:7px;background:#f8fafc;border:1.5px solid #e5eaf2;">
             <input type="checkbox" name="terms_accepted" id="terms_accepted" required
                    style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--navy);">
             <label for="terms_accepted" style="font-size:.85rem;color:#374151;line-height:1.5;">

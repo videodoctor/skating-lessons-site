@@ -235,67 +235,137 @@
 
     <div id="wl-errors" style="display:none;background:#fee2e2;border:1.5px solid #fca5a5;color:#991b1b;padding:.6rem .85rem;border-radius:7px;margin-bottom:.75rem;font-size:.82rem;"></div>
 
+    @php
+      $wlClient = auth('client')->user();
+      $hasEmail = $wlClient && $wlClient->email_consent_at;
+      $hasSms = $wlClient && $wlClient->sms_consent;
+      $hasWaiver = $wlClient && $wlClient->hasSignedCurrentWaiver();
+      $hasTerms = $wlClient && $wlClient->terms_accepted_at;
+      $allConsented = $hasEmail && $hasWaiver && $hasTerms;
+    @endphp
     <form id="waitlist-form" method="POST" action="">
       @csrf
       <input type="hidden" name="service_id" id="wl-service-id">
-      <div style="margin-bottom:.55rem;">
-        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Your Name *</label>
-        <input type="text" name="name" required placeholder="Parent/guardian name"
-          style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
-      </div>
-      <div style="margin-bottom:.55rem;">
-        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Email *</label>
-        <input type="email" name="email" required
-          style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
-      </div>
-      <div style="margin-bottom:.55rem;">
-        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Phone <span style="color:#9ca3af;">(optional, for SMS reminders)</span></label>
-        <input type="tel" name="phone" placeholder="(314) 555-0000"
-          style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;"
-          oninput="wlFormatPhone(this)">
-      </div>
 
-      <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:8px;padding:.75rem .85rem;margin-bottom:.55rem;">
-        <div style="font-weight:700;font-size:.8rem;color:#0c4a6e;margin-bottom:.4rem;">Skater Information</div>
-        <div style="margin-bottom:.4rem;">
-          <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skater Name *</label>
-          <input type="text" name="student_name" required placeholder="Name of the person skating"
+      {{-- Contact info --}}
+      @if($wlClient)
+        <input type="hidden" name="name" value="{{ $wlClient->full_name }}">
+        <input type="hidden" name="email" value="{{ $wlClient->email }}">
+        <input type="hidden" name="phone" value="{{ $wlClient->phone }}">
+        <div style="background:#f8fafc;border:1.5px solid #e5eaf2;border-radius:7px;padding:.6rem .85rem;margin-bottom:.55rem;font-size:.85rem;">
+          <div style="font-weight:600;color:#374151;">{{ $wlClient->full_name }}</div>
+          <div style="color:#6b7280;font-size:.8rem;">{{ $wlClient->email }}@if($wlClient->phone) · {{ $wlClient->phone }}@endif</div>
+        </div>
+      @else
+        <div style="margin-bottom:.55rem;">
+          <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Your Name *</label>
+          <input type="text" name="name" required placeholder="Parent/guardian name"
             style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
-          <div>
-            <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skater Age *</label>
-            <input type="number" name="student_age" required min="2" max="99" placeholder="Age"
-              style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
-          </div>
-          <div>
-            <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skill Level *</label>
-            <select name="skill_level" required style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
-              <option value="">Select...</option>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
+        <div style="margin-bottom:.55rem;">
+          <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Email *</label>
+          <input type="email" name="email" required
+            style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+        </div>
+        <div style="margin-bottom:.55rem;">
+          <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Phone <span style="color:#9ca3af;">(optional, for SMS reminders)</span></label>
+          <input type="tel" name="phone" placeholder="(314) 555-0000"
+            style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;"
+            oninput="wlFormatPhone(this)">
+        </div>
+      @endif
+
+      {{-- Skater info --}}
+      <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:8px;padding:.75rem .85rem;margin-bottom:.55rem;">
+        <div style="font-weight:700;font-size:.8rem;color:#0c4a6e;margin-bottom:.4rem;">Skater Information</div>
+        @if($wlClient && $clientStudents->isNotEmpty())
+          <div style="margin-bottom:.4rem;">
+            <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Select Skater *</label>
+            <select name="student_name" required id="wl-student-select"
+              style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;"
+              onchange="wlStudentSelected(this)">
+              <option value="">— Choose —</option>
+              @foreach($clientStudents as $cs)
+                <option value="{{ $cs->full_name }}" data-age="{{ $cs->age }}" data-skill="{{ $cs->skill_level }}">{{ $cs->full_name }}@if($cs->age) (age {{ $cs->age }})@endif</option>
+              @endforeach
+              <option value="__new">+ Add new skater</option>
             </select>
           </div>
-        </div>
+          <input type="hidden" name="student_age" id="wl-student-age">
+          <input type="hidden" name="skill_level" id="wl-student-skill">
+          <div id="wl-student-new-fields" style="display:none;">
+            <div style="margin-bottom:.4rem;">
+              <input type="text" id="wl-new-name" placeholder="Skater name"
+                style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+              <div>
+                <input type="number" id="wl-new-age" min="2" max="99" placeholder="Age"
+                  style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;"
+                  onchange="document.getElementById('wl-student-age').value=this.value">
+              </div>
+              <div>
+                <select id="wl-new-skill" style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;"
+                  onchange="document.getElementById('wl-student-skill').value=this.value">
+                  <option value="">Skill level...</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        @else
+          <div style="margin-bottom:.4rem;">
+            <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skater Name *</label>
+            <input type="text" name="student_name" required placeholder="Name of the person skating"
+              style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+            <div>
+              <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skater Age *</label>
+              <input type="number" name="student_age" required min="2" max="99" placeholder="Age"
+                style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+            </div>
+            <div>
+              <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skill Level *</label>
+              <select name="skill_level" required style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
+                <option value="">Select...</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+          </div>
+        @endif
       </div>
 
+      @guest('client')
       <div style="margin-bottom:.55rem;">
         <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">How did you hear about us? <span style="color:#9ca3af;">(optional)</span></label>
         <input type="text" name="referred_by" placeholder="e.g. Mike G., Google, Instagram"
           style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;">
       </div>
+      @endguest
+
       <div style="margin-bottom:.55rem;">
         <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Anything else? <span style="color:#9ca3af;">(optional)</span></label>
         <textarea name="message" rows="2" placeholder="Goals, availability preferences..."
           style="width:100%;border:1.5px solid #dbe4ff;border-radius:7px;padding:7px 10px;font-size:.85rem;font-family:inherit;resize:vertical;"></textarea>
       </div>
 
+      {{-- Consent: only show checkboxes the user HASN'T already given --}}
+      @if(!$allConsented)
       <div style="border-top:1px solid #f3f4f6;padding-top:.65rem;margin-bottom:.65rem;">
+        @if(!$hasEmail)
         <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#f8fafc;border:1.5px solid #e5eaf2;">
           <input type="checkbox" name="email_consent" id="wl-email" required style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-email" style="font-size:.78rem;color:#374151;line-height:1.4;">I agree to receive email notifications from Kristine Skates. *</label>
         </div>
+        @else
+          <input type="hidden" name="email_consent" value="1">
+        @endif
+        @if(!$hasSms)
         <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#f0f4ff;border:1.5px solid #dbe4ff;">
           <input type="checkbox" name="sms_consent" id="wl-sms" value="1" style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-sms" style="font-size:.78rem;color:#374151;line-height:1.4;">
@@ -306,12 +376,18 @@
             View our <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
           </label>
         </div>
+        @endif
+        @if(!$hasWaiver)
         <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.65rem;padding:.6rem .75rem;border-radius:7px;background:#fffbeb;border:1.5px solid #fde68a;">
           <input type="checkbox" name="waiver_accepted" id="wl-waiver" required style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-waiver" style="font-size:.78rem;color:#374151;line-height:1.4;">
             I agree to the <a href="{{ route('waiver.show') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Liability Waiver</a>. *
           </label>
         </div>
+        @else
+          <input type="hidden" name="waiver_accepted" value="1">
+        @endif
+        @if(!$hasTerms)
         <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.6rem .75rem;border-radius:7px;background:#f8fafc;border:1.5px solid #e5eaf2;">
           <input type="checkbox" name="terms_accepted" id="wl-terms" required style="margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:#001F5B;">
           <label for="wl-terms" style="font-size:.78rem;color:#374151;line-height:1.4;">
@@ -319,12 +395,22 @@
             <a href="{{ route('privacy') }}" target="_blank" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>. *
           </label>
         </div>
+        @else
+          <input type="hidden" name="terms_accepted" value="1">
+        @endif
       </div>
+      @else
+        <input type="hidden" name="email_consent" value="1">
+        <input type="hidden" name="waiver_accepted" value="1">
+        <input type="hidden" name="terms_accepted" value="1">
+      @endif
 
+      @guest('client')
       <div id="wl-turnstile" style="display:flex;justify-content:center;margin-bottom:.65rem;"></div>
+      @endguest
 
-      <button type="submit" id="wl-modal-submit" disabled
-        style="width:100%;background:#001F5B;color:#fff;border:none;border-radius:7px;padding:.65rem;font-size:.88rem;font-weight:700;cursor:pointer;opacity:.4;">
+      <button type="submit" id="wl-modal-submit" {{ $wlClient ? '' : 'disabled' }}
+        style="width:100%;background:#001F5B;color:#fff;border:none;border-radius:7px;padding:.65rem;font-size:.88rem;font-weight:700;cursor:pointer;{{ $wlClient ? '' : 'opacity:.4;' }}">
         Join Waitlist
       </button>
     </form>
@@ -356,6 +442,23 @@ function closeWaitlistModal() {
   document.body.style.overflow = '';
 }
 function onTurnstileLoad() { /* loaded, render happens in openWaitlistModal */ }
+function wlStudentSelected(sel) {
+  var opt = sel.options[sel.selectedIndex];
+  var newFields = document.getElementById('wl-student-new-fields');
+  if (sel.value === '__new') {
+    if (newFields) newFields.style.display = 'block';
+    var nameInput = document.getElementById('wl-new-name');
+    if (nameInput) { nameInput.setAttribute('name', 'student_name'); sel.removeAttribute('name'); nameInput.required = true; }
+  } else {
+    if (newFields) newFields.style.display = 'none';
+    sel.setAttribute('name', 'student_name');
+    var nameInput = document.getElementById('wl-new-name');
+    if (nameInput) { nameInput.removeAttribute('name'); nameInput.required = false; }
+    document.getElementById('wl-student-age').value = opt.dataset.age || '';
+    document.getElementById('wl-student-skill').value = opt.dataset.skill || '';
+  }
+}
+
 function wlFormatPhone(input) {
   var v = input.value.replace(/\D/g, '').substring(0, 10);
   if (v.length >= 6) v = '(' + v.substring(0,3) + ') ' + v.substring(3,6) + '-' + v.substring(6);

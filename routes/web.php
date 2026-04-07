@@ -66,7 +66,12 @@ Route::get('/', function () {
     $sections = json_decode(\App\Models\SiteSetting::get('homepage_sections', '[]'), true)
         ?: \App\Http\Controllers\Admin\HomePageController::defaultSections();
 
-    return view('home', compact('services', 'rinks', 'comingSoonServices', 'heroMedia', 'bioMedia', 'sections'));
+    // Client's students for waitlist form
+    $clientStudents = auth('client')->check()
+        ? auth('client')->user()->students()->where('is_active', true)->get()
+        : collect();
+
+    return view('home', compact('services', 'rinks', 'comingSoonServices', 'heroMedia', 'bioMedia', 'sections', 'clientStudents'));
 });
 
 // Public Booking Flow

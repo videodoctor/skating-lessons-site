@@ -45,7 +45,7 @@
             Book a Lesson
           </a>
           @auth('client')
-            <a href="{{ route('client.dashboard') }}" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">My Bookings</a>
+            <a href="{{ route('client.dashboard') }}" class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">My Dashboard</a>
             <form method="POST" action="{{ route('client.logout') }}" class="inline">
               @csrf
               <button type="submit" class="text-gray-400 hover:text-gray-600 px-2 py-2 text-sm">Sign Out</button>
@@ -109,7 +109,7 @@
           <a href="/book" class="mobile-menu-item cta">Book a Lesson</a>
           <a href="/rinks" class="mobile-menu-item">Rink Information</a>
           @auth('client')
-            <a href="{{ route('client.dashboard') }}" class="mobile-menu-item">My Bookings</a>
+            <a href="{{ route('client.dashboard') }}" class="mobile-menu-item">My Dashboard</a>
             <form method="POST" action="{{ route('client.logout') }}" style="text-align:right;">
               @csrf
               <button type="submit" class="mobile-menu-item" style="border:none;cursor:pointer;width:auto;">Sign Out</button>
