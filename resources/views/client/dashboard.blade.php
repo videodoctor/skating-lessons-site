@@ -44,8 +44,81 @@
         </div>
     </div>
 
+    {{-- My Skaters --}}
+    @php
+      $client = Auth::guard('client')->user();
+      $myStudents = $client->students()->where('is_active', true)->get();
+    @endphp
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h2 class="text-2xl font-bold text-blue-900">My Skaters</h2>
+            <button onclick="document.getElementById('addSkaterForm').style.display=document.getElementById('addSkaterForm').style.display==='none'?'block':'none'"
+              style="background:#001F5B;color:#fff;border:none;border-radius:6px;padding:.5rem 1rem;font-weight:600;font-size:.85rem;cursor:pointer;">+ Add Skater</button>
+        </div>
+
+        {{-- Add skater form --}}
+        <div id="addSkaterForm" style="display:none;background:#f8fafc;border:1.5px solid #e5eaf2;border-radius:8px;padding:1rem;margin-bottom:1rem;">
+            <form method="POST" action="{{ route('client.students.store') }}">
+                @csrf
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem;">
+                    <div>
+                        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">First Name *</label>
+                        <input type="text" name="first_name" required style="width:100%;border:1.5px solid #dbe4ff;border-radius:6px;padding:6px 10px;font-size:.85rem;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Last Name</label>
+                        <input type="text" name="last_name" style="width:100%;border:1.5px solid #dbe4ff;border-radius:6px;padding:6px 10px;font-size:.85rem;">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem;">
+                    <div>
+                        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Age</label>
+                        <input type="number" name="age" min="2" max="99" style="width:100%;border:1.5px solid #dbe4ff;border-radius:6px;padding:6px 10px;font-size:.85rem;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:.75rem;font-weight:600;color:#374151;margin-bottom:2px;">Skill Level</label>
+                        <select name="skill_level" style="width:100%;border:1.5px solid #dbe4ff;border-radius:6px;padding:6px 10px;font-size:.85rem;">
+                            <option value="">Select...</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" style="background:#001F5B;color:#fff;border:none;border-radius:6px;padding:.5rem 1.25rem;font-weight:600;font-size:.85rem;cursor:pointer;">Add Skater</button>
+            </form>
+        </div>
+
+        @if($myStudents->isNotEmpty())
+        <div style="display:grid;gap:.75rem;">
+            @foreach($myStudents as $student)
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border:1.5px solid #e5eaf2;border-radius:8px;padding:.75rem 1rem;">
+                <div style="display:flex;align-items:center;gap:.75rem;">
+                    @if($student->profile_photo_url)
+                        <img src="{{ $student->profile_photo_url }}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #001F5B;">
+                    @else
+                        <div style="width:40px;height:40px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-weight:700;color:#1e40af;font-size:1rem;">{{ strtoupper(substr($student->first_name, 0, 1)) }}</div>
+                    @endif
+                    <div>
+                        <div style="font-weight:700;color:#111827;">{{ $student->full_name }}</div>
+                        <div style="font-size:.78rem;color:#6b7280;">
+                            @if($student->age)Age {{ $student->age }}@endif
+                            @if($student->skill_level) · {{ ucfirst($student->skill_level) }}@endif
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:.4rem;">
+                    <a href="{{ route('client.student.show', $student) }}" style="background:#dbeafe;color:#1e40af;border:none;border-radius:5px;padding:4px 10px;font-size:.78rem;font-weight:600;text-decoration:none;">📸 Gallery</a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <p style="color:#9ca3af;font-size:.88rem;">No skaters added yet. Add your child to get started!</p>
+        @endif
+    </div>
+
     {{-- Notification Preferences --}}
-    @php $client = Auth::guard('client')->user(); @endphp
     <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
         <h2 class="text-2xl font-bold text-blue-900 mb-2">Notification Preferences</h2>
         <p class="text-gray-500 text-sm mb-5">Choose how you'd like to be notified. Account security notifications cannot be disabled.</p>

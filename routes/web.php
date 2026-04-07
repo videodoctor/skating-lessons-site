@@ -128,6 +128,7 @@ Route::get('/accept-terms', [\App\Http\Controllers\Auth\ClientAuthController::cl
         Route::get('/students/{student}', [App\Http\Controllers\ClientStudentController::class, 'show'])->name('client.student.show');
         Route::post('/students/{student}/upload', [App\Http\Controllers\ClientStudentController::class, 'upload'])->name('client.student.upload');
         Route::post('/notifications', [App\Http\Controllers\ClientNotificationController::class, 'update'])->name('client.notifications.update');
+        Route::post('/students', [App\Http\Controllers\ClientStudentController::class, 'store'])->name('client.students.store');
         Route::get('/verify-phone', [App\Http\Controllers\Auth\ClientAuthController::class, 'showVerifyPhone'])->name('client.verify-phone');
         Route::post('/verify-phone', [App\Http\Controllers\Auth\ClientAuthController::class, 'verifyPhone'])->name('client.verify-phone.submit');
         Route::post('/verify-phone/resend', [App\Http\Controllers\Auth\ClientAuthController::class, 'resendPhoneCode'])->name('client.verify-phone.resend');
