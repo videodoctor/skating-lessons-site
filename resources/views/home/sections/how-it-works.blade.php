@@ -1,6 +1,6 @@
 <!-- HOW IT WORKS -->
 <section style="background:url('{{ asset('images/ice-texture-bg.webp') }}') center/cover no-repeat #f0f4f8;position:relative;" class="py-24 pb-32">
-  <div style="position:absolute;inset:0;background:rgba(240,244,248,.88);"></div>
+  <div style="position:absolute;inset:0;background:rgba(240,244,248,.5);"></div>
   <div class="max-w-7xl mx-auto px-6 lg:px-8" style="position:relative;z-index:1;">
     <div class="text-center mb-14">
       <p class="section-label mb-2">Simple Process</p>
