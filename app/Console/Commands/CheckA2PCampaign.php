@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Twilio\Rest\Client as TwilioClient;
 
 class CheckA2PCampaign extends Command
@@ -61,10 +62,12 @@ class CheckA2PCampaign extends Command
                             'new_status'   => $status,
                         ]);
 
-                        // Log to activity for admin visibility
                         \App\Models\SiteSetting::set('a2p_campaign_status', $status);
                         \App\Models\SiteSetting::set('a2p_campaign_last_checked', now()->toIso8601String());
                         \App\Models\SiteSetting::set('a2p_campaign_status_changed_at', now()->toIso8601String());
+
+                        // Send email alert on any status change
+                        $this->sendStatusEmail($previousStatus, $status, $campaign->sid, $campaign->campaignId);
                     }
 
                     Cache::put($cacheKey, $status, now()->addDays(30));
@@ -75,6 +78,43 @@ class CheckA2PCampaign extends Command
         } catch (\Throwable $e) {
             $this->error("Failed: {$e->getMessage()}");
             Log::error("A2P campaign check failed: {$e->getMessage()}");
+        }
+    }
+
+    private function sendStatusEmail(string $oldStatus, string $newStatus, string $sid, ?string $campaignId): void
+    {
+        $isApproved = in_array($newStatus, ['VERIFIED', 'APPROVED']);
+        $isFailed = in_array($newStatus, ['FAILED', 'REJECTED']);
+        $urgency = ($isApproved || $isFailed) ? 'URGENT: ' : '';
+        $emoji = $isApproved ? '✅' : ($isFailed ? '❌' : '📱');
+
+        $subject = "{$urgency}{$emoji} A2P Campaign: {$newStatus}";
+        $body = "Kristine Skates A2P 10DLC Campaign Status Change\n\n"
+            . "Previous: {$oldStatus}\n"
+            . "New: {$newStatus}\n"
+            . "Campaign SID: {$sid}\n"
+            . "Campaign ID: {$campaignId}\n"
+            . "Checked: " . now()->format('M j, Y g:i A T') . "\n\n";
+
+        if ($isApproved) {
+            $body .= "🎉 The campaign has been APPROVED! SMS messaging is now fully operational.\n";
+        } elseif ($isFailed) {
+            $body .= "⚠️ The campaign was REJECTED. Check the Twilio console for details and resubmit.\n"
+                . "https://console.twilio.com/\n";
+        }
+
+        $body .= "\n— Kristine Skates Automated Monitor";
+
+        try {
+            Mail::raw($body, function ($message) use ($subject) {
+                $message->to('rob@videorx.com')
+                    ->from('kristine@kristineskates.com', 'Kristine Skates')
+                    ->subject($subject);
+            });
+            $this->info("  Email alert sent to rob@videorx.com");
+        } catch (\Throwable $e) {
+            $this->error("  Email failed: {$e->getMessage()}");
+            Log::error("A2P status email failed: {$e->getMessage()}");
         }
     }
 }
