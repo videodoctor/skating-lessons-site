@@ -85,6 +85,10 @@ class BookingController extends Controller
             new \App\Notifications\WaitlistSignupNotification($interest)
         ));
 
+        // Send confirmation email to the person who signed up
+        \Illuminate\Support\Facades\Notification::route('mail', $interest->email)
+            ->notify(new \App\Notifications\WaitlistConfirmationNotification($interest));
+
         // Set service-specific waitlist flag if we know which service (for home page cards)
         if ($serviceId) {
             session()->flash('waitlist_joined_' . $serviceId, true);
