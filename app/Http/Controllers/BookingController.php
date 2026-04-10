@@ -69,7 +69,7 @@ class BookingController extends Controller
 
         $serviceId = $request->input('service_id');
 
-        BookingInterest::create([
+        $interest = BookingInterest::create([
             ...$validated,
             'service_id'      => $serviceId ?: null,
             'source'          => $serviceId ? 'service_waitlist' : 'booking_paused',
@@ -78,6 +78,12 @@ class BookingController extends Controller
             'waiver_accepted' => true,
             'terms_accepted'  => true,
         ]);
+
+        // Notify all admins about the new waitlist sign-up
+        $interest->load('service');
+        \App\Models\User::all()->each(fn($admin) => $admin->notify(
+            new \App\Notifications\WaitlistSignupNotification($interest)
+        ));
 
         // Set service-specific waitlist flag if we know which service (for home page cards)
         if ($serviceId) {
