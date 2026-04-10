@@ -10,9 +10,10 @@
   .wrapper { background:url('https://kristineskates.com/images/email-bg-blue-streak.jpg') center center / cover no-repeat fixed #d4eaf5; padding:32px 16px; min-height:100vh; }
   .container { max-width:560px; margin:0 auto; border:1.5px solid #bfcad6; border-radius:12px; overflow:hidden; box-shadow:0 4px 24px rgba(0,31,91,.1); }
   .header { background:#001F5B; padding:24px 32px; text-align:center; }
-  .header-logo { width:36px; height:36px; vertical-align:middle; margin-right:10px; }
-  .header-text { font-family:'Bebas Neue','Helvetica Neue',Arial,sans-serif; font-size:28px; font-weight:400; color:#ffffff; letter-spacing:3px; vertical-align:middle; }
-  .header-sub { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; color:rgba(255,255,255,.45); letter-spacing:2px; text-transform:uppercase; margin-top:6px; }
+  .header-inner { display:inline-flex; align-items:center; text-align:left; }
+  .header-logo { width:44px; height:44px; margin-right:14px; flex-shrink:0; }
+  .header-text { font-family:'Bebas Neue','Helvetica Neue',Arial,sans-serif; font-size:29.25px; font-weight:400; color:#ffffff; letter-spacing:3.25px; display:block; line-height:1.1; }
+  .header-sub { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; color:rgba(255,255,255,.45); letter-spacing:2px; text-transform:uppercase; margin-top:4px; display:block; }
   .body { background:#ffffff; padding:32px; }
   .greeting { font-family:'Bebas Neue','Helvetica Neue',Arial,sans-serif; font-size:26px; font-weight:400; color:#001F5B; letter-spacing:1px; margin:0 0 16px; }
   .text { font-size:15px; line-height:1.7; color:#374151; margin:0 0 14px; }
@@ -48,11 +49,13 @@
   <div class="container">
     {{-- Header --}}
     <div class="header">
-      <div>
+      <div class="header-inner">
         <img src="https://kristineskates.com/images/HOCKEY_SKATER.webp" alt="" class="header-logo" style="filter:brightness(0) invert(1);">
-        <span class="header-text">KRISTINE SKATES</span>
+        <div>
+          <span class="header-text">KRISTINE SKATES</span>
+          <span class="header-sub">Private Skating Lessons</span>
+        </div>
       </div>
-      <div class="header-sub">Private Skating Lessons &bull; St. Louis, MO</div>
     </div>
     <div class="accent-bar"></div>
 
