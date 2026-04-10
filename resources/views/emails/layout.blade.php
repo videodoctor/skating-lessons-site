@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
   body { margin:0; padding:0; background:#e8eef4; font-family:'Helvetica Neue',Arial,sans-serif; -webkit-text-size-adjust:100%; }
-  .wrapper { background:url('https://kristineskates.com/images/ice-texture-email.jpg') center center / cover no-repeat fixed #e8eef4; padding:32px 16px; min-height:100vh; }
+  .wrapper { background:url('https://kristineskates.com/images/email-bg-blue-streak.jpg') center center / cover no-repeat fixed #d4eaf5; padding:32px 16px; min-height:100vh; }
   .container { max-width:560px; margin:0 auto; border:1.5px solid #bfcad6; border-radius:12px; overflow:hidden; box-shadow:0 4px 24px rgba(0,31,91,.1); }
   .header { background:#001F5B; padding:24px 32px; text-align:center; }
   .header-logo { width:36px; height:36px; vertical-align:middle; margin-right:10px; }
