@@ -73,6 +73,22 @@
   </div>
 </div>
 
+@if(count($ignoredSenders) > 0)
+<div style="font-size:.78rem;color:#6b7280;margin-bottom:1.25rem;">
+  <strong>Always ignoring:</strong>
+  @foreach($ignoredSenders as $sender)
+    <span style="display:inline-flex;align-items:center;gap:3px;background:#f3f4f6;padding:2px 8px;border-radius:6px;margin:2px;">
+      {{ $sender }}
+      <form method="POST" action="{{ route('admin.venmo.remove-ignored-sender') }}" style="display:inline;">
+        @csrf @method('DELETE')
+        <input type="hidden" name="sender_name" value="{{ $sender }}">
+        <button type="submit" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:.7rem;padding:0 2px;" title="Remove from ignore list">✕</button>
+      </form>
+    </span>
+  @endforeach
+</div>
+@endif
+
 {{-- ═══ NEEDS ACTION ═══ --}}
 @if($needsAction->count() > 0)
 <div style="margin-bottom:2rem;">
@@ -126,7 +142,13 @@
           </button>
           <form method="POST" action="{{ route('admin.venmo.ignore', $payment) }}" style="display:inline;margin-left:2px;">
             @csrf @method('PATCH')
-            <button type="submit" class="btn-sm" style="background:#f3f4f6;color:#6b7280;">— Ignore</button>
+            <button type="submit" class="btn-sm" style="background:#f3f4f6;color:#6b7280;">Ignore</button>
+          </form>
+          <form method="POST" action="{{ route('admin.venmo.ignore', $payment) }}" style="display:inline;margin-left:2px;"
+                onsubmit="return confirm('Always ignore payments from {{ addslashes($payment->sender_name) }}?')">
+            @csrf @method('PATCH')
+            <input type="hidden" name="always" value="1">
+            <button type="submit" class="btn-sm" style="background:#fee2e2;color:#991b1b;">Always Ignore</button>
           </form>
         </td>
       </tr>

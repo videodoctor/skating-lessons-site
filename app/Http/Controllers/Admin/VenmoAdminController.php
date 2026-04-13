@@ -40,8 +40,9 @@ class VenmoAdminController extends Controller
             ->get();
 
         $clients = Client::orderBy('first_name')->get();
+        $ignoredSenders = json_decode(\App\Models\SiteSetting::get('venmo_ignored_senders', '[]'), true) ?: [];
 
-        return view('admin.venmo', compact('needsAction', 'resolved', 'stats', 'showIgnored', 'bookings', 'clients'));
+        return view('admin.venmo', compact('needsAction', 'resolved', 'stats', 'showIgnored', 'bookings', 'clients', 'ignoredSenders'));
     }
 
     public function parseNow()
@@ -158,9 +159,28 @@ class VenmoAdminController extends Controller
         return redirect()->route('admin.venmo.index')->with('success', $msg);
     }
 
-    public function ignore(VenmoPayment $payment)
+    public function ignore(Request $request, VenmoPayment $payment)
     {
         $payment->update(['match_status' => 'ignored']);
+
+        // "Always ignore" — add sender to permanent ignore list
+        if ($request->boolean('always')) {
+            $list = json_decode(\App\Models\SiteSetting::get('venmo_ignored_senders', '[]'), true) ?: [];
+            $name = $payment->sender_name;
+            if (!in_array($name, $list)) {
+                $list[] = $name;
+                \App\Models\SiteSetting::set('venmo_ignored_senders', json_encode($list));
+            }
+
+            // Also ignore all other unmatched payments from this sender
+            $count = VenmoPayment::where('sender_name', $name)
+                ->where('match_status', '!=', 'ignored')
+                ->where('match_status', '!=', 'matched')
+                ->update(['match_status' => 'ignored']);
+
+            return back()->with('success', "Always ignoring \"{$name}\". {$count} payment(s) ignored.");
+        }
+
         return back()->with('success', "Payment from {$payment->sender_name} ignored.");
     }
 
@@ -168,5 +188,15 @@ class VenmoAdminController extends Controller
     {
         $payment->update(['match_status' => 'unmatched']);
         return back()->with('success', "Payment from {$payment->sender_name} restored.");
+    }
+
+    public function removeIgnoredSender(Request $request)
+    {
+        $name = $request->input('sender_name');
+        $list = json_decode(\App\Models\SiteSetting::get('venmo_ignored_senders', '[]'), true) ?: [];
+        $list = array_values(array_filter($list, fn($n) => $n !== $name));
+        \App\Models\SiteSetting::set('venmo_ignored_senders', json_encode($list));
+
+        return back()->with('success', "\"{$name}\" removed from always-ignore list.");
     }
 }

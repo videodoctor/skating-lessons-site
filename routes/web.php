@@ -210,6 +210,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::patch('/venmo/{payment}', [App\Http\Controllers\Admin\VenmoAdminController::class, 'link'])->name('admin.venmo.link');
     Route::patch('/venmo/{payment}/ignore', [App\Http\Controllers\Admin\VenmoAdminController::class, 'ignore'])->name('admin.venmo.ignore');
     Route::patch('/venmo/{payment}/unignore', [App\Http\Controllers\Admin\VenmoAdminController::class, 'unignore'])->name('admin.venmo.unignore');
+    Route::delete('/venmo/ignored-sender', [App\Http\Controllers\Admin\VenmoAdminController::class, 'removeIgnoredSender'])->name('admin.venmo.remove-ignored-sender');
 
     // Waivers
     Route::get('/waivers', [App\Http\Controllers\Admin\WaiverAdminController::class, 'index'])->name('admin.waivers.index');

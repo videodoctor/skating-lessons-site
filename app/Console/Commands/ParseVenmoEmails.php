@@ -87,6 +87,25 @@ class ParseVenmoEmails extends Command
 
         $this->line("  📧 {$parsed['sender_name']} paid \${$parsed['amount']} — note: \"{$parsed['note']}\"");
 
+        // Check if sender is on the permanent ignore list
+        $ignoredSenders = json_decode(\App\Models\SiteSetting::get('venmo_ignored_senders', '[]'), true) ?: [];
+        if (in_array($parsed['sender_name'], $ignoredSenders)) {
+            $this->line("     ↷ Sender \"{$parsed['sender_name']}\" is on ignore list — auto-ignoring");
+            if (!$isDryRun) {
+                VenmoPayment::create([
+                    'transaction_id'  => $parsed['transaction_id'] ?: null,
+                    'sender_name'     => $parsed['sender_name'],
+                    'amount'          => $parsed['amount'],
+                    'note'            => $parsed['note'],
+                    'paid_at'         => $parsed['paid_at'],
+                    'match_status'    => 'ignored',
+                    'raw_subject'     => $subject ?? null,
+                ]);
+                $this->markAsRead($token, $msgId);
+            }
+            return;
+        }
+
         // Check for duplicate by transaction ID (skip if empty — can't dedup on blank)
         if ($parsed['transaction_id'] && VenmoPayment::where('transaction_id', $parsed['transaction_id'])->exists()) {
             $this->line("     ↷ Already recorded (transaction ID match)");
