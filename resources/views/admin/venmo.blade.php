@@ -102,6 +102,9 @@
              style="color:var(--navy);font-weight:600;font-size:.85rem;text-decoration:none;">
             {{ $payment->client->full_name }}
           </a>
+          @if($payment->client->venmo_aliases)
+            <div style="font-size:.68rem;color:#9ca3af;margin-top:1px;">aka {{ implode(', ', $payment->client->venmo_aliases) }}</div>
+          @endif
         @else
           <span style="color:#9ca3af;font-size:.78rem;">— unlinked —</span>
         @endif
@@ -188,6 +191,13 @@
           @endforeach
         </select>
       </div>
+      <div style="margin:.65rem 0;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:#374151;cursor:pointer;">
+          <input type="checkbox" name="save_alias" value="1" id="linkSaveAlias" checked
+                 style="accent-color:var(--navy);width:16px;height:16px;">
+          <span>Save "<strong id="link-alias-name"></strong>" as alias for auto-matching</span>
+        </label>
+      </div>
       <p style="font-size:.75rem;color:#9ca3af;margin-bottom:.5rem;">Select a client to link now. Add bookings to mark them as paid, or reconcile later.</p>
       <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem;">
         <button type="button" style="background:#f3f4f6;color:#374151;border:none;border-radius:7px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer;" onclick="closeModal()">Cancel</button>
@@ -201,8 +211,10 @@
 function openLinkModal(id, sender, amount) {
   document.getElementById('link-sender').textContent = sender;
   document.getElementById('link-amount').textContent = amount;
+  document.getElementById('link-alias-name').textContent = sender;
   document.getElementById('linkForm').action = `/admin/venmo/${id}`;
   document.getElementById('linkClientSelect').value = '';
+  document.getElementById('linkSaveAlias').checked = true;
   const bookingSel = document.getElementById('linkBookingSelect');
   for (let opt of bookingSel.options) opt.selected = false;
   document.getElementById('linkModal').style.display = 'flex';

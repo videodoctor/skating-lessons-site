@@ -227,6 +227,16 @@ class ParseVenmoEmails extends Command
 
         if ($client) return $client;
 
+        // Venmo alias match
+        $senderLower = strtolower(trim($parsed['sender_name']));
+        foreach (Client::whereNotNull('venmo_aliases')->get() as $c) {
+            foreach ($c->venmo_aliases ?? [] as $alias) {
+                if (strtolower($alias) === $senderLower) {
+                    return $c;
+                }
+            }
+        }
+
         // First name only match (common for parents with different last names)
         if ($firstName) {
             return Client::where('first_name', $firstName)->first();

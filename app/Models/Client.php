@@ -13,7 +13,7 @@ class Client extends Authenticatable
         'name', 'first_name', 'last_name',
         'email', 'password', 'phone', 'notes',
         'email_consent_at', 'terms_accepted_at', 'must_accept_terms',
-        'sms_consent', 'sms_phone', 'notification_prefs',
+        'sms_consent', 'sms_phone', 'notification_prefs', 'venmo_aliases',
         'last_login_at',
         'email_verify_token', 'email_verified_at',
         'phone_verify_code', 'phone_verify_sent_at', 'phone_verified_at',
@@ -36,6 +36,7 @@ class Client extends Authenticatable
         'phone_verified_at'    => 'datetime',
         'phone_verify_sent_at' => 'datetime',
         'sms_consent'          => 'boolean',
+        'venmo_aliases'        => 'array',
     ];
 
     // ── Relationships ──────────────────────────────────────────────────────────
@@ -140,6 +141,31 @@ class Client extends Authenticatable
     public function waiverRequired(): bool
     {
         return !$this->hasSignedCurrentWaiver();
+    }
+
+    // ── Venmo aliases ─────────────────────────────────────────────────────────
+
+    public function addVenmoAlias(string $alias): void
+    {
+        $aliases = $this->venmo_aliases ?? [];
+        $normalized = trim($alias);
+
+        if (strcasecmp($normalized, $this->full_name) === 0) return;
+        if (strcasecmp($normalized, $this->name ?? '') === 0) return;
+
+        foreach ($aliases as $existing) {
+            if (strcasecmp($existing, $normalized) === 0) return;
+        }
+
+        $aliases[] = $normalized;
+        $this->update(['venmo_aliases' => $aliases]);
+    }
+
+    public function removeVenmoAlias(string $alias): void
+    {
+        $aliases = $this->venmo_aliases ?? [];
+        $aliases = array_values(array_filter($aliases, fn($a) => strcasecmp($a, trim($alias)) !== 0));
+        $this->update(['venmo_aliases' => $aliases ?: null]);
     }
 
     // ── Sync name fields ───────────────────────────────────────────────────────

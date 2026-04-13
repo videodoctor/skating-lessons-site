@@ -87,10 +87,20 @@ class VenmoAdminController extends Controller
             'match_status' => !empty($linkedCodes) ? 'matched' : 'client_only',
         ]);
 
+        // Save sender name as Venmo alias for future auto-matching
+        $aliasSaved = false;
+        if ($client && $request->boolean('save_alias')) {
+            $client->addVenmoAlias($payment->sender_name);
+            $aliasSaved = true;
+        }
+
         $clientName = $client?->full_name ?? 'unknown client';
         $msg = "Payment from {$payment->sender_name} linked to {$clientName}.";
         if (!empty($linkedCodes)) {
             $msg .= ' Bookings marked paid: ' . implode(', ', $linkedCodes) . '.';
+        }
+        if ($aliasSaved) {
+            $msg .= " Alias \"{$payment->sender_name}\" saved for future auto-matching.";
         }
 
         return redirect()->route('admin.venmo.index')->with('success', $msg);
