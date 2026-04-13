@@ -73,27 +73,85 @@
   </div>
 </div>
 
-{{-- Unmatched alert --}}
-@if($stats['unmatched'] > 0)
-<div style="background:#fff8ed;border:2px solid #fcd34d;border-radius:10px;padding:.85rem 1.1rem;margin-bottom:1.25rem;font-size:.83rem;color:#92400e;">
-  ⚠️ <strong>{{ $stats['unmatched'] }} payment(s)</strong> could not be matched to a booking or client. Review below and link manually.
+{{-- ═══ NEEDS ACTION ═══ --}}
+@if($needsAction->count() > 0)
+<div style="margin-bottom:2rem;">
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#dc2626;margin:0 0 .75rem;">
+    ⚠️ Needs Action ({{ $needsAction->count() }})
+  </h2>
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden" style="border:2px solid #fecaca;">
+    <table class="tbl w-full">
+      <thead style="background:#fef2f2;"><tr>
+        <th>Date</th><th>From</th><th>Amount</th><th>Note</th><th>Client</th><th>Booking</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+      @foreach($needsAction as $payment)
+      <tr>
+        <td style="white-space:nowrap;">
+          <div>{{ $payment->paid_at->format('M j, Y') }}</div>
+          <div style="font-size:.72rem;color:#9ca3af;">{{ $payment->paid_at->format('g:i A') }}</div>
+        </td>
+        <td style="font-weight:600;">{{ $payment->sender_name }}</td>
+        <td style="font-weight:700;color:#065f46;font-size:1rem;">${{ number_format($payment->amount, 2) }}</td>
+        <td style="color:#6b7280;font-size:.82rem;max-width:160px;">{{ $payment->note ?: '—' }}</td>
+        <td>
+          @if($payment->client)
+            <a href="{{ route('admin.clients.show', $payment->client) }}" style="color:var(--navy);font-weight:600;font-size:.85rem;text-decoration:none;">{{ $payment->client->full_name }}</a>
+            @if($payment->client->venmo_aliases)
+              <div style="font-size:.68rem;color:#9ca3af;margin-top:1px;">aka {{ implode(', ', $payment->client->venmo_aliases) }}</div>
+            @endif
+          @else
+            <span style="color:#9ca3af;font-size:.78rem;">— unlinked —</span>
+          @endif
+        </td>
+        <td>
+          @if($payment->booking)
+            <div style="font-size:.8rem;font-weight:600;color:var(--navy);">#{{ $payment->booking->confirmation_code }}</div>
+            <div style="font-size:.72rem;color:#6b7280;">{{ \Carbon\Carbon::parse($payment->booking->date)->format('M j') }} · {{ $payment->booking->student?->first_name ?? '?' }}</div>
+          @else
+            <span style="color:#9ca3af;font-size:.78rem;">— no booking —</span>
+          @endif
+        </td>
+        <td>
+          @if($payment->match_status === 'client_only')
+            <span class="pill pill-yellow">~ Client only</span>
+          @else
+            <span class="pill pill-red">⚠ Unmatched</span>
+          @endif
+        </td>
+        <td style="white-space:nowrap;">
+          <button class="btn-sm" style="background:#dbeafe;color:#1e40af;"
+            onclick="openLinkModal({{ $payment->id }}, '{{ addslashes($payment->sender_name) }}', '{{ $payment->amount }}')">
+            Link
+          </button>
+          <form method="POST" action="{{ route('admin.venmo.ignore', $payment) }}" style="display:inline;margin-left:2px;">
+            @csrf @method('PATCH')
+            <button type="submit" class="btn-sm" style="background:#f3f4f6;color:#6b7280;">— Ignore</button>
+          </form>
+        </td>
+      </tr>
+      @endforeach
+      </tbody>
+    </table>
+  </div>
+</div>
+@else
+<div style="background:#d1fae5;border:1.5px solid #a7f3d0;border-radius:10px;padding:.85rem 1.1rem;margin-bottom:1.5rem;font-size:.85rem;color:#065f46;">
+  ✓ All payments are matched — nothing needs attention.
 </div>
 @endif
 
+{{-- ═══ RESOLVED / MATCHED ═══ --}}
+<h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--navy);margin:0 0 .75rem;">
+  ✓ Resolved ({{ $resolved->total() }})
+</h2>
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
   <table class="tbl w-full">
     <thead class="bg-gray-50"><tr>
-      <th>Date</th>
-      <th>From</th>
-      <th>Amount</th>
-      <th>Note</th>
-      <th>Client</th>
-      <th>Booking</th>
-      <th>Status</th>
-      <th></th>
+      <th>Date</th><th>From</th><th>Amount</th><th>Note</th><th>Client</th><th>Booking</th><th>Status</th><th></th>
     </tr></thead>
     <tbody>
-    @forelse($payments as $payment)
+    @forelse($resolved as $payment)
     <tr>
       <td style="white-space:nowrap;">
         <div>{{ $payment->paid_at->format('M j, Y') }}</div>
@@ -101,15 +159,10 @@
       </td>
       <td style="font-weight:600;">{{ $payment->sender_name }}</td>
       <td style="font-weight:700;color:#065f46;font-size:1rem;">${{ number_format($payment->amount, 2) }}</td>
-      <td style="color:#6b7280;font-size:.82rem;max-width:160px;">
-        {{ $payment->note ?: '—' }}
-      </td>
+      <td style="color:#6b7280;font-size:.82rem;max-width:160px;">{{ $payment->note ?: '—' }}</td>
       <td>
         @if($payment->client)
-          <a href="{{ route('admin.clients.show', $payment->client) }}"
-             style="color:var(--navy);font-weight:600;font-size:.85rem;text-decoration:none;">
-            {{ $payment->client->full_name }}
-          </a>
+          <a href="{{ route('admin.clients.show', $payment->client) }}" style="color:var(--navy);font-weight:600;font-size:.85rem;text-decoration:none;">{{ $payment->client->full_name }}</a>
           @if($payment->client->venmo_aliases)
             <div style="font-size:.68rem;color:#9ca3af;margin-top:1px;">aka {{ implode(', ', $payment->client->venmo_aliases) }}</div>
           @endif
@@ -119,13 +172,8 @@
       </td>
       <td>
         @if($payment->booking)
-          <div style="font-size:.8rem;font-weight:600;color:var(--navy);">
-            #{{ $payment->booking->confirmation_code }}
-          </div>
-          <div style="font-size:.72rem;color:#6b7280;">
-            {{ \Carbon\Carbon::parse($payment->booking->date)->format('M j') }}
-            · {{ $payment->booking->student?->first_name ?? '?' }}
-          </div>
+          <div style="font-size:.8rem;font-weight:600;color:var(--navy);">#{{ $payment->booking->confirmation_code }}</div>
+          <div style="font-size:.72rem;color:#6b7280;">{{ \Carbon\Carbon::parse($payment->booking->date)->format('M j') }} · {{ $payment->booking->student?->first_name ?? '?' }}</div>
         @else
           <span style="color:#9ca3af;font-size:.78rem;">— no booking —</span>
         @endif
@@ -133,12 +181,8 @@
       <td>
         @if($payment->match_status === 'matched')
           <span class="pill pill-green">✓ Matched</span>
-        @elseif($payment->match_status === 'client_only')
-          <span class="pill pill-yellow">~ Client only</span>
         @elseif($payment->match_status === 'ignored')
           <span class="pill pill-gray">— Ignored</span>
-        @else
-          <span class="pill pill-red">⚠ Unmatched</span>
         @endif
       </td>
       <td style="white-space:nowrap;">
@@ -147,26 +191,15 @@
             @csrf @method('PATCH')
             <button type="submit" class="btn-sm" style="background:#f3f4f6;color:#374151;">↩ Restore</button>
           </form>
-        @else
-          @if($payment->match_status !== 'matched')
-          <button class="btn-sm" style="background:#dbeafe;color:#1e40af;"
-            onclick="openLinkModal({{ $payment->id }}, '{{ addslashes($payment->sender_name) }}', '{{ $payment->amount }}')">
-            Link
-          </button>
-          <form method="POST" action="{{ route('admin.venmo.ignore', $payment) }}" style="display:inline;margin-left:2px;">
-            @csrf @method('PATCH')
-            <button type="submit" class="btn-sm" style="background:#f3f4f6;color:#6b7280;">— Ignore</button>
-          </form>
-          @endif
         @endif
       </td>
     </tr>
     @empty
-    <tr><td colspan="8" class="text-center py-10 text-gray-400">No Venmo payments recorded yet.</td></tr>
+    <tr><td colspan="8" class="text-center py-10 text-gray-400">No resolved payments yet.</td></tr>
     @endforelse
     </tbody>
   </table>
-  <div class="p-4">{{ $payments->links() }}</div>
+  <div class="p-4">{{ $resolved->links() }}</div>
 </div>
 
 {{-- Link modal --}}

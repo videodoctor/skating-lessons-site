@@ -15,15 +15,21 @@ class VenmoAdminController extends Controller
     {
         $showIgnored = $request->boolean('show_ignored');
 
-        $payments = VenmoPayment::with(['booking.student', 'client'])
-            ->when(!$showIgnored, fn($q) => $q->where('match_status', '!=', 'ignored'))
+        $needsAction = VenmoPayment::with(['booking.student', 'client'])
+            ->whereIn('match_status', ['unmatched', 'client_only'])
+            ->orderByDesc('paid_at')
+            ->get();
+
+        $resolved = VenmoPayment::with(['booking.student', 'client'])
+            ->where('match_status', 'matched')
+            ->when($showIgnored, fn($q) => $q->orWhere('match_status', 'ignored'))
             ->orderByDesc('paid_at')
             ->paginate(30);
 
         $stats = [
             'total'        => VenmoPayment::where('match_status', '!=', 'ignored')->count(),
             'total_amount' => VenmoPayment::where('match_status', '!=', 'ignored')->sum('amount'),
-            'matched'      => VenmoPayment::where('match_status', 'matched')->count(),
+            'matched'      => VenmoPayment::whereIn('match_status', ['matched', 'client_only'])->count(),
             'unmatched'    => VenmoPayment::where('match_status', 'unmatched')->count(),
         ];
 
@@ -35,7 +41,7 @@ class VenmoAdminController extends Controller
 
         $clients = Client::orderBy('first_name')->get();
 
-        return view('admin.venmo', compact('payments', 'stats', 'showIgnored', 'bookings', 'clients'));
+        return view('admin.venmo', compact('needsAction', 'resolved', 'stats', 'showIgnored', 'bookings', 'clients'));
     }
 
     public function parseNow()
