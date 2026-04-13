@@ -206,6 +206,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Venmo payments
     Route::get('/venmo', [App\Http\Controllers\Admin\VenmoAdminController::class, 'index'])->name('admin.venmo.index');
     Route::post('/venmo/parse-now', [App\Http\Controllers\Admin\VenmoAdminController::class, 'parseNow'])->name('admin.venmo.parse-now');
+    Route::post('/venmo/rematch', [App\Http\Controllers\Admin\VenmoAdminController::class, 'rematch'])->name('admin.venmo.rematch');
     Route::patch('/venmo/{payment}', [App\Http\Controllers\Admin\VenmoAdminController::class, 'link'])->name('admin.venmo.link');
     Route::patch('/venmo/{payment}/ignore', [App\Http\Controllers\Admin\VenmoAdminController::class, 'ignore'])->name('admin.venmo.ignore');
     Route::patch('/venmo/{payment}/unignore', [App\Http\Controllers\Admin\VenmoAdminController::class, 'unignore'])->name('admin.venmo.unignore');

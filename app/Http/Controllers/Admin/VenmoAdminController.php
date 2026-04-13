@@ -90,8 +90,10 @@ class VenmoAdminController extends Controller
         // Save sender name as Venmo alias for future auto-matching
         $aliasSaved = false;
         if ($client && $request->boolean('save_alias')) {
+            $before = $client->venmo_aliases ?? [];
             $client->addVenmoAlias($payment->sender_name);
-            $aliasSaved = true;
+            $after = $client->fresh()->venmo_aliases ?? [];
+            $aliasSaved = count($after) > count($before);
         }
 
         $clientName = $client?->full_name ?? 'unknown client';
@@ -102,6 +104,50 @@ class VenmoAdminController extends Controller
         if ($aliasSaved) {
             $msg .= " Alias \"{$payment->sender_name}\" saved for future auto-matching.";
         }
+
+        return redirect()->route('admin.venmo.index')->with('success', $msg);
+    }
+
+    public function rematch()
+    {
+        $unmatched = VenmoPayment::where('match_status', 'unmatched')->get();
+        $matched = 0;
+
+        foreach ($unmatched as $payment) {
+            $nameParts = explode(' ', $payment->sender_name);
+            $firstName = $nameParts[0] ?? '';
+            $lastName  = $nameParts[1] ?? '';
+
+            // Exact name match
+            $client = Client::where('name', $payment->sender_name)
+                ->orWhere(fn($q) => $q->where('first_name', $firstName)->where('last_name', $lastName))
+                ->first();
+
+            // Alias match
+            if (!$client) {
+                $senderLower = strtolower(trim($payment->sender_name));
+                foreach (Client::whereNotNull('venmo_aliases')->get() as $c) {
+                    foreach ($c->venmo_aliases ?? [] as $alias) {
+                        if (strtolower($alias) === $senderLower) {
+                            $client = $c;
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            if ($client) {
+                $payment->update([
+                    'client_id'    => $client->id,
+                    'match_status' => 'client_only',
+                ]);
+                $matched++;
+            }
+        }
+
+        $msg = $matched > 0
+            ? "Re-matched {$matched} payment(s) to clients."
+            : "No new matches found for " . $unmatched->count() . " unmatched payment(s).";
 
         return redirect()->route('admin.venmo.index')->with('success', $msg);
     }

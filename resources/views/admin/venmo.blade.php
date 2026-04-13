@@ -36,6 +36,14 @@
       </button>
     </div>
   </form>
+  @if($stats['unmatched'] > 0)
+  <form method="POST" action="{{ route('admin.venmo.rematch') }}" style="display:inline;">
+    @csrf
+    <button type="submit" style="background:#dbeafe;color:#1e40af;border:none;border-radius:7px;padding:.5rem 1.1rem;font-size:.82rem;font-weight:700;cursor:pointer;">
+      🔄 Re-match Unmatched
+    </button>
+  </form>
+  @endif
 </div>
 
 @if(session('success'))
