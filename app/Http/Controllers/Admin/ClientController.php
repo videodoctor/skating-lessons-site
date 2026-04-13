@@ -39,6 +39,19 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('q');
+        $sort   = $request->get('sort', 'created_at');
+        $dir    = $request->get('dir', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        $allowedSorts = [
+            'name'       => 'first_name',
+            'email'      => 'email',
+            'bookings'   => 'bookings_count',
+            'total_paid' => 'bookings_sum_price_paid',
+            'created_at' => 'created_at',
+            'last_login' => 'last_login_at',
+            'students'   => 'students_count',
+        ];
+        $sortCol = $allowedSorts[$sort] ?? 'created_at';
 
         $clients = Client::withCount('bookings')
             ->withCount('students')
@@ -49,13 +62,13 @@ class ClientController extends Controller
                 ->orWhere('first_name', 'like', "%{$search}%")
                 ->orWhere('last_name', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%"))
-            ->orderByDesc('created_at')
+            ->orderBy($sortCol, $dir)
             ->paginate(30);
 
         $guestCount       = Booking::whereNull('client_id')->distinct('client_email')->count('client_email');
         $orphanedStudents = Student::whereNull('client_id')->where('is_active', true)->with('aliases')->get();
 
-        return view('admin.clients.index', compact('clients', 'search', 'guestCount', 'orphanedStudents'));
+        return view('admin.clients.index', compact('clients', 'search', 'guestCount', 'orphanedStudents', 'sort', 'dir'));
     }
 
     // ── Show ───────────────────────────────────────────────────────────────────

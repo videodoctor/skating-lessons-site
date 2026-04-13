@@ -4,6 +4,9 @@
 <style>
   :root{--navy:#001F5B;--red:#C8102E;--gold:#C9A84C;}
   .tbl th{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;padding:.6rem 1rem;text-align:left;}
+  .tbl th a{color:#9ca3af;text-decoration:none;white-space:nowrap;}
+  .tbl th a:hover{color:var(--navy);}
+  .tbl th a.active{color:var(--navy);}
   .tbl td{padding:.7rem 1rem;border-bottom:1px solid #f3f4f6;font-size:.88rem;vertical-align:middle;}
   .tbl tr:hover td{background:#fafafa;}
   .search-input{padding:.55rem 1rem;border:2px solid #e5eaf2;border-radius:8px;font-size:.88rem;width:100%;max-width:300px;transition:border .15s;}
@@ -68,8 +71,25 @@
 
 <div class="desktop-table bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
   <table class="tbl w-full">
+    @php
+      $sortLink = function($col, $label) use ($sort, $dir, $search) {
+          $newDir = ($sort === $col && $dir === 'asc') ? 'desc' : 'asc';
+          $arrow = $sort === $col ? ($dir === 'asc' ? ' ▲' : ' ▼') : '';
+          $class = $sort === $col ? 'active' : '';
+          $url = request()->fullUrlWithQuery(['sort' => $col, 'dir' => $newDir, 'q' => $search]);
+          return "<a href=\"{$url}\" class=\"{$class}\">{$label}{$arrow}</a>";
+      };
+    @endphp
     <thead class="bg-gray-50"><tr>
-      <th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Students</th><th>Bookings</th><th>Total Paid</th><th>Since</th><th></th>
+      <th>{!! $sortLink('name', 'Name') !!}</th>
+      <th>{!! $sortLink('email', 'Email') !!}</th>
+      <th>Phone</th>
+      <th>{!! $sortLink('last_login', 'Status') !!}</th>
+      <th>{!! $sortLink('students', 'Students') !!}</th>
+      <th>{!! $sortLink('bookings', 'Bookings') !!}</th>
+      <th>{!! $sortLink('total_paid', 'Total Paid') !!}</th>
+      <th>{!! $sortLink('created_at', 'Since') !!}</th>
+      <th></th>
     </tr></thead>
     <tbody>
     @forelse($clients as $client)
@@ -118,7 +138,7 @@
     @endforelse
     </tbody>
   </table>
-  <div class="p-4">{{ $clients->appends(['q'=>$search])->links() }}</div>
+  <div class="p-4">{{ $clients->appends(['q'=>$search, 'sort'=>$sort, 'dir'=>$dir])->links() }}</div>
 </div>
 
 {{-- Mobile client cards --}}
@@ -165,7 +185,7 @@
 </div>
 @endforeach
 <div class="client-card" style="background:transparent;border:none;padding:0;">
-  {{ $clients->appends(['q'=>$search])->links() }}
+  {{ $clients->appends(['q'=>$search, 'sort'=>$sort, 'dir'=>$dir])->links() }}
 </div>
 
 {{-- Orphaned students --}}
