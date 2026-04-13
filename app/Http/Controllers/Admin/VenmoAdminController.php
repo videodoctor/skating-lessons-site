@@ -16,12 +16,12 @@ class VenmoAdminController extends Controller
         $showIgnored = $request->boolean('show_ignored');
 
         $needsAction = VenmoPayment::with(['booking.student', 'client'])
-            ->whereIn('match_status', ['unmatched', 'client_only'])
+            ->where('match_status', 'unmatched')
             ->orderByDesc('paid_at')
             ->get();
 
         $resolved = VenmoPayment::with(['booking.student', 'client'])
-            ->where('match_status', 'matched')
+            ->whereIn('match_status', ['matched', 'client_only'])
             ->when($showIgnored, fn($q) => $q->orWhere('match_status', 'ignored'))
             ->orderByDesc('paid_at')
             ->paginate(30);
