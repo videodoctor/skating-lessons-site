@@ -68,6 +68,7 @@ class CheckA2PCampaign extends Command
 
                         // Send email alert on any status change
                         $this->sendStatusEmail($previousStatus, $status, $campaign->sid, $campaign->campaignId);
+                        $this->sendApprovalSms($status, $service->sid);
                     }
 
                     Cache::put($cacheKey, $status, now()->addDays(30));
@@ -115,6 +116,26 @@ class CheckA2PCampaign extends Command
         } catch (\Throwable $e) {
             $this->error("  Email failed: {$e->getMessage()}");
             Log::error("A2P status email failed: {$e->getMessage()}");
+        }
+    }
+
+    private function sendApprovalSms(string $newStatus, string $serviceSid): void
+    {
+        if (!in_array($newStatus, ['VERIFIED', 'APPROVED'])) {
+            return;
+        }
+
+        try {
+            $client = new TwilioClient(config('services.twilio.sid'), config('services.twilio.token'));
+            $msg = $client->messages->create('+13233141992', [
+                'from' => '+13143147528',
+                'messagingServiceSid' => $serviceSid,
+                'body' => 'Kristine Skates A2P campaign APPROVED — SMS is now live. Reply STOP to opt out or HELP for help.',
+            ]);
+            $this->info("  Confirmation SMS sent: {$msg->sid}");
+        } catch (\Throwable $e) {
+            $this->error("  SMS failed: {$e->getMessage()}");
+            Log::error("A2P confirmation SMS failed: {$e->getMessage()}");
         }
     }
 }
