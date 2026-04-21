@@ -268,7 +268,8 @@ class BookingController extends Controller
         // Notify admins
         User::all()->each(fn($admin) => $admin->notify(new NewBookingNotification($booking)));
 
-        return redirect()->route('booking.confirmation', $booking);
+        return redirect()->route('booking.confirmation', $booking)
+            ->with('show_vcard_modal', true);
     }
 
     // Step 5: Confirmation

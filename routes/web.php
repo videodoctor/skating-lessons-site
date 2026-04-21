@@ -321,8 +321,13 @@ Route::post('/waitlist/{service}', function (\Illuminate\Http\Request $request, 
         ['service_id' => $service->id, 'email' => $request->email],
         ['name' => $request->name]
     );
-    return back()->with('waitlist_joined_' . $service->id, true);
+    return back()
+        ->with('waitlist_joined_' . $service->id, true)
+        ->with('show_vcard_modal', true);
 })->name('waitlist.join');
+
+// vCard download (Kristine's contact card)
+Route::get('/vcard', [App\Http\Controllers\VCardController::class, 'show'])->name('vcard');
 
 // Booking suggestion accept/decline (public, token-protected)
 Route::get('/booking/suggestion/{token}/accept', [App\Http\Controllers\Admin\BookingController::class, 'acceptSuggestion'])->name('booking.suggestion.accept');

@@ -97,7 +97,8 @@ class ClientAuthController extends Controller
 
         return redirect()->route('client.dashboard')
             ->with('success', 'Account created! Please check your email to verify your address.'
-                . ($smsConsent ? ' A 6-digit code was sent to your phone to verify your number.' : ''));
+                . ($smsConsent ? ' A 6-digit code was sent to your phone to verify your number.' : ''))
+            ->with('show_vcard_modal', true);
     }
 
     public function showLogin()

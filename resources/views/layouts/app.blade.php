@@ -167,5 +167,6 @@
     </div>
   </footer>
 
+  @include('components.vcard-modal')
 </body>
 </html>

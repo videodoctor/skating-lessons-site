@@ -35,6 +35,10 @@
             </a>
             <p class="text-xs text-gray-400 text-center mt-1">Opens in Apple Calendar, Google Calendar, or Outlook</p>
             @endif
+            <a href="{{ route('vcard') }}" class="block bg-blue-50 hover:bg-blue-100 text-blue-900 font-bold py-3 px-4 rounded text-center transition border border-blue-200 mt-3">
+                📇 Save Kristine to My Contacts
+            </a>
+            <p class="text-xs text-gray-400 text-center mt-1">So texts from 314-314-SKATE show as "Kristine Skates"</p>
         </div>
 
         <div class="bg-white rounded-lg shadow-lg p-6">
