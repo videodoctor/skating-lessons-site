@@ -98,14 +98,24 @@
 
   <div class="policy-section">
     <h2>SMS Text Message Communications</h2>
-    <p>By providing your phone number and creating an account, you may opt in to receive SMS text message reminders about your upcoming skating lessons. Specifically:</p>
+    <p>By providing your phone number and opting in (via registration, lesson booking, or waitlist signup), you may receive the following categories of SMS text messages from Kristine Skates:</p>
     <ul>
-      <li>You will receive a reminder approximately 30 hours before each scheduled lesson</li>
-      <li>You may reply YES to confirm your lesson or NO to cancel</li>
+      <li><strong>Lesson reminders</strong> approximately 30 hours before each scheduled lesson (reply YES to confirm, NO to cancel)</li>
+      <li><strong>Booking confirmations and updates</strong> when lesson requests are approved, rejected, or modified</li>
+      <li><strong>Schedule change notifications</strong> for cancellations or time changes</li>
+      <li><strong>Payment reminders</strong> for outstanding lesson balances, with a payment link</li>
+      <li><strong>Availability notifications</strong> for waitlisted clients when lesson times open</li>
+      <li><strong>Public skate schedule replies</strong> sent on-demand when you reply SKATE to receive today's public skating times at area rinks</li>
+      <li><strong>One-time passcodes</strong> for account verification</li>
+    </ul>
+    <p>Additional terms:</p>
+    <ul>
       <li>Cancellations received via SMS less than 24 hours before the lesson may be subject to a cancellation fee at the quoted lesson rate</li>
+      <li>Message frequency varies by message type and user activity; a typical client receives fewer than 10 messages per month</li>
       <li>Message and data rates may apply depending on your mobile carrier</li>
       <li>You may opt out at any time by replying STOP to any SMS message. Reply HELP for assistance.</li>
-      <li>SMS reminders are sent from a dedicated Kristine Skates phone number via Twilio</li>
+      <li>SMS messages are sent from a dedicated Kristine Skates phone number via Twilio, our SMS delivery provider</li>
+      <li>Registered clients can manage per-category notification preferences (SMS and/or email) from their account dashboard</li>
     </ul>
     <p>We will never sell your phone number or use it for marketing unrelated to your skating lessons. <strong>No mobile information (including phone numbers collected via SMS opt-in) will be shared with third parties or affiliates for marketing or promotional purposes at any time.</strong></p>
     <p>For full details on our SMS opt-in process, consent language, and sample messages, see our <a href="/sms-opt-in" style="color:#001F5B;text-decoration:underline;">SMS Opt-In Disclosure page</a>.</p>

@@ -17,7 +17,7 @@ This campaign sends automated SMS messages to clients of Kristine Skates, a priv
 - **Schedule change notifications** for cancellations or time changes
 - **Payment reminders** for outstanding lesson balances
 - **Availability notifications** for waitlisted clients when lesson times open
-- **Public skate schedule updates** for clients who opt in to receive daily rink schedules
+- **Public skate schedule replies** sent on-demand when a user replies SKATE to receive today's public skating times at area rinks
 - **One-time passcodes** for account verification
 
 Users can reply LESSONS to receive a list of upcoming lessons, and SKATE to receive today's public skating times at area rinks.
@@ -106,7 +106,7 @@ Today's public skate times: Creve Coeur 9:15AM-1:00PM, Brentwood 2:00PM-4:00PM, 
 When a user replies STOP:
 1. Twilio automatically marks the number as opted out
 2. No further messages are sent
-3. User receives confirmation: "You have been unsubscribed from Kristine Skates SMS notifications. No further messages will be sent. Reply START to re-subscribe or email kristine@kristineskates.com for help."
+3. User receives confirmation: "You have been unsubscribed from Kristine Skates SMS messages. No further messages will be sent. Reply START to resubscribe or HELP for assistance."
 
 ---
 
@@ -122,6 +122,7 @@ When a user replies STOP:
 
 | Date | Change |
 |------|--------|
+| 2026-04-21 | Comprehensive alignment pass across submission doc, /sms-opt-in, privacy policy, SmsService code, and NotificationTemplate DB after Twilio rejection: reworded public skate message type from "daily rink schedules" (push, not actually implemented) to on-demand via SKATE keyword reply; added missing STOP/HELP tail to Lesson Reminder and SKATE samples on /sms-opt-in; renamed "YES Confirmation + Payment Link" → "Booking Confirmation" and restored "Pay $55 at" wording to match sms_booking_confirmed template; aligned STOP response doc wording to actual code output ("SMS messages" / "HELP for assistance"); aligned HELP response doc/page wording to code; updated SmsService YES-reply handler to include STOP/HELP and sign "Kristine Skates"; added migration to append STOP + signature to sms_phone_verification template; expanded privacy policy SMS section to cover all 7 message types |
 | 2026-04-21 | /sms-opt-in verification page aligned with submission: expanded Program Description to all 7 message types, added Method 3 (Waitlist), renamed program "Lesson Reminders" → "Notifications", broadened Message Frequency disclosure, updated Opt-In Confirmation sample ("lesson reminders" → "notifications"), updated YES Confirmation sample (Venmo → kristineskates.com/pay link to match actual SmsService output) |
 | 2026-04-06 | Updated Sample 2 opt-in confirmation: "lesson reminders" → "notifications" |
 | 2026-04-06 | Updated SmsService opt-in confirmation message to match |

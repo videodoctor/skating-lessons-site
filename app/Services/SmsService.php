@@ -184,7 +184,7 @@ class SmsService
                 ? " Pay here: " . url('/pay/' . $booking->confirmation_code)
                 : '';
 
-            return "Confirmed! We'll see you{$who} on {$date} at {$time}.{$payLink} — Coach Kristine";
+            return "Confirmed! We'll see you{$who} on {$date} at {$time}.{$payLink} Reply STOP to opt out or HELP for assistance. — Kristine Skates";
 
         } elseif ($reply === 'NO') {
             $booking->update([

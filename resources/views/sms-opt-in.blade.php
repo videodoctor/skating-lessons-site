@@ -22,7 +22,7 @@
       <li><strong>Schedule change notifications</strong> for cancellations or time changes</li>
       <li><strong>Payment reminders</strong> for outstanding lesson balances</li>
       <li><strong>Availability notifications</strong> for waitlisted clients when lesson times open</li>
-      <li><strong>Public skate schedule updates</strong> for clients who opt in to receive daily rink schedules</li>
+      <li><strong>Public skate schedule replies</strong> sent on-demand when a user replies SKATE to receive today's public skating times at area rinks</li>
       <li><strong>One-time passcodes</strong> for account verification</li>
     </ul>
     <p style="color:#374151;font-size:.92rem;line-height:1.7;margin:0 0 .75rem;">
@@ -154,7 +154,7 @@
       </tr>
       <tr style="border-bottom:1px solid #f3f4f6;">
         <td style="padding:.6rem .75rem;font-weight:600;color:#374151;">Message Frequency</td>
-        <td style="padding:.6rem .75rem;color:#6b7280;">Varies by message type and user activity. Typical client receives fewer than 10 messages per month (e.g., lesson reminders, booking confirmations). Users who opt in to public skate schedules receive up to 1 message per day.</td>
+        <td style="padding:.6rem .75rem;color:#6b7280;">Varies by message type and user activity. Typical client receives fewer than 10 messages per month across lesson reminders, booking confirmations, schedule changes, payment reminders, and availability notifications. Keyword replies (LESSONS, SKATE) are sent only in response to a user-initiated inbound message.</td>
       </tr>
       <tr style="border-bottom:1px solid #f3f4f6;">
         <td style="padding:.6rem .75rem;font-weight:600;color:#374151;">Message &amp; Data Rates</td>
@@ -196,12 +196,12 @@
     <h2 style="font-size:1.1rem;color:#001F5B;margin:0 0 .75rem;">Sample Messages</h2>
     @foreach([
       'Opt-In Confirmation (sent immediately upon opting in)' => 'You are now opted in to SMS notifications from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates',
-      'Lesson Reminder' => 'Reminder: Your skating lesson for [Student] is tomorrow at 3:30 PM at Creve Coeur Ice Arena. $55 due at lesson. Reply YES to confirm or NO to cancel. Cancellations less than 24 hours before the lesson will be billed at the full rate. — Kristine Skates',
-      'YES Confirmation + Payment Link' => 'Confirmed! Your skating lesson for [Student] is Saturday, March 15 at 12:00 PM at Creve Coeur Ice Arena. Pay here: https://kristineskates.com/pay/ABC123. Reply STOP to opt out. — Kristine Skates',
+      'Lesson Reminder' => 'Reminder: Your skating lesson for [Student] is tomorrow at 3:30 PM at Creve Coeur Ice Arena. $55 due at lesson. Reply YES to confirm or NO to cancel. Cancellations less than 24 hours before the lesson will be billed at the full rate. Reply STOP to opt out or HELP for assistance. — Kristine Skates',
+      'Booking Confirmation (sent when admin approves a lesson request)' => 'Confirmed! Your skating lesson for [Student] is Saturday, March 15 at 12:00 PM at Creve Coeur Ice Arena. Pay $55 at https://kristineskates.com/pay/ABC123. Reply STOP to opt out or HELP for assistance. — Kristine Skates',
       'LESSONS Keyword Reply' => 'Upcoming lessons for Jane: Sat Mar 15 12:00PM Creve Coeur, Wed Mar 19 3:30PM Brentwood. Reply HELP for assistance or STOP to opt out. — Kristine Skates',
-      'SKATE Keyword Reply' => "Today's public skate times: Creve Coeur 9:15AM-1:00PM, Brentwood 2:00PM-4:00PM, Webster Groves 1:00PM-3:00PM. Book a lesson at kristineskates.com — Kristine Skates",
+      'SKATE Keyword Reply' => "Today's public skate times: Creve Coeur 9:15AM-1:00PM, Brentwood 2:00PM-4:00PM, Webster Groves 1:00PM-3:00PM. Reply STOP to opt out or HELP for assistance. — Kristine Skates",
       'STOP Response' => 'You have been unsubscribed from Kristine Skates SMS messages. No further messages will be sent. Reply START to resubscribe or HELP for assistance.',
-      'HELP Response' => 'Kristine Skates help: Reply YES to confirm a lesson, NO to cancel, LESSONS for upcoming lessons, SKATE for today\'s public skate times. Contact: kristine@kristineskates.com Reply STOP to opt out. — Kristine Skates',
+      'HELP Response' => 'Kristine Skates help: Reply YES to confirm a lesson, NO to cancel, LESSONS for upcoming lessons, SKATE for today\'s public skate times. Contact: kristine@kristineskates.com or kristineskates.com. Reply STOP to opt out.',
       'One-Time Passcode' => 'Your Kristine Skates verification code is: 456431. Reply STOP to opt out. — Kristine Skates',
     ] as $label => $msg)
     <div style="margin-bottom:.85rem;">
