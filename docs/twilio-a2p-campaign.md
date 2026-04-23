@@ -1,7 +1,7 @@
 # Twilio A2P 10DLC Campaign — Kristine Skates
 
-**Last Updated:** 2026-04-06
-**Campaign Status:** Pending (resubmitted)
+**Last Updated:** 2026-04-21
+**Campaign Status:** Rejected 2026-04-21 (resubmitting after /sms-opt-in alignment fix)
 **Brand:** Kristine Skates
 **Business:** Private skating instruction, St. Louis, MO
 **Website:** https://kristineskates.com
@@ -122,6 +122,7 @@ When a user replies STOP:
 
 | Date | Change |
 |------|--------|
+| 2026-04-21 | /sms-opt-in verification page aligned with submission: expanded Program Description to all 7 message types, added Method 3 (Waitlist), renamed program "Lesson Reminders" → "Notifications", broadened Message Frequency disclosure, updated Opt-In Confirmation sample ("lesson reminders" → "notifications"), updated YES Confirmation sample (Venmo → kristineskates.com/pay link to match actual SmsService output) |
 | 2026-04-06 | Updated Sample 2 opt-in confirmation: "lesson reminders" → "notifications" |
 | 2026-04-06 | Updated SmsService opt-in confirmation message to match |
 | 2026-04-06 | Added payment reminders to consent text and campaign description |

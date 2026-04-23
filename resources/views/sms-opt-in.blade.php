@@ -12,11 +12,22 @@
   {{-- Program Description --}}
   <div style="background:#f8fafc;border:1.5px solid #e5eaf2;border-radius:10px;padding:1.5rem;margin-bottom:1.5rem;">
     <h2 style="font-size:1.1rem;color:#001F5B;margin:0 0 .75rem;">Program Description</h2>
-    <p style="color:#374151;font-size:.92rem;line-height:1.7;margin:0 0 .75rem;">
+    <p style="color:#374151;font-size:.92rem;line-height:1.7;margin:0 0 .5rem;">
       <strong>Kristine Skates</strong> is a private skating instruction business based in St. Louis, MO.
-      This SMS program sends automated lesson reminders to clients approximately 30 hours before scheduled skating lessons.
-      Users may also receive lesson confirmations, one-time passcodes for account verification, and responses to keyword messages (LESSONS, SKATE, HELP).
-      All messages identify the sender as <strong>Kristine Skates</strong>.
+      This SMS program sends automated messages to clients who have provided explicit opt-in consent. Message types include:
+    </p>
+    <ul style="color:#374151;font-size:.92rem;line-height:1.7;margin:0 0 .75rem;padding-left:1.75rem;">
+      <li><strong>Lesson reminders</strong> approximately 30 hours before scheduled skating lessons</li>
+      <li><strong>Booking confirmations and updates</strong> when lesson requests are approved, rejected, or modified</li>
+      <li><strong>Schedule change notifications</strong> for cancellations or time changes</li>
+      <li><strong>Payment reminders</strong> for outstanding lesson balances</li>
+      <li><strong>Availability notifications</strong> for waitlisted clients when lesson times open</li>
+      <li><strong>Public skate schedule updates</strong> for clients who opt in to receive daily rink schedules</li>
+      <li><strong>One-time passcodes</strong> for account verification</li>
+    </ul>
+    <p style="color:#374151;font-size:.92rem;line-height:1.7;margin:0 0 .75rem;">
+      Users can reply <strong>LESSONS</strong> to receive a list of upcoming lessons, and <strong>SKATE</strong> to receive today's public skating times at area rinks.
+      All messages identify the sender as <strong>Kristine Skates</strong>. Users can manage per-category notification preferences (SMS and/or email) from their account dashboard and may opt out at any time by replying STOP.
     </p>
     <p style="color:#374151;font-size:.92rem;line-height:1.7;margin:0;">
       <strong>No mobile information will be shared with third parties or affiliates for marketing or promotional purposes at any time.</strong>
@@ -101,13 +112,41 @@
     </div>
   </div>
 
+  {{-- Method 3: Waitlist Signup --}}
+  <div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1.5rem;margin-bottom:1.5rem;">
+    <h2 style="font-size:1.1rem;color:#001F5B;margin:0 0 .25rem;">Opt-In Method 3: Waitlist Signup</h2>
+    <p style="font-size:.82rem;color:#6b7280;margin:0 0 .5rem;">
+      URL: <a href="{{ url('/book') }}" style="color:#001F5B;">https://kristineskates.com/book</a>
+      (waitlist form is presented when booking is paused, or for "coming soon" services from the home page)
+    </p>
+    <p style="font-size:.88rem;color:#374151;margin:0 0 1rem;">
+      When booking is paused or a service is not yet open for booking, users may join a waitlist to be notified when lesson times become available.
+      The SMS consent checkbox below is <strong>optional and unchecked by default</strong> — it is never pre-checked and is not required to join the waitlist.
+      Users who opt in receive a confirmation SMS and will receive availability notifications when lesson times open.
+    </p>
+
+    <div style="background:#f0f4ff;border:1.5px solid #c7d2fe;border-radius:8px;padding:1.25rem;">
+      <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 .75rem;">SMS Consent Checkbox (optional, unchecked by default, as shown to users):</p>
+      <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:default;">
+        <input type="checkbox" disabled
+               style="margin-top:3px;width:18px;height:18px;flex-shrink:0;">
+        <span style="font-size:.85rem;color:#374151;line-height:1.6;">
+          <strong>Optional:</strong> I agree to receive SMS text messages from Kristine Skates, including lesson reminders, booking confirmations, schedule changes, payment reminders, availability notifications, and public skate schedules.
+          You will receive a confirmation text upon opting in. Message frequency varies.
+          Message and data rates may apply. Reply <strong>STOP</strong> to opt out or <strong>HELP</strong> for help.
+          View our <a href="{{ url('/privacy-policy') }}" style="color:#001F5B;text-decoration:underline;">Privacy Policy</a>.
+        </span>
+      </label>
+    </div>
+  </div>
+
   {{-- Required disclosures --}}
   <div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1.5rem;margin-bottom:1.5rem;">
     <h2 style="font-size:1.1rem;color:#001F5B;margin:0 0 .75rem;">Required Disclosures</h2>
     <table style="width:100%;border-collapse:collapse;font-size:.88rem;">
       <tr style="border-bottom:1px solid #f3f4f6;">
         <td style="padding:.6rem .75rem;font-weight:600;color:#374151;width:40%;">Program Name</td>
-        <td style="padding:.6rem .75rem;color:#6b7280;">Kristine Skates Lesson Reminders</td>
+        <td style="padding:.6rem .75rem;color:#6b7280;">Kristine Skates Notifications</td>
       </tr>
       <tr style="border-bottom:1px solid #f3f4f6;">
         <td style="padding:.6rem .75rem;font-weight:600;color:#374151;">Sender</td>
@@ -115,7 +154,7 @@
       </tr>
       <tr style="border-bottom:1px solid #f3f4f6;">
         <td style="padding:.6rem .75rem;font-weight:600;color:#374151;">Message Frequency</td>
-        <td style="padding:.6rem .75rem;color:#6b7280;">Varies based on scheduled lessons (typically 1 reminder per lesson booked)</td>
+        <td style="padding:.6rem .75rem;color:#6b7280;">Varies by message type and user activity. Typical client receives fewer than 10 messages per month (e.g., lesson reminders, booking confirmations). Users who opt in to public skate schedules receive up to 1 message per day.</td>
       </tr>
       <tr style="border-bottom:1px solid #f3f4f6;">
         <td style="padding:.6rem .75rem;font-weight:600;color:#374151;">Message &amp; Data Rates</td>
@@ -156,9 +195,9 @@
   <div style="background:#fff;border:1.5px solid #e5eaf2;border-radius:10px;padding:1.5rem;">
     <h2 style="font-size:1.1rem;color:#001F5B;margin:0 0 .75rem;">Sample Messages</h2>
     @foreach([
-      'Opt-In Confirmation (sent immediately upon opting in)' => 'You are now opted in to SMS lesson reminders from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates',
+      'Opt-In Confirmation (sent immediately upon opting in)' => 'You are now opted in to SMS notifications from Kristine Skates. Msg frequency varies. Msg & data rates may apply. Reply STOP to cancel or HELP for help. — Kristine Skates',
       'Lesson Reminder' => 'Reminder: Your skating lesson for [Student] is tomorrow at 3:30 PM at Creve Coeur Ice Arena. $55 due at lesson. Reply YES to confirm or NO to cancel. Cancellations less than 24 hours before the lesson will be billed at the full rate. — Kristine Skates',
-      'YES Confirmation + Payment Link' => 'Confirmed! Your skating lesson for [Student] is Saturday, March 15 at 12:00 PM at Creve Coeur Ice Arena. Pay $55 via Venmo: venmo.com/Kristine-Humphrey Reply STOP to opt out. — Kristine Skates',
+      'YES Confirmation + Payment Link' => 'Confirmed! Your skating lesson for [Student] is Saturday, March 15 at 12:00 PM at Creve Coeur Ice Arena. Pay here: https://kristineskates.com/pay/ABC123. Reply STOP to opt out. — Kristine Skates',
       'LESSONS Keyword Reply' => 'Upcoming lessons for Jane: Sat Mar 15 12:00PM Creve Coeur, Wed Mar 19 3:30PM Brentwood. Reply HELP for assistance or STOP to opt out. — Kristine Skates',
       'SKATE Keyword Reply' => "Today's public skate times: Creve Coeur 9:15AM-1:00PM, Brentwood 2:00PM-4:00PM, Webster Groves 1:00PM-3:00PM. Book a lesson at kristineskates.com — Kristine Skates",
       'STOP Response' => 'You have been unsubscribed from Kristine Skates SMS messages. No further messages will be sent. Reply START to resubscribe or HELP for assistance.',
